@@ -1,0 +1,75 @@
+#include "PlaylistWidget.hpp"
+
+#include <QDebug>
+#include <QKeyEvent>
+
+PlaylistWidget::PlaylistWidget(QWidget *parent)
+: QTreeView{ parent }
+{
+    setAllColumnsShowFocus(true);
+    setAlternatingRowColors(true);
+    setUniformRowHeights(true);
+    setFrameShape(QFrame::NoFrame);
+    setSelectionMode(ExtendedSelection);
+    setDragDropMode(DragDrop);
+
+    setStyleSheet(R"(
+        QTreeView {
+            color: #f47e46;
+            background-color: #21231f;
+            alternate-background-color: #242622;
+        }
+        QTreeView::item:selected,
+        QTreeView::branch:selected {
+            color: #21231f;
+            background-color: #aba39a;
+            border: none;
+        }
+    )");
+}
+
+void PlaylistWidget::keyPressEvent(QKeyEvent *event)
+{
+    QTreeView::keyPressEvent(event);
+    qDebug() << "Key pressed: " << event->key();
+}
+
+void PlaylistWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    QTreeView::mouseMoveEvent(event);
+    //    qDebug() << "Mouse moved: " << event->pos();
+}
+
+void PlaylistWidget::leaveEvent(QEvent *event)
+{
+    QTreeView::leaveEvent(event);
+    qDebug() << "Leave event";
+}
+
+void PlaylistWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+    QTreeView::dragMoveEvent(event);
+    qDebug() << "DropMoveEvent";
+}
+
+void PlaylistWidget::dropEvent(QDropEvent *event)
+{
+    QTreeView::dropEvent(event);
+    qDebug() << "DropEvent";
+}
+
+void PlaylistWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    QTreeView::currentChanged(current, previous);
+
+    if(current.row() != previous.row())
+    {
+        qDebug() << QString{ "CurrentChanged (Row: %1)" }.arg(current.row());
+    }
+}
+
+void PlaylistWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    QTreeView::selectionChanged(selected, deselected);
+    qDebug() << "Selection changed: " << selected;
+}
