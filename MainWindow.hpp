@@ -6,6 +6,8 @@
 
 struct Playlist;
 
+class QMediaPlayer;
+
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -19,4 +21,5 @@ private slots:
 private:
     Ui::MainWindowForm ui;
     std::unique_ptr<Playlist> playlist;
+    std::unique_ptr<QMediaPlayer> mediaPlayer_;
 };

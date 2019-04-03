@@ -8,5 +8,6 @@
 struct Playlist
 {
     std::string name;
+    int currentSongIndex;
     std::vector<Song> songs;
 };

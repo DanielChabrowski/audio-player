@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QLabel>
+#include <QMediaPlayer>
 #include <QMenuBar>
 
 #include "taglib/fileref.h"
@@ -28,6 +29,7 @@ void loadFileToPlaylist(std::string path, Playlist &playlist)
     if(audioProperties)
     {
         length = audioProperties->length();
+        qDebug() << path.c_str() << length;
     }
 
     AlbumInfo albumInfo{ -1, -1, -1, -1 };
@@ -115,10 +117,35 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui.playlist->setFocusPolicy(Qt::NoFocus);
 
-    auto *playlistWidget = new PlaylistWidget;
+    auto *playlistWidget = new PlaylistWidget([this](int index) {
+        const auto &song = this->playlist->songs.at(index);
+        this->playlist->currentSongIndex = index;
+        this->mediaPlayer_->setMedia(QUrl::fromLocalFile(song.path.c_str()));
+        this->mediaPlayer_->play();
+
+        this->ui.seekbar->setValue(0);
+        this->ui.seekbar->setMaximum(song.duration.count() * 1000);
+
+        qDebug() << "Callback with index: " << index << song.path.c_str();
+    });
+
     auto *playlistModel = new PlaylistModel(*playlist);
     playlistWidget->setModel(playlistModel);
     ui.playlist->addTab(playlistWidget, "Default");
+
+    mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
+    mediaPlayer_->setMedia(QUrl::fromLocalFile(
+    "/home/chabrows/Music/"
+    "Orion_String_Quartet_-_01_-_Mozart_String_Quintet_No_5_in_D_Major_K_593.mp3"));
+    mediaPlayer_->play();
+
+    ui.seekbar->setMaximum(1532 * 1000);
+
+    connect(ui.volumeSlider, &QSlider::valueChanged, &(*mediaPlayer_), &QMediaPlayer::setVolume);
+
+    // BUG: They interact with eachother causing noise in MediaPlayer
+    connect(ui.seekbar, &QSlider::valueChanged, &(*mediaPlayer_), &QMediaPlayer::setPosition);
+    connect(&(*mediaPlayer_), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 
     ui.menuLayout->addWidget(bar);
 }

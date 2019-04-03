@@ -3,8 +3,9 @@
 #include <QDebug>
 #include <QKeyEvent>
 
-PlaylistWidget::PlaylistWidget(QWidget *parent)
+PlaylistWidget::PlaylistWidget(std::function<void(int)> itemSelectedCallback, QWidget *parent)
 : QTreeView{ parent }
+, itemSelectedCallback_{ itemSelectedCallback }
 {
     setAllColumnsShowFocus(true);
     setAlternatingRowColors(true);
@@ -38,6 +39,21 @@ void PlaylistWidget::mouseMoveEvent(QMouseEvent *event)
 {
     QTreeView::mouseMoveEvent(event);
     //    qDebug() << "Mouse moved: " << event->pos();
+}
+
+void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if(Qt::LeftButton != event->button())
+    {
+        return QTreeView::mouseDoubleClickEvent(event);
+    }
+
+    QModelIndex index = indexAt(event->pos());
+    if(index.isValid())
+    {
+        itemSelectedCallback_(index.row());
+        update();
+    }
 }
 
 void PlaylistWidget::leaveEvent(QEvent *event)

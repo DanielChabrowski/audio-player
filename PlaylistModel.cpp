@@ -72,7 +72,7 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
         {
         case PlaylistColumn::NOW_PLAYING:
         {
-            return {};
+            return row == playlist_.currentSongIndex ? QString{ "YES" } : "";
         }
 
         case PlaylistColumn::TITLE:
