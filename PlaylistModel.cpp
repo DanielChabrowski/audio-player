@@ -120,6 +120,19 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
         return QString("Unsupported column %1").arg(index.column());
     }
 
+    if(Qt::TextAlignmentRole == role)
+    {
+        switch(col)
+        {
+        case PlaylistColumn::NOW_PLAYING:
+            return Qt::AlignmentFlag::AlignCenter;
+
+        case PlaylistColumn::TRACK:
+        case PlaylistColumn::DURATION:
+            return Qt::AlignmentFlag::AlignRight;
+        }
+    }
+
     return {};
 }
 
