@@ -1,7 +1,11 @@
 #include "PlaylistModel.hpp"
 
+#include <QFileInfo>
+
 #include "Playlist.hpp"
 
+namespace
+{
 const char *const labels[] = {
     "Playing", "Artist/album", "Track", "Title", "Duration",
 };
@@ -14,7 +18,7 @@ enum PlaylistColumn
     TITLE,
     DURATION
 };
-
+} // namespace
 
 PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
 : QAbstractListModel{ parent }
@@ -72,12 +76,19 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
         {
         case PlaylistColumn::NOW_PLAYING:
         {
-            return row == playlist_.currentSongIndex ? QString{ "YES" } : "";
+            return row == playlist_.currentSongIndex ? QString{ '>' } : "";
         }
 
         case PlaylistColumn::TITLE:
         {
-            return QString{ song.name.c_str() };
+            if(not song.name.empty())
+            {
+                return QString{ song.name.c_str() };
+            }
+            else
+            {
+                return QFileInfo(song.path.c_str()).completeBaseName();
+            }
         }
 
         case PlaylistColumn::ARTIST_ALBUM:
