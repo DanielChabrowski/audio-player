@@ -4,7 +4,7 @@
 
 struct Playlist;
 
-class PlaylistModel : public QAbstractListModel
+class PlaylistModel final : public QAbstractListModel
 {
     Q_OBJECT
 

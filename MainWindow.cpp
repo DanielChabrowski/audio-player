@@ -134,10 +134,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui.playlist->addTab(playlistWidget, "Default");
 
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
-    mediaPlayer_->setMedia(QUrl::fromLocalFile(
-    "/home/chabrows/Music/"
-    "Orion_String_Quartet_-_01_-_Mozart_String_Quintet_No_5_in_D_Major_K_593.mp3"));
-    mediaPlayer_->play();
 
     ui.seekbar->setMaximum(1532 * 1000);
 

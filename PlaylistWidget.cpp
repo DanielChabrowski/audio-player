@@ -59,7 +59,6 @@ void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
 void PlaylistWidget::leaveEvent(QEvent *event)
 {
     QTreeView::leaveEvent(event);
-    qDebug() << "Leave event";
 }
 
 void PlaylistWidget::dragMoveEvent(QDragMoveEvent *event)
