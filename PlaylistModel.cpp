@@ -122,15 +122,7 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 
     if(Qt::TextAlignmentRole == role)
     {
-        switch(col)
-        {
-        case PlaylistColumn::NOW_PLAYING:
-            return Qt::AlignmentFlag::AlignCenter;
-
-        case PlaylistColumn::TRACK:
-        case PlaylistColumn::DURATION:
-            return Qt::AlignmentFlag::AlignRight;
-        }
+        return alignment(col);
     }
 
     return {};
@@ -139,6 +131,21 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 Qt::ItemFlags PlaylistModel::flags(const QModelIndex &) const
 {
     return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsEnabled;
+}
+
+QVariant PlaylistModel::alignment(int column) const
+{
+    switch(column)
+    {
+    case PlaylistColumn::NOW_PLAYING:
+        return Qt::AlignmentFlag::AlignCenter + Qt::AlignmentFlag::AlignVCenter;
+
+    case PlaylistColumn::TRACK:
+    case PlaylistColumn::DURATION:
+        return Qt::AlignmentFlag::AlignRight + Qt::AlignVCenter;
+    }
+
+    return Qt::AlignmentFlag::AlignLeft + Qt::AlignVCenter;
 }
 
 void PlaylistModel::update()

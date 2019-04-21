@@ -19,6 +19,8 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &) const override;
 
+    QVariant alignment(int column) const;
+
 public slots:
     void update();
 
