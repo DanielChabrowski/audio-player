@@ -3,6 +3,7 @@
 #include <QAbstractListModel>
 
 struct Playlist;
+struct Song;
 
 class PlaylistModel final : public QAbstractListModel
 {
@@ -19,7 +20,11 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &) const override;
 
-    QVariant alignment(int column) const;
+    QVariant roleAlignment(int column) const;
+    QVariant dataTitle(const Song &) const;
+    QVariant dataArtistAlbum(const Song &) const;
+    QVariant dataDuration(const Song &) const;
+    QVariant dataTrack(const Song &) const;
 
 public slots:
     void update();

@@ -81,39 +81,22 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 
         case PlaylistColumn::TITLE:
         {
-            if(not song.name.empty())
-            {
-                return QString{ song.name.c_str() };
-            }
-            else
-            {
-                return QFileInfo(song.path.c_str()).completeBaseName();
-            }
+            return dataTitle(song);
         }
 
         case PlaylistColumn::ARTIST_ALBUM:
         {
-            return QString{ song.artist.c_str() } + " - " + QString{ song.album.c_str() };
+            return dataArtistAlbum(song);
         }
 
         case PlaylistColumn::TRACK:
         {
-            const auto track = QString{ "%1" }.arg(song.albumInfo.trackNumber, 2, 10, QChar('0'));
-
-            if(-1 != song.albumInfo.discNumber)
-            {
-                return QString{ "%1.%2" }.arg(song.albumInfo.discNumber).arg(track);
-            }
-
-            return track;
+            return dataTrack(song);
         }
 
         case PlaylistColumn::DURATION:
         {
-            const auto duration = song.duration.count();
-            const auto minutes = duration / 60;
-            const auto seconds = duration % 60;
-            return QString{ "%1:%2" }.arg(minutes).arg(seconds, 2, 10, QChar('0'));
+            return dataDuration(song);
         }
         }
 
@@ -122,7 +105,7 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 
     if(Qt::TextAlignmentRole == role)
     {
-        return alignment(col);
+        return roleAlignment(col);
     }
 
     return {};
@@ -133,7 +116,8 @@ Qt::ItemFlags PlaylistModel::flags(const QModelIndex &) const
     return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsEnabled;
 }
 
-QVariant PlaylistModel::alignment(int column) const
+
+QVariant PlaylistModel::roleAlignment(int column) const
 {
     switch(column)
     {
@@ -146,6 +130,50 @@ QVariant PlaylistModel::alignment(int column) const
     }
 
     return Qt::AlignmentFlag::AlignLeft + Qt::AlignVCenter;
+}
+
+QVariant PlaylistModel::dataTitle(const Song &song) const
+{
+    if(not song.name.empty())
+    {
+        return QString{ song.name.c_str() };
+    }
+
+    return QFileInfo(song.path.c_str()).completeBaseName();
+}
+
+QVariant PlaylistModel::dataArtistAlbum(const Song &song) const
+{
+    const QString artist{ song.artist.empty() ? "?" : song.artist.c_str() };
+    const QString album{ song.album.empty() ? "?" : song.album.c_str() };
+    return artist + " - " + album;
+}
+
+QVariant PlaylistModel::dataDuration(const Song &song) const
+{
+    const auto duration = song.duration.count();
+    const auto minutes = duration / 60;
+    const auto seconds = duration % 60;
+    return QString{ "%1:%2" }.arg(minutes).arg(seconds, 2, 10, QChar('0'));
+}
+
+QVariant PlaylistModel::dataTrack(const Song &song) const
+{
+    constexpr int missingData{ -1 };
+
+    if(missingData != song.albumInfo.trackNumber)
+    {
+        const auto track = QString{ "%1" }.arg(song.albumInfo.trackNumber, 2, 10, QChar('0'));
+
+        if(missingData != song.albumInfo.discNumber)
+        {
+            return QString{ "%1.%2" }.arg(song.albumInfo.discNumber).arg(track);
+        }
+
+        return track;
+    }
+
+    return {};
 }
 
 void PlaylistModel::update()
