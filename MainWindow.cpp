@@ -139,8 +139,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui.volumeSlider, &QSlider::valueChanged, &(*mediaPlayer_), &QMediaPlayer::setVolume);
 
-    // BUG: They interact with eachother causing noise in MediaPlayer
-    // connect(ui.seekbar, &QSlider::valueChanged, &(*mediaPlayer_), &QMediaPlayer::setPosition);
+    connect(ui.seekbar, &QSlider::sliderReleased,
+            [this]() { this->mediaPlayer_->setPosition(this->ui.seekbar->value()); });
     connect(&(*mediaPlayer_), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 
     ui.menuLayout->addWidget(bar);
