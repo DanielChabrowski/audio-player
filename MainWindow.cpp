@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QMediaPlayer>
 #include <QMenuBar>
+#include <QPushButton>
 
 #include "taglib/fileref.h"
 #include "taglib/tag.h"
@@ -144,6 +145,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&(*mediaPlayer_), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 
     ui.menuLayout->addWidget(bar);
+
+    auto *playButton = new QPushButton(this);
+    playButton->setFlat(true);
+    playButton->setIcon(QPixmap(":/resources/play.png"));
+
+    ui.buttonsLayout->addWidget(playButton);
 }
 
 MainWindow::~MainWindow() = default;

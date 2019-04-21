@@ -41,6 +41,9 @@
       <layout class="QHBoxLayout" name="menuLayout"/>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="buttonsLayout"/>
+     </item>
+     <item>
       <widget class="QSlider" name="volumeSlider">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">

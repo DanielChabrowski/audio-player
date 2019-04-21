@@ -16,6 +16,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 # Create code from a list of Qt designer ui files
 set(CMAKE_AUTOUIC ON)
+# Handle resources for Qt targets
+set(CMAKE_AUTORCC ON)
 
 find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Qt5Multimedia CONFIG REQUIRED)
@@ -42,6 +44,8 @@ set(SOURCES
 
     Song.hpp
     Playlist.hpp
+
+    Resources.qrc
 )
 
 add_executable(foobar main.cpp MainWindow.ui ${SOURCES})
