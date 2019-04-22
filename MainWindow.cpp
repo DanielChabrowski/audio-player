@@ -13,15 +13,16 @@
 #include "taglib/tpropertymap.h"
 
 #include "Playlist.hpp"
+#include "PlaylistHeader.hpp"
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"
 
-void loadFileToPlaylist(std::string path, Playlist &playlist)
+void loadFileToPlaylist(QString path, Playlist &playlist)
 {
-    TagLib::FileRef ref{ path.c_str() };
+    TagLib::FileRef ref{ path.toStdString().c_str() };
     if(ref.isNull() or not ref.tag())
     {
-        qDebug() << "Skipping file without tags: " << path.c_str();
+        qDebug() << "Skipping file without tags: " << path;
         return;
     }
 
@@ -30,7 +31,7 @@ void loadFileToPlaylist(std::string path, Playlist &playlist)
     if(audioProperties)
     {
         length = audioProperties->length();
-        qDebug() << path.c_str() << length;
+        qDebug() << path << length;
     }
 
     AlbumInfo albumInfo{ -1, -1, -1, -1 };
@@ -63,12 +64,12 @@ void loadFileToPlaylist(std::string path, Playlist &playlist)
     const auto *tags = ref.tag();
 
     playlist.songs.push_back(Song{
-    path,
-    QString::fromStdWString(tags->title().toWString()).toStdString(),
-    QString::fromStdWString(tags->artist().toWString()).toStdString(),
-    QString::fromStdWString(tags->album().toWString()).toStdString(),
-    std::chrono::seconds{ length },
     std::move(albumInfo),
+    path,
+    QString::fromStdWString(tags->title().toWString()),
+    QString::fromStdWString(tags->artist().toWString()),
+    QString::fromStdWString(tags->album().toWString()),
+    std::chrono::seconds{ length },
     });
 }
 
@@ -78,8 +79,7 @@ void loadPlaylistFromDir(QDir dir, Playlist &playlist)
     {
         if(entry.isFile())
         {
-            const auto absolutePath = entry.absoluteFilePath().toStdString();
-            loadFileToPlaylist(absolutePath, playlist);
+            loadFileToPlaylist(entry.absoluteFilePath(), playlist);
         }
         else if(entry.isDir())
         {
@@ -121,17 +121,21 @@ MainWindow::MainWindow(QWidget *parent)
     auto *playlistWidget = new PlaylistWidget([this](int index) {
         const auto &song = this->playlist->songs.at(index);
         this->playlist->currentSongIndex = index;
-        this->mediaPlayer_->setMedia(QUrl::fromLocalFile(song.path.c_str()));
+        this->mediaPlayer_->setMedia(QUrl::fromLocalFile(song.path));
         this->mediaPlayer_->play();
 
         this->ui.seekbar->setValue(0);
         this->ui.seekbar->setMaximum(song.duration.count() * 1000);
 
-        qDebug() << "Callback with index: " << index << song.path.c_str();
+        qDebug() << "Callback with index: " << index << song.path;
     });
 
-    auto *playlistModel = new PlaylistModel(*playlist);
+    auto *playlistModel = new PlaylistModel{ *playlist };
     playlistWidget->setModel(playlistModel);
+
+    auto *playlistHeader = new PlaylistHeader{ playlistWidget };
+    playlistWidget->setHeader(playlistHeader);
+
     ui.playlist->addTab(playlistWidget, "Default");
 
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <QString>
 #include <chrono>
-#include <string>
 
 struct AlbumInfo
 {
@@ -13,10 +13,10 @@ struct AlbumInfo
 
 struct Song
 {
-    std::string path;
-    std::string name;
-    std::string artist;
-    std::string album;
-    std::chrono::seconds duration;
     AlbumInfo albumInfo;
+    QString path;
+    QString name;
+    QString artist;
+    QString album;
+    std::chrono::seconds duration;
 };

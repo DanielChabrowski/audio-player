@@ -38,7 +38,6 @@ void PlaylistWidget::keyPressEvent(QKeyEvent *event)
 void PlaylistWidget::mouseMoveEvent(QMouseEvent *event)
 {
     QTreeView::mouseMoveEvent(event);
-    //    qDebug() << "Mouse moved: " << event->pos();
 }
 
 void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -76,15 +75,9 @@ void PlaylistWidget::dropEvent(QDropEvent *event)
 void PlaylistWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     QTreeView::currentChanged(current, previous);
-
-    if(current.row() != previous.row())
-    {
-        qDebug() << QString{ "CurrentChanged (Row: %1)" }.arg(current.row());
-    }
 }
 
 void PlaylistWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeView::selectionChanged(selected, deselected);
-    qDebug() << "Selection changed: " << selected;
 }

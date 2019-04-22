@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string>
+#include <QString>
 #include <vector>
 
 #include "Song.hpp"
 
 struct Playlist
 {
-    std::string name;
+    QString name;
     int currentSongIndex;
     std::vector<Song> songs;
 };

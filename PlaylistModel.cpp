@@ -1,13 +1,14 @@
 #include "PlaylistModel.hpp"
 
 #include <QFileInfo>
+#include <QSize>
 
 #include "Playlist.hpp"
 
 namespace
 {
 const char *const labels[] = {
-    "Playing", "Artist/album", "Track", "Title", "Duration",
+    "", "Artist/album", "Track", "Title", "Duration",
 };
 
 enum PlaylistColumn
@@ -134,18 +135,18 @@ QVariant PlaylistModel::roleAlignment(int column) const
 
 QVariant PlaylistModel::dataTitle(const Song &song) const
 {
-    if(not song.name.empty())
+    if(not song.name.isEmpty())
     {
-        return QString{ song.name.c_str() };
+        return song.name;
     }
 
-    return QFileInfo(song.path.c_str()).completeBaseName();
+    return QFileInfo(song.path).completeBaseName();
 }
 
 QVariant PlaylistModel::dataArtistAlbum(const Song &song) const
 {
-    const QString artist{ song.artist.empty() ? "?" : song.artist.c_str() };
-    const QString album{ song.album.empty() ? "?" : song.album.c_str() };
+    const QString artist{ song.artist.isEmpty() ? "?" : song.artist };
+    const QString album{ song.album.isEmpty() ? "?" : song.album };
     return artist + " - " + album;
 }
 

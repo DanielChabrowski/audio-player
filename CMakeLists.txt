@@ -22,6 +22,9 @@ set(SOURCES
     PlaylistModel.cpp
     PlaylistModel.hpp
 
+    PlaylistHeader.cpp
+    PlaylistHeader.hpp
+
     Song.hpp
     Playlist.hpp
 
