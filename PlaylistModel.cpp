@@ -117,7 +117,6 @@ Qt::ItemFlags PlaylistModel::flags(const QModelIndex &) const
     return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsEnabled;
 }
 
-
 QVariant PlaylistModel::roleAlignment(int column) const
 {
     switch(column)

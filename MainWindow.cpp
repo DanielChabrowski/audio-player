@@ -7,71 +7,13 @@
 #include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
-
-#include "taglib/fileref.h"
-#include "taglib/tag.h"
-#include "taglib/tpropertymap.h"
+#include <QStandardPaths>
 
 #include "Playlist.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"
-
-void loadFileToPlaylist(QString path, Playlist &playlist)
-{
-    TagLib::FileRef ref{ path.toStdString().c_str() };
-    if(ref.isNull() or not ref.tag())
-    {
-        qDebug() << "Skipping file without tags: " << path;
-        return;
-    }
-
-    std::int64_t length{ 0 };
-    const auto *audioProperties = ref.audioProperties();
-    if(audioProperties)
-    {
-        length = audioProperties->length();
-        qDebug() << path << length;
-    }
-
-    AlbumInfo albumInfo{ -1, -1, -1, -1 };
-
-    const auto properties = ref.file()->properties();
-    for(const auto &property : properties)
-    {
-        for(const auto &propValue : property.second)
-        {
-            const auto &propertyName = property.first.to8Bit(true);
-            if(u8"DISCNUMBER" == propertyName)
-            {
-                albumInfo.discNumber = propValue.toInt();
-            }
-            else if(u8"DISCTOTAL" == propertyName)
-            {
-                albumInfo.discTotal = propValue.toInt();
-            }
-            else if(u8"TRACKNUMBER" == propertyName)
-            {
-                albumInfo.trackNumber = propValue.toInt();
-            }
-            else if(u8"TRACKTOTAL" == propertyName)
-            {
-                albumInfo.trackTotal = propValue.toInt();
-            }
-        }
-    }
-
-    const auto *tags = ref.tag();
-
-    playlist.songs.push_back(Song{
-    std::move(albumInfo),
-    path,
-    QString::fromStdWString(tags->title().toWString()),
-    QString::fromStdWString(tags->artist().toWString()),
-    QString::fromStdWString(tags->album().toWString()),
-    std::chrono::seconds{ length },
-    });
-}
+#include "TaglibAudioPropertyReader.hpp"
 
 void loadPlaylistFromDir(QDir dir, Playlist &playlist)
 {
@@ -79,7 +21,14 @@ void loadPlaylistFromDir(QDir dir, Playlist &playlist)
     {
         if(entry.isFile())
         {
-            loadFileToPlaylist(entry.absoluteFilePath(), playlist);
+            try
+            {
+                playlist.songs.push_back(TaglibAudioPropertyReader{}.loadSong(entry.absoluteFilePath()));
+            }
+            catch(const std::runtime_error &e)
+            {
+                qDebug() << e.what();
+            }
         }
         else if(entry.isDir())
         {
@@ -95,7 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
 
     playlist->name = "Default";
-    loadPlaylistFromDir(QDir{ "/home/dantez/Music/" }, *playlist);
+    loadPlaylistFromDir(
+    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0), *playlist);
 
     QMenuBar *bar = new QMenuBar;
     auto *fileMenu = bar->addMenu(tr("File"));

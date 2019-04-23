@@ -25,6 +25,11 @@ set(SOURCES
     PlaylistHeader.cpp
     PlaylistHeader.hpp
 
+    AudioPropertyReader.hpp
+
+    TaglibAudioPropertyReader.cpp
+    TaglibAudioPropertyReader.hpp
+
     Song.hpp
     Playlist.hpp
 
