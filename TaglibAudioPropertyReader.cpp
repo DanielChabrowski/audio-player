@@ -4,8 +4,6 @@
 #include "taglib/tag.h"
 #include "taglib/tpropertymap.h"
 
-#include <QDebug>
-
 Song TaglibAudioPropertyReader::loadSong(const QString &path)
 {
     TagLib::FileRef ref{ path.toStdString().c_str() };
@@ -19,7 +17,6 @@ Song TaglibAudioPropertyReader::loadSong(const QString &path)
     if(audioProperties)
     {
         length = audioProperties->length();
-        qDebug() << path << length;
     }
 
     AlbumInfo albumInfo{ -1, -1, -1, -1 };

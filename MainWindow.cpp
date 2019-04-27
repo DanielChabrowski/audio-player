@@ -8,6 +8,7 @@
 #include <QMenuBar>
 #include <QPushButton>
 #include <QStandardPaths>
+#include <QTime>
 
 #include "Playlist.hpp"
 #include "PlaylistHeader.hpp"
@@ -25,9 +26,8 @@ void loadPlaylistFromDir(QDir dir, Playlist &playlist)
             {
                 playlist.songs.push_back(TaglibAudioPropertyReader{}.loadSong(entry.absoluteFilePath()));
             }
-            catch(const std::runtime_error &e)
+            catch(const std::runtime_error &)
             {
-                qDebug() << e.what();
             }
         }
         else if(entry.isDir())
@@ -44,8 +44,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
 
     playlist->name = "Default";
-    loadPlaylistFromDir(
-    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0), *playlist);
+
+    {
+        QTime startTime = QTime::currentTime();
+        loadPlaylistFromDir(
+        QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0), *playlist);
+        auto elapsedTime = startTime.msecsTo(QTime::currentTime());
+        qDebug() << "Loaded playlist in: " << elapsedTime << "ms";
+    }
 
     QMenuBar *bar = new QMenuBar;
     auto *fileMenu = bar->addMenu(tr("File"));
