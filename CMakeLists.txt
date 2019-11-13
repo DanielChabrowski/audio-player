@@ -12,29 +12,37 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(Taglib taglib REQUIRED IMPORTED_TARGET)
 
 set(SOURCES
-    MainWindow.cpp
-    MainWindow.hpp
-    MainWindow.ui
+    src/main.cpp
 
-    PlaylistWidget.cpp
-    PlaylistWidget.hpp
+    src/MainWindow.cpp
+    src/MainWindow.hpp
+    src/MainWindow.ui
 
-    PlaylistModel.cpp
-    PlaylistModel.hpp
+    src/PlaylistWidget.cpp
+    src/PlaylistWidget.hpp
 
-    PlaylistHeader.cpp
-    PlaylistHeader.hpp
+    src/PlaylistModel.cpp
+    src/PlaylistModel.hpp
 
-    AudioPropertyReader.hpp
+    src/PlaylistHeader.cpp
+    src/PlaylistHeader.hpp
 
-    TaglibAudioPropertyReader.cpp
-    TaglibAudioPropertyReader.hpp
+    src/AudioPropertyReader.hpp
 
-    Song.hpp
-    Playlist.hpp
+    src/TaglibAudioPropertyReader.cpp
+    src/TaglibAudioPropertyReader.hpp
 
-    Resources.qrc
+    src/Song.hpp
+    src/Playlist.hpp
+
+    resources/Resources.qrc
 )
 
-add_executable(foobar main.cpp MainWindow.ui ${SOURCES})
-target_link_libraries(foobar Qt5::Widgets Qt5::Multimedia PkgConfig::Taglib)
+add_executable(foobar ${SOURCES})
+
+target_link_libraries(foobar
+  PRIVATE
+    Qt5::Widgets
+    Qt5::Multimedia
+    PkgConfig::Taglib
+)
