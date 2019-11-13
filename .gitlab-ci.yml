@@ -2,8 +2,8 @@ image: debian:testing-slim
 
 build:
   stage: build
-  before_script: 
+  before_script:
     - apt update && apt install -y --no-install-recommends g++ cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
-  script: 
+  script:
     - cmake . -GNinja
     - ninja
