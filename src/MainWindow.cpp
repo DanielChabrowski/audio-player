@@ -7,8 +7,10 @@
 #include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QTime>
+#include <QtGlobal>
 
 #include "Playlist.hpp"
 #include "PlaylistHeader.hpp"
@@ -39,6 +41,7 @@ void loadPlaylistFromDir(QDir dir, Playlist &playlist)
 
 MainWindow::MainWindow(QWidget *parent)
 : QWidget{ parent }
+, settings_{ std::make_unique<QSettings>("OpenSource", "Foobar3000") }
 , playlist{ std::make_unique<Playlist>() }
 {
     ui.setupUi(this);
@@ -96,9 +99,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
 
-    ui.seekbar->setMaximum(1532 * 1000);
+    {
+        constexpr auto volumeConfigKey{ "player/volume" };
+        constexpr auto defaultVolume{ 30 };
+        constexpr auto minVolume{ 0 };
+        constexpr auto maxVolume{ 100 };
 
-    connect(ui.volumeSlider, &QSlider::valueChanged, &(*mediaPlayer_), &QMediaPlayer::setVolume);
+        const auto volume =
+        qBound(minVolume, settings_->value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
+        ui.volumeSlider->setMaximum(100);
+        ui.volumeSlider->setValue(volume);
+
+        connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
+            this->mediaPlayer_->setVolume(volume);
+            this->settings_->setValue(volumeConfigKey, volume);
+            qDebug() << "Volume set to " << volume;
+        });
+
+        mediaPlayer_->setVolume(volume);
+    }
 
     connect(ui.seekbar, &QSlider::sliderReleased,
             [this]() { this->mediaPlayer_->setPosition(this->ui.seekbar->value()); });
