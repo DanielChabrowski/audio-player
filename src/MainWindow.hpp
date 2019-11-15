@@ -18,6 +18,7 @@ public:
     ~MainWindow();
 
 private:
+    void setupSeekbar();
     void connectSeekbarToMediaPlayer();
 
     void playMediaFromCurrentPlaylist(int index);

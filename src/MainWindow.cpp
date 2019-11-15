@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
 
         const auto volume =
         qBound(minVolume, settings_->value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
-        ui.volumeSlider->setMaximum(100);
+        ui.volumeSlider->setMaximum(maxVolume);
         ui.volumeSlider->setValue(volume);
 
         connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
@@ -124,15 +124,7 @@ MainWindow::MainWindow(QWidget *parent)
         mediaPlayer_->setVolume(volume);
     }
 
-    connect(ui.seekbar, &QSlider::sliderPressed, [this]() {
-        disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr);
-    });
-
-    connect(ui.seekbar, &QSlider::sliderReleased, [this]() {
-        this->mediaPlayer_->setPosition(this->ui.seekbar->value());
-        connectSeekbarToMediaPlayer();
-    });
-
+    setupSeekbar();
     connectSeekbarToMediaPlayer();
 
     ui.menuLayout->addWidget(bar);
@@ -145,6 +137,18 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::setupSeekbar()
+{
+    connect(ui.seekbar, &QSlider::sliderPressed, [this]() {
+        disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr);
+    });
+
+    connect(ui.seekbar, &QSlider::sliderReleased, [this]() {
+        this->mediaPlayer_->setPosition(this->ui.seekbar->value());
+        connectSeekbarToMediaPlayer();
+    });
+}
 
 void MainWindow::connectSeekbarToMediaPlayer()
 {
