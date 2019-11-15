@@ -77,17 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui.playlist->setFocusPolicy(Qt::NoFocus);
 
-    auto *playlistWidget = new PlaylistWidget([this](int index) {
-        const auto &song = this->playlist->songs.at(index);
-        this->playlist->currentSongIndex = index;
-        this->mediaPlayer_->setMedia(QUrl::fromLocalFile(song.path));
-        this->mediaPlayer_->play();
-
-        this->ui.seekbar->setValue(0);
-        this->ui.seekbar->setMaximum(song.duration.count() * 1000);
-
-        qDebug() << "Callback with index: " << index << song.path;
-    });
+    auto *playlistWidget =
+    new PlaylistWidget([this](int index) { playMediaFromCurrentPlaylist(index); });
 
     auto *playlistModel = new PlaylistModel{ *playlist };
     playlistWidget->setModel(playlistModel);
@@ -100,6 +91,20 @@ MainWindow::MainWindow(QWidget *parent)
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
 
     {
+        // Playback
+        connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
+                [this](const QMediaPlayer::MediaStatus status) {
+                    using Status = QMediaPlayer::MediaStatus;
+                    if(Status::EndOfMedia == status or Status::InvalidMedia == status)
+                    {
+                        qDebug() << "QMediaPlayer status changed to " << status;
+                        onMediaFinish();
+                    }
+                });
+    }
+
+    {
+        // Volume settings
         constexpr auto volumeConfigKey{ "player/volume" };
         constexpr auto defaultVolume{ 30 };
         constexpr auto minVolume{ 0 };
@@ -121,15 +126,45 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui.seekbar, &QSlider::sliderReleased,
             [this]() { this->mediaPlayer_->setPosition(this->ui.seekbar->value()); });
-    connect(&(*mediaPlayer_), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
+    connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 
     ui.menuLayout->addWidget(bar);
 
     auto *playButton = new QPushButton(this);
     playButton->setFlat(true);
-    playButton->setIcon(QPixmap(":/resources/play.png"));
+    playButton->setIcon(QPixmap(":/play.png"));
 
     ui.buttonsLayout->addWidget(playButton);
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::playMediaFromCurrentPlaylist(int index)
+{
+    const auto &song = this->playlist->songs.at(index);
+
+    this->playlist->currentSongIndex = index;
+    this->mediaPlayer_->setMedia(QUrl::fromLocalFile(song.path));
+    this->mediaPlayer_->play();
+
+    qDebug() << "Playing media: " << song.path;
+
+    this->ui.seekbar->setValue(0);
+    this->ui.seekbar->setMaximum(song.duration.count() * 1000);
+
+    this->ui.playlist->update();
+}
+
+void MainWindow::onMediaFinish()
+{
+    const auto songsCount = static_cast<int>(this->playlist->songs.size());
+    const auto currentSongIndex = this->playlist->currentSongIndex;
+
+    auto nextSongIndex = currentSongIndex + 1;
+    if(nextSongIndex > songsCount - 1)
+    {
+        nextSongIndex = 0;
+    }
+
+    playMediaFromCurrentPlaylist(qBound(0, nextSongIndex, songsCount - 1));
+}

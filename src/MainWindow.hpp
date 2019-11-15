@@ -17,7 +17,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
+private:
+    void playMediaFromCurrentPlaylist(int index);
+
+    void onMediaFinish();
 
 private:
     Ui::MainWindowForm ui;
