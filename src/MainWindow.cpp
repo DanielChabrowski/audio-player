@@ -10,6 +10,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTime>
+#include <QToolTip>
 #include <QtGlobal>
 
 #include "Playlist.hpp"
@@ -132,8 +133,23 @@ MainWindow::MainWindow(QWidget *parent)
     auto *playButton = new QPushButton(this);
     playButton->setFlat(true);
     playButton->setIcon(QPixmap(":/play.png"));
+    connect(playButton, &QPushButton::released, [this]() { mediaPlayer_->play(); });
 
     ui.buttonsLayout->addWidget(playButton);
+
+    auto *pauseButton = new QPushButton(this);
+    pauseButton->setFlat(true);
+    pauseButton->setText("P");
+    connect(pauseButton, &QPushButton::released, [this]() { mediaPlayer_->pause(); });
+
+    ui.buttonsLayout->addWidget(pauseButton);
+
+    auto *stopButton = new QPushButton(this);
+    stopButton->setFlat(true);
+    stopButton->setText("S");
+    connect(stopButton, &QPushButton::released, [this]() { mediaPlayer_->stop(); });
+
+    ui.buttonsLayout->addWidget(stopButton);
 }
 
 MainWindow::~MainWindow() = default;
@@ -147,6 +163,14 @@ void MainWindow::setupSeekbar()
     connect(ui.seekbar, &QSlider::sliderReleased, [this]() {
         this->mediaPlayer_->setPosition(this->ui.seekbar->value());
         connectMediaPlayerToSeekbar();
+    });
+
+    connect(ui.seekbar, &QSlider::sliderMoved, [this](int value) {
+        const auto currentTime = QTime(0, 0, 0, 0).addMSecs(value);
+        const auto verticalPos = QWidget::mapToGlobal(ui.seekbar->geometry().bottomLeft());
+
+        QToolTip::showText(QPoint{ QCursor::pos().x(), verticalPos.y() },
+                           currentTime.toString("H:mm:ss"));
     });
 }
 
