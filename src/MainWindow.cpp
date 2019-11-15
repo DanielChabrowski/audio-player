@@ -140,8 +140,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui.menuLayout->addWidget(bar);
 
+    ui.buttonsLayout->QLayout::setSpacing(0);
+
     auto *playButton = new QPushButton(this);
     playButton->setFlat(true);
+    playButton->setMaximumSize(24, 24);
     playButton->setIcon(QPixmap(":/play.png"));
     connect(playButton, &QPushButton::released, [this]() { mediaPlayer_->play(); });
 
@@ -149,14 +152,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto *pauseButton = new QPushButton(this);
     pauseButton->setFlat(true);
-    pauseButton->setText("P");
+    pauseButton->setMaximumSize(24, 24);
+    pauseButton->setIcon(QPixmap(":/pause.png"));
     connect(pauseButton, &QPushButton::released, [this]() { mediaPlayer_->pause(); });
 
     ui.buttonsLayout->addWidget(pauseButton);
 
     auto *stopButton = new QPushButton(this);
     stopButton->setFlat(true);
-    stopButton->setText("S");
+    stopButton->setMaximumSize(24, 24);
+    stopButton->setIcon(QPixmap(":/stop.png"));
     connect(stopButton, &QPushButton::released, [this]() { mediaPlayer_->stop(); });
 
     ui.buttonsLayout->addWidget(stopButton);
