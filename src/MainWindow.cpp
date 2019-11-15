@@ -124,9 +124,16 @@ MainWindow::MainWindow(QWidget *parent)
         mediaPlayer_->setVolume(volume);
     }
 
-    connect(ui.seekbar, &QSlider::sliderReleased,
-            [this]() { this->mediaPlayer_->setPosition(this->ui.seekbar->value()); });
-    connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
+    connect(ui.seekbar, &QSlider::sliderPressed, [this]() {
+        disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr);
+    });
+
+    connect(ui.seekbar, &QSlider::sliderReleased, [this]() {
+        this->mediaPlayer_->setPosition(this->ui.seekbar->value());
+        connectSeekbarToMediaPlayer();
+    });
+
+    connectSeekbarToMediaPlayer();
 
     ui.menuLayout->addWidget(bar);
 
@@ -138,6 +145,11 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::connectSeekbarToMediaPlayer()
+{
+    connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
+}
 
 void MainWindow::playMediaFromCurrentPlaylist(int index)
 {
