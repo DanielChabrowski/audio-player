@@ -19,6 +19,11 @@
 #include "PlaylistWidget.hpp"
 #include "TaglibAudioPropertyReader.hpp"
 
+namespace
+{
+constexpr auto geometryConfigKey{ "window/geometry" };
+} // namespace
+
 void loadPlaylistFromDir(QDir dir, Playlist &playlist)
 {
     for(const auto &entry : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot))
@@ -46,6 +51,11 @@ MainWindow::MainWindow(QWidget *parent)
 , playlist{ std::make_unique<Playlist>() }
 {
     ui.setupUi(this);
+
+    {
+        // Restoring window size and position
+        restoreGeometry(settings_->value(geometryConfigKey).toByteArray());
+    }
 
     playlist->name = "Default";
 
@@ -153,6 +163,12 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    settings_->setValue(geometryConfigKey, saveGeometry());
+    QWidget::closeEvent(event);
+}
 
 void MainWindow::setupSeekbar()
 {

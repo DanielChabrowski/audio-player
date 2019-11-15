@@ -8,6 +8,7 @@ struct Playlist;
 
 class QMediaPlayer;
 class QSettings;
+class QCloseEvent;
 
 class MainWindow : public QWidget
 {
@@ -16,6 +17,9 @@ class MainWindow : public QWidget
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+protected:
+    void closeEvent(QCloseEvent *) override;
 
 private:
     void setupSeekbar();
