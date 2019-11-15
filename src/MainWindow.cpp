@@ -125,7 +125,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     setupSeekbar();
-    connectSeekbarToMediaPlayer();
+    connectMediaPlayerToSeekbar();
 
     ui.menuLayout->addWidget(bar);
 
@@ -146,11 +146,11 @@ void MainWindow::setupSeekbar()
 
     connect(ui.seekbar, &QSlider::sliderReleased, [this]() {
         this->mediaPlayer_->setPosition(this->ui.seekbar->value());
-        connectSeekbarToMediaPlayer();
+        connectMediaPlayerToSeekbar();
     });
 }
 
-void MainWindow::connectSeekbarToMediaPlayer()
+void MainWindow::connectMediaPlayerToSeekbar()
 {
     connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 }

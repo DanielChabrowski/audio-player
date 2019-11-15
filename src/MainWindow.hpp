@@ -19,7 +19,7 @@ public:
 
 private:
     void setupSeekbar();
-    void connectSeekbarToMediaPlayer();
+    void connectMediaPlayerToSeekbar();
 
     void playMediaFromCurrentPlaylist(int index);
 
