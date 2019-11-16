@@ -135,36 +135,11 @@ MainWindow::MainWindow(QWidget *parent)
         mediaPlayer_->setVolume(volume);
     }
 
+    setupPlaybackControlButtons();
     setupSeekbar();
     connectMediaPlayerToSeekbar();
 
     ui.menuLayout->addWidget(bar);
-
-    ui.buttonsLayout->QLayout::setSpacing(0);
-
-    auto *playButton = new QPushButton(this);
-    playButton->setFlat(true);
-    playButton->setMaximumSize(24, 24);
-    playButton->setIcon(QPixmap(":/play.png"));
-    connect(playButton, &QPushButton::released, [this]() { mediaPlayer_->play(); });
-
-    ui.buttonsLayout->addWidget(playButton);
-
-    auto *pauseButton = new QPushButton(this);
-    pauseButton->setFlat(true);
-    pauseButton->setMaximumSize(24, 24);
-    pauseButton->setIcon(QPixmap(":/pause.png"));
-    connect(pauseButton, &QPushButton::released, [this]() { mediaPlayer_->pause(); });
-
-    ui.buttonsLayout->addWidget(pauseButton);
-
-    auto *stopButton = new QPushButton(this);
-    stopButton->setFlat(true);
-    stopButton->setMaximumSize(24, 24);
-    stopButton->setIcon(QPixmap(":/stop.png"));
-    connect(stopButton, &QPushButton::released, [this]() { mediaPlayer_->stop(); });
-
-    ui.buttonsLayout->addWidget(stopButton);
 }
 
 MainWindow::~MainWindow() = default;
@@ -193,6 +168,25 @@ void MainWindow::setupSeekbar()
         QToolTip::showText(QPoint{ QCursor::pos().x(), verticalPos.y() },
                            currentTime.toString("H:mm:ss"));
     });
+}
+
+void MainWindow::setupPlaybackControlButtons()
+{
+    const auto createButtonFunc = [this](QString filename, std::function<void()> onReleaseEvent) {
+        auto *button = new QPushButton(this);
+        button->setFlat(true);
+        button->setMaximumSize(24, 24);
+        button->setIcon(QPixmap(filename));
+        connect(button, &QPushButton::released, std::move(onReleaseEvent));
+
+        ui.buttonsLayout->addWidget(button);
+    };
+
+    ui.buttonsLayout->QLayout::setSpacing(0);
+
+    createButtonFunc(":/play.png", [this]() { mediaPlayer_->play(); });
+    createButtonFunc(":/pause.png", [this]() { mediaPlayer_->pause(); });
+    createButtonFunc(":/stop.png", [this]() { mediaPlayer_->stop(); });
 }
 
 void MainWindow::connectMediaPlayerToSeekbar()

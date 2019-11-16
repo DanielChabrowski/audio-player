@@ -23,6 +23,7 @@ protected:
 
 private:
     void setupSeekbar();
+    void setupPlaybackControlButtons();
     void connectMediaPlayerToSeekbar();
 
     void playMediaFromCurrentPlaylist(int index);
