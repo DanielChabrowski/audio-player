@@ -90,11 +90,6 @@
        <property name="movable">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>Album List</string>
-        </attribute>
-       </widget>
       </widget>
      </item>
      <item>

@@ -24,6 +24,7 @@ protected:
 private:
     void setupSeekbar();
     void setupPlaybackControlButtons();
+    void setupAlbumsBrowser();
     void connectMediaPlayerToSeekbar();
 
     void playMediaFromCurrentPlaylist(int index);

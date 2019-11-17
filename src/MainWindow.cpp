@@ -52,6 +52,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui.setupUi(this);
 
+    setStyleSheet(R"(
+        QTreeView {
+            color: #f47e46;
+            background-color: #21231f;
+            alternate-background-color: #242622;
+        }
+        QTreeView::item:selected,
+        QTreeView::branch:selected {
+            color: #21231f;
+            background-color: #aba39a;
+            border: none;
+        }
+    )");
+
     {
         // Restoring window size and position
         restoreGeometry(settings_->value(geometryConfigKey).toByteArray());
@@ -137,6 +151,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupPlaybackControlButtons();
     setupSeekbar();
+    setupAlbumsBrowser();
     connectMediaPlayerToSeekbar();
 
     ui.menuLayout->addWidget(bar);
@@ -187,6 +202,12 @@ void MainWindow::setupPlaybackControlButtons()
     createButtonFunc(":/play.png", [this]() { mediaPlayer_->play(); });
     createButtonFunc(":/pause.png", [this]() { mediaPlayer_->pause(); });
     createButtonFunc(":/stop.png", [this]() { mediaPlayer_->stop(); });
+}
+
+void MainWindow::setupAlbumsBrowser()
+{
+    const auto albumsViews = new QTreeView(this);
+    ui.albums->addTab(albumsViews, "Albums");
 }
 
 void MainWindow::connectMediaPlayerToSeekbar()

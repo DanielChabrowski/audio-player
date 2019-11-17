@@ -13,20 +13,6 @@ PlaylistWidget::PlaylistWidget(std::function<void(int)> itemSelectedCallback, QW
     setFrameShape(QFrame::NoFrame);
     setSelectionMode(ExtendedSelection);
     setDragDropMode(DragDrop);
-
-    setStyleSheet(R"(
-        QTreeView {
-            color: #f47e46;
-            background-color: #21231f;
-            alternate-background-color: #242622;
-        }
-        QTreeView::item:selected,
-        QTreeView::branch:selected {
-            color: #21231f;
-            background-color: #aba39a;
-            border: none;
-        }
-    )");
 }
 
 void PlaylistWidget::keyPressEvent(QKeyEvent *event)
