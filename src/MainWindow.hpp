@@ -22,6 +22,7 @@ protected:
     void closeEvent(QCloseEvent *) override;
 
 private:
+    void setupMenu();
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();

@@ -69,24 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Loaded playlist in: " << elapsedTime << "ms";
     }
 
-    QMenuBar *bar = new QMenuBar;
-    auto *fileMenu = bar->addMenu(tr("File"));
-
-    fileMenu->addAction("Open");
-    fileMenu->addSeparator();
-    fileMenu->addAction("Preferences");
-    fileMenu->addSeparator();
-    auto *exitAction = fileMenu->addAction("Exit", []() {
-        constexpr int exitCode{ 0 };
-        QApplication::exit(exitCode);
-    });
-    exitAction->setShortcut(QKeySequence(QKeySequence::Quit));
-
-    bar->addMenu(tr("Edit"));
-    bar->addMenu(tr("View"));
-    bar->addMenu(tr("Playback"));
-    bar->addMenu(tr("Library"));
-    bar->addMenu(tr("Help"));
+    setupMenu();
 
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
 
@@ -130,8 +113,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupPlaylistWidget();
 
     connectMediaPlayerToSeekbar();
-
-    ui.menuLayout->addWidget(bar);
 }
 
 MainWindow::~MainWindow() = default;
@@ -140,6 +121,31 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     settings_->setValue(geometryConfigKey, saveGeometry());
     QWidget::closeEvent(event);
+}
+
+void MainWindow::setupMenu()
+{
+    QMenuBar *bar = new QMenuBar(this);
+    auto *fileMenu = bar->addMenu(tr("File"));
+
+    fileMenu->addAction("Open");
+    fileMenu->addSeparator();
+    fileMenu->addAction("Preferences");
+    fileMenu->addSeparator();
+
+    auto *exitAction = fileMenu->addAction("Exit", []() {
+        constexpr int exitCode{ 0 };
+        QApplication::exit(exitCode);
+    });
+    exitAction->setShortcut(QKeySequence(QKeySequence::Quit));
+
+    bar->addMenu(tr("Edit"));
+    bar->addMenu(tr("View"));
+    bar->addMenu(tr("Playback"));
+    bar->addMenu(tr("Library"));
+    bar->addMenu(tr("Help"));
+
+    ui.menuLayout->addWidget(bar);
 }
 
 void MainWindow::setupSeekbar()
