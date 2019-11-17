@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
+#include <QFileSystemModel>
 #include <QLabel>
 #include <QMediaPlayer>
 #include <QMenuBar>
@@ -178,8 +179,29 @@ void MainWindow::setupPlaybackControlButtons()
 
 void MainWindow::setupAlbumsBrowser()
 {
-    const auto albumsViews = new QTreeView(this);
-    ui.albums->addTab(albumsViews, "Albums");
+    const auto albumLocation =
+    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0);
+
+    qDebug() << "Loading album view for:" << albumLocation;
+
+    const auto dirModel = new QFileSystemModel(this);
+    dirModel->setReadOnly(true);
+    dirModel->setRootPath(albumLocation);
+
+    const auto albumsView = new QTreeView(this);
+    albumsView->setHeaderHidden(true);
+    albumsView->setModel(dirModel);
+
+    // Hide all columns except the first one
+    const auto columnCount = dirModel->columnCount();
+    for(int i = 1; i < columnCount; ++i)
+    {
+        albumsView->setColumnHidden(i, true);
+    }
+
+    albumsView->setRootIndex(dirModel->index(albumLocation));
+
+    ui.albums->addTab(albumsView, "Albums");
 }
 
 void MainWindow::setupPlaylistWidget()
