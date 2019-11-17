@@ -23,6 +23,7 @@ protected:
 
 private:
     void setupMenu();
+    void setupVolumeControl();
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();

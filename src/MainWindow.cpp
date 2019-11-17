@@ -69,32 +69,11 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Loaded playlist in: " << elapsedTime << "ms";
     }
 
-    setupMenu();
-
     setupMediaPlayer();
 
-    {
-        // Volume settings
-        constexpr auto volumeConfigKey{ "player/volume" };
-        constexpr auto defaultVolume{ 30 };
-        constexpr auto minVolume{ 0 };
-        constexpr auto maxVolume{ 100 };
-
-        const auto volume =
-        qBound(minVolume, settings_->value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
-        ui.volumeSlider->setMaximum(maxVolume);
-        ui.volumeSlider->setValue(volume);
-
-        connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
-            this->mediaPlayer_->setVolume(volume);
-            this->settings_->setValue(volumeConfigKey, volume);
-            qDebug() << "Volume set to " << volume;
-        });
-
-        mediaPlayer_->setVolume(volume);
-    }
-
+    setupMenu();
     setupPlaybackControlButtons();
+    setupVolumeControl();
     setupSeekbar();
     setupAlbumsBrowser();
     setupPlaylistWidget();
@@ -133,6 +112,26 @@ void MainWindow::setupMenu()
     bar->addMenu(tr("Help"));
 
     ui.menuLayout->addWidget(bar);
+}
+
+void MainWindow::setupVolumeControl()
+{
+    constexpr auto volumeConfigKey{ "player/volume" };
+    constexpr auto defaultVolume{ 30 };
+    constexpr auto minVolume{ 0 };
+    constexpr auto maxVolume{ 100 };
+
+    const auto volume = qBound(minVolume, settings_->value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
+    ui.volumeSlider->setMaximum(maxVolume);
+    ui.volumeSlider->setValue(volume);
+
+    mediaPlayer_->setVolume(volume);
+
+    connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
+        this->mediaPlayer_->setVolume(volume);
+        this->settings_->setValue(volumeConfigKey, volume);
+        qDebug() << "Volume set to " << volume;
+    });
 }
 
 void MainWindow::setupSeekbar()
