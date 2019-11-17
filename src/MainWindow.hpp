@@ -30,12 +30,14 @@ private:
     void setupPlaylistWidget();
 
     void setupMediaPlayer();
+    void setupGlobalShortcuts();
 
     void setTheme(const QString &filename);
 
     void connectMediaPlayerToSeekbar();
 
     void playMediaFromCurrentPlaylist(int index);
+    void togglePlayPause();
 
     void onMediaFinish();
 

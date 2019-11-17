@@ -8,6 +8,7 @@
 #include <QMenuBar>
 #include <QPushButton>
 #include <QSettings>
+#include <QShortcut>
 #include <QStandardPaths>
 #include <QTime>
 #include <QToolTip>
@@ -79,6 +80,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupPlaylistWidget();
 
     connectMediaPlayerToSeekbar();
+
+    setupGlobalShortcuts();
 }
 
 MainWindow::~MainWindow() = default;
@@ -217,6 +220,12 @@ void MainWindow::setupMediaPlayer()
     });
 }
 
+void MainWindow::setupGlobalShortcuts()
+{
+    const auto togglePlayPause = new QShortcut(Qt::Key_Space, this);
+    connect(togglePlayPause, &QShortcut::activated, this, &MainWindow::togglePlayPause);
+}
+
 void MainWindow::setTheme(const QString &filename)
 {
     QFile file{ filename };
@@ -251,6 +260,18 @@ void MainWindow::playMediaFromCurrentPlaylist(int index)
     this->ui.seekbar->setMaximum(song.duration.count() * 1000);
 
     this->ui.playlist->update();
+}
+
+void MainWindow::togglePlayPause()
+{
+    if(QMediaPlayer::State::PlayingState == mediaPlayer_->state())
+    {
+        mediaPlayer_->pause();
+    }
+    else
+    {
+        mediaPlayer_->play();
+    }
 }
 
 void MainWindow::onMediaFinish()
