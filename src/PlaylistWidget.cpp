@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QKeyEvent>
+#include <QShortcut>
 
 PlaylistWidget::PlaylistWidget(std::function<void(int)> itemSelectedCallback, QWidget *parent)
 : QTreeView{ parent }
@@ -13,12 +14,25 @@ PlaylistWidget::PlaylistWidget(std::function<void(int)> itemSelectedCallback, QW
     setFrameShape(QFrame::NoFrame);
     setSelectionMode(ExtendedSelection);
     setDragDropMode(DragDrop);
+
+    const auto playShortcut = new QShortcut(Qt::Key_Return, this);
+
+    // Probably has to be in Widget context or controlled externally
+    playShortcut->setContext(Qt::ShortcutContext::WindowShortcut);
+
+    connect(playShortcut, &QShortcut::activated, [this]() {
+        const auto currentIndex = this->currentIndex();
+        if(currentIndex.isValid())
+        {
+            itemSelectedCallback_(currentIndex.row());
+            update();
+        }
+    });
 }
 
 void PlaylistWidget::keyPressEvent(QKeyEvent *event)
 {
     QTreeView::keyPressEvent(event);
-    qDebug() << "Key pressed: " << event->key();
 }
 
 void PlaylistWidget::mouseMoveEvent(QMouseEvent *event)
@@ -33,7 +47,7 @@ void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
         return QTreeView::mouseDoubleClickEvent(event);
     }
 
-    QModelIndex index = indexAt(event->pos());
+    const auto index = indexAt(event->pos());
     if(index.isValid())
     {
         itemSelectedCallback_(index.row());
