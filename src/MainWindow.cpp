@@ -71,20 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupMenu();
 
-    mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
-
-    {
-        // Playback
-        connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
-                [this](const QMediaPlayer::MediaStatus status) {
-                    using Status = QMediaPlayer::MediaStatus;
-                    if(Status::EndOfMedia == status or Status::InvalidMedia == status)
-                    {
-                        qDebug() << "QMediaPlayer status changed to " << status;
-                        onMediaFinish();
-                    }
-                });
-    }
+    setupMediaPlayer();
 
     {
         // Volume settings
@@ -214,6 +201,21 @@ void MainWindow::setupPlaylistWidget()
                                                    QHeaderView::ResizeMode::ResizeToContents);
 
     ui.playlist->addTab(playlistWidget.release(), "Default");
+}
+
+void MainWindow::setupMediaPlayer()
+{
+    mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
+
+    // Playback
+    connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, [this](const QMediaPlayer::MediaStatus status) {
+        using Status = QMediaPlayer::MediaStatus;
+        if(Status::EndOfMedia == status or Status::InvalidMedia == status)
+        {
+            qDebug() << "QMediaPlayer status changed to " << status;
+            onMediaFinish();
+        }
+    });
 }
 
 void MainWindow::setTheme(const QString &filename)

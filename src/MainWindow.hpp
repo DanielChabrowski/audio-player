@@ -28,6 +28,8 @@ private:
     void setupAlbumsBrowser();
     void setupPlaylistWidget();
 
+    void setupMediaPlayer();
+
     void setTheme(const QString &filename);
 
     void connectMediaPlayerToSeekbar();
