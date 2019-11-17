@@ -10,15 +10,6 @@ namespace
 const char *const labels[] = {
     "", "Artist/album", "Track", "Title", "Duration",
 };
-
-enum PlaylistColumn
-{
-    NOW_PLAYING,
-    ARTIST_ALBUM,
-    TRACK,
-    TITLE,
-    DURATION
-};
 } // namespace
 
 PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)

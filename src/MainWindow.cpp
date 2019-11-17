@@ -88,19 +88,6 @@ MainWindow::MainWindow(QWidget *parent)
     bar->addMenu(tr("Library"));
     bar->addMenu(tr("Help"));
 
-    ui.playlist->setFocusPolicy(Qt::NoFocus);
-
-    auto *playlistWidget =
-    new PlaylistWidget([this](int index) { playMediaFromCurrentPlaylist(index); });
-
-    auto *playlistModel = new PlaylistModel{ *playlist };
-    playlistWidget->setModel(playlistModel);
-
-    auto *playlistHeader = new PlaylistHeader{ playlistWidget };
-    playlistWidget->setHeader(playlistHeader);
-
-    ui.playlist->addTab(playlistWidget, "Default");
-
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
 
     {
@@ -140,6 +127,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupPlaybackControlButtons();
     setupSeekbar();
     setupAlbumsBrowser();
+    setupPlaylistWidget();
+
     connectMediaPlayerToSeekbar();
 
     ui.menuLayout->addWidget(bar);
@@ -196,6 +185,29 @@ void MainWindow::setupAlbumsBrowser()
 {
     const auto albumsViews = new QTreeView(this);
     ui.albums->addTab(albumsViews, "Albums");
+}
+
+void MainWindow::setupPlaylistWidget()
+{
+    ui.playlist->setFocusPolicy(Qt::NoFocus);
+
+    auto playlistWidget =
+    std::make_unique<PlaylistWidget>([this](int index) { playMediaFromCurrentPlaylist(index); });
+    auto playlistModel = std::make_unique<PlaylistModel>(*playlist, playlistWidget.get());
+    auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
+
+    playlistWidget->setModel(playlistModel.release());
+    playlistWidget->setHeader(playlistHeader.release());
+
+    playlistWidget->setColumnWidth(0, 10);
+    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::NOW_PLAYING, QHeaderView::ResizeMode::Fixed);
+    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::ARTIST_ALBUM, QHeaderView::ResizeMode::Stretch);
+    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::TRACK, QHeaderView::ResizeMode::ResizeToContents);
+    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::TITLE, QHeaderView::ResizeMode::Stretch);
+    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::DURATION,
+                                                   QHeaderView::ResizeMode::ResizeToContents);
+
+    ui.playlist->addTab(playlistWidget.release(), "Default");
 }
 
 void MainWindow::setTheme(const QString &filename)

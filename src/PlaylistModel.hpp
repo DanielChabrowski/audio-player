@@ -2,6 +2,15 @@
 
 #include <QAbstractListModel>
 
+enum PlaylistColumn
+{
+    NOW_PLAYING,
+    ARTIST_ALBUM,
+    TRACK,
+    TITLE,
+    DURATION
+};
+
 struct Playlist;
 struct Song;
 

@@ -10,7 +10,6 @@ PlaylistHeader::PlaylistHeader(PlaylistWidget *playlistWidget)
 : QHeaderView{ Qt::Horizontal, playlistWidget }
 {
     setSectionsMovable(true);
-    setStretchLastSection(true);
 }
 
 void PlaylistHeader::contextMenuEvent(QContextMenuEvent *e)

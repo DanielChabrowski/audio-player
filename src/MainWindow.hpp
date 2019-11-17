@@ -25,6 +25,7 @@ private:
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();
+    void setupPlaylistWidget();
 
     void setTheme(const QString &filename);
 
