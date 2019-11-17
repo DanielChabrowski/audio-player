@@ -52,19 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui.setupUi(this);
 
-    setStyleSheet(R"(
-        QTreeView {
-            color: #f47e46;
-            background-color: #21231f;
-            alternate-background-color: #242622;
-        }
-        QTreeView::item:selected,
-        QTreeView::branch:selected {
-            color: #21231f;
-            background-color: #aba39a;
-            border: none;
-        }
-    )");
+    setTheme(":/themes/gray-orange.css");
 
     {
         // Restoring window size and position
@@ -199,15 +187,30 @@ void MainWindow::setupPlaybackControlButtons()
 
     ui.buttonsLayout->QLayout::setSpacing(0);
 
-    createButtonFunc(":/play.png", [this]() { mediaPlayer_->play(); });
-    createButtonFunc(":/pause.png", [this]() { mediaPlayer_->pause(); });
-    createButtonFunc(":/stop.png", [this]() { mediaPlayer_->stop(); });
+    createButtonFunc(":/icons/play.png", [this]() { mediaPlayer_->play(); });
+    createButtonFunc(":/icons/pause.png", [this]() { mediaPlayer_->pause(); });
+    createButtonFunc(":/icons/stop.png", [this]() { mediaPlayer_->stop(); });
 }
 
 void MainWindow::setupAlbumsBrowser()
 {
     const auto albumsViews = new QTreeView(this);
     ui.albums->addTab(albumsViews, "Albums");
+}
+
+void MainWindow::setTheme(const QString &filename)
+{
+    QFile file{ filename };
+    if(!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        qDebug() << "Could not open a theme file for reading:";
+        return;
+    }
+
+    QTextStream in(&file);
+    const QString stylesheet = in.readAll();
+
+    setStyleSheet(stylesheet);
 }
 
 void MainWindow::connectMediaPlayerToSeekbar()

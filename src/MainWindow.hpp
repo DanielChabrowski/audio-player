@@ -25,6 +25,9 @@ private:
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();
+
+    void setTheme(const QString &filename);
+
     void connectMediaPlayerToSeekbar();
 
     void playMediaFromCurrentPlaylist(int index);

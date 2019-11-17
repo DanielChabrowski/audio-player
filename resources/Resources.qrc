@@ -1,7 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file>play.png</file>
-        <file>pause.png</file>
-        <file>stop.png</file>
+        <file>icons/play.png</file>
+        <file>icons/pause.png</file>
+        <file>icons/stop.png</file>
+
+        <file>themes/gray-orange.css</file>
     </qresource>
 </RCC>
