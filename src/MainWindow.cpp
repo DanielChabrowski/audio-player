@@ -17,6 +17,7 @@
 
 #include "Playlist.hpp"
 #include "PlaylistHeader.hpp"
+#include "PlaylistLoader.hpp"
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"
 #include "TaglibAudioPropertyReader.hpp"
@@ -83,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent)
     connectMediaPlayerToSeekbar();
 
     setupGlobalShortcuts();
+
+    loadPlaylist();
 }
 
 MainWindow::~MainWindow() = default;
@@ -308,4 +311,18 @@ void MainWindow::onMediaFinish()
     }
 
     playMediaFromCurrentPlaylist(qBound(0, nextSongIndex, songsCount - 1));
+}
+
+void MainWindow::loadPlaylist()
+{
+    // TODO: Move to playlist provider
+    const auto playlistDir =
+    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) +
+    "/playlists";
+
+    const auto playlist = PlaylistLoader{}.loadFromFile("myfirstplaylist");
+    for(const auto &path : playlist.audioFiles)
+    {
+        qDebug() << path;
+    }
 }

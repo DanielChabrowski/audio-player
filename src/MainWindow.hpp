@@ -41,6 +41,8 @@ private:
 
     void onMediaFinish();
 
+    void loadPlaylist();
+
 private:
     Ui::MainWindowForm ui;
     std::unique_ptr<QSettings> settings_;

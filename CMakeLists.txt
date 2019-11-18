@@ -27,6 +27,9 @@ set(SOURCES
     src/PlaylistHeader.cpp
     src/PlaylistHeader.hpp
 
+    src/PlaylistLoader.cpp
+    src/PlaylistLoader.hpp
+
     src/AudioPropertyReader.hpp
 
     src/TaglibAudioPropertyReader.cpp

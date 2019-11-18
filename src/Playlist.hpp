@@ -8,6 +8,8 @@
 struct Playlist
 {
     QString name;
+    QString playlistPath;
     int currentSongIndex;
-    std::vector<Song> songs;
+    std::vector<Song> songs; // TODO: Remove from Playlist
+    std::vector<QString> audioFiles;
 };
