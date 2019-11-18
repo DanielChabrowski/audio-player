@@ -14,7 +14,7 @@ AudioMetaData AudioMetaDataProvider::getMetaData(const QString &filepath)
         throw std::runtime_error("Not an audio file");
     }
 
-    std::chrono::milliseconds duration{ 0 };
+    std::chrono::seconds duration{ 0 };
     const auto *audioProperties = ref.audioProperties();
     if(audioProperties)
     {

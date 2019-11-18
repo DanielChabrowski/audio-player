@@ -1,10 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <optional>
+
+#include "Playlist.hpp"
 
 #include "ui_MainWindow.h"
 
-struct Playlist;
 struct IAudioMetaDataProvider;
 
 class QMediaPlayer;
@@ -42,14 +44,14 @@ private:
 
     void onMediaFinish();
 
-    void loadPlaylist();
+    void loadPlaylists();
 
 private:
     Ui::MainWindowForm ui;
     std::unique_ptr<QSettings> settings_;
-    std::unique_ptr<Playlist> playlist;
     std::unique_ptr<QMediaPlayer> mediaPlayer_;
 
     // TODO: Shouldn't be a part of UI
+    std::optional<Playlist> playlist;
     std::unique_ptr<IAudioMetaDataProvider> audioMetaDataProvider;
 };

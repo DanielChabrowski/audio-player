@@ -18,6 +18,8 @@ set(SOURCES
     src/MainWindow.hpp
     src/MainWindow.ui
 
+    src/Playlist.hpp
+
     src/PlaylistWidget.cpp
     src/PlaylistWidget.hpp
 
@@ -30,17 +32,10 @@ set(SOURCES
     src/PlaylistLoader.cpp
     src/PlaylistLoader.hpp
 
+    src/AudioMetaData.hpp
     src/IAudioMetaDataProvider.hpp
     src/AudioMetaDataProvider.cpp
     src/AudioMetaDataProvider.hpp
-
-    src/AudioPropertyReader.hpp
-
-    src/TaglibAudioPropertyReader.cpp
-    src/TaglibAudioPropertyReader.hpp
-
-    src/Song.hpp
-    src/Playlist.hpp
 
     resources/Resources.qrc
 )

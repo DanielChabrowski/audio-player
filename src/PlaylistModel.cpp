@@ -3,6 +3,7 @@
 #include <QFileInfo>
 #include <QSize>
 
+#include "IAudioMetaDataProvider.hpp"
 #include "Playlist.hpp"
 
 namespace
@@ -12,15 +13,16 @@ const char *const labels[] = {
 };
 } // namespace
 
-PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
+PlaylistModel::PlaylistModel(IAudioMetaDataProvider &audioMetaDataProvider, Playlist &playlist, QObject *parent)
 : QAbstractListModel{ parent }
+, audioMetaDataProvider_{ audioMetaDataProvider }
 , playlist_{ playlist }
 {
 }
 
 int PlaylistModel::rowCount(const QModelIndex &) const
 {
-    return static_cast<int>(playlist_.songs.size());
+    return static_cast<int>(playlist_.audioFiles.size());
 }
 
 int PlaylistModel::columnCount(const QModelIndex &) const
@@ -52,7 +54,7 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
         return {};
     }
 
-    const auto playlistSize = static_cast<int>(playlist_.songs.size());
+    const auto playlistSize = static_cast<int>(playlist_.audioFiles.size());
     const auto row = index.row();
     if(row >= playlistSize || row < 0)
     {
@@ -62,7 +64,8 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 
     if(Qt::DisplayRole == role)
     {
-        const auto &song = playlist_.songs.at(row);
+        const auto &audioFilePath = playlist_.audioFiles.at(row);
+        const auto metaData = audioMetaDataProvider_.getMetaData(audioFilePath);
 
         switch(col)
         {
@@ -73,22 +76,22 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 
         case PlaylistColumn::TITLE:
         {
-            return dataTitle(song);
+            return dataTitle(audioFilePath, metaData);
         }
 
         case PlaylistColumn::ARTIST_ALBUM:
         {
-            return dataArtistAlbum(song);
+            return dataArtistAlbum(metaData);
         }
 
         case PlaylistColumn::TRACK:
         {
-            return dataTrack(song);
+            return dataTrack(metaData);
         }
 
         case PlaylistColumn::DURATION:
         {
-            return dataDuration(song);
+            return dataDuration(metaData);
         }
         }
 
@@ -123,42 +126,42 @@ QVariant PlaylistModel::roleAlignment(int column) const
     return Qt::AlignmentFlag::AlignLeft + Qt::AlignVCenter;
 }
 
-QVariant PlaylistModel::dataTitle(const Song &song) const
+QVariant PlaylistModel::dataTitle(const QString &filepath, const AudioMetaData &metaData) const
 {
-    if(not song.name.isEmpty())
+    if(not metaData.title.isEmpty())
     {
-        return song.name;
+        return metaData.title;
     }
 
-    return QFileInfo(song.path).completeBaseName();
+    return QFileInfo(filepath).completeBaseName();
 }
 
-QVariant PlaylistModel::dataArtistAlbum(const Song &song) const
+QVariant PlaylistModel::dataArtistAlbum(const AudioMetaData &metaData) const
 {
-    const QString artist{ song.artist.isEmpty() ? "?" : song.artist };
-    const QString album{ song.album.isEmpty() ? "?" : song.album };
+    const QString artist{ metaData.artist.isEmpty() ? "?" : metaData.artist };
+    const QString album{ metaData.albumData.name.isEmpty() ? "?" : metaData.albumData.name };
     return artist + " - " + album;
 }
 
-QVariant PlaylistModel::dataDuration(const Song &song) const
+QVariant PlaylistModel::dataDuration(const AudioMetaData &metaData) const
 {
-    const auto duration = song.duration.count();
+    const auto duration = metaData.duration.count();
     const auto minutes = duration / 60;
     const auto seconds = duration % 60;
     return QString{ "%1:%2" }.arg(minutes).arg(seconds, 2, 10, QChar('0'));
 }
 
-QVariant PlaylistModel::dataTrack(const Song &song) const
+QVariant PlaylistModel::dataTrack(const AudioMetaData &metaData) const
 {
     constexpr int missingData{ -1 };
 
-    if(missingData != song.albumInfo.trackNumber)
+    if(missingData != metaData.albumData.trackNumber)
     {
-        const auto track = QString{ "%1" }.arg(song.albumInfo.trackNumber, 2, 10, QChar('0'));
+        const auto track = QString{ "%1" }.arg(metaData.albumData.trackNumber, 2, 10, QChar('0'));
 
-        if(missingData != song.albumInfo.discNumber)
+        if(missingData != metaData.albumData.discNumber)
         {
-            return QString{ "%1.%2" }.arg(song.albumInfo.discNumber).arg(track);
+            return QString{ "%1.%2" }.arg(metaData.albumData.discNumber).arg(track);
         }
 
         return track;

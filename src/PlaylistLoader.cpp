@@ -35,7 +35,6 @@ Playlist PlaylistLoader::loadFromFile(const QString &filename)
         playlistFileInfo.completeBaseName(),
         playlistFileInfo.absoluteFilePath(),
         currentSongIndex,
-        {},
         std::move(audioFilePaths),
     };
 }

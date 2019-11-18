@@ -18,5 +18,5 @@ struct AudioMetaData
     QString title;
     QString artist;
     AudioAlbumMetaData albumData;
-    std::chrono::milliseconds duration;
+    std::chrono::seconds duration;
 };
