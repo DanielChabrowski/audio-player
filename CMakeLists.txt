@@ -18,6 +18,8 @@ set(SOURCES
     src/MainWindow.hpp
     src/MainWindow.ui
 
+    src/ConfigurationKeys.hpp
+
     src/Playlist.hpp
 
     src/PlaylistWidget.cpp

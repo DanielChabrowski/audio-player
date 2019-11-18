@@ -16,16 +16,12 @@
 #include <QtGlobal>
 
 #include "AudioMetaDataProvider.hpp"
+#include "ConfigurationKeys.hpp"
 #include "Playlist.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistLoader.hpp"
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"
-
-namespace
-{
-constexpr auto geometryConfigKey{ "window/geometry" };
-} // namespace
 
 MainWindow::MainWindow(QWidget *parent)
 : QWidget{ parent }
@@ -97,7 +93,6 @@ void MainWindow::setupMenu()
 
 void MainWindow::setupVolumeControl()
 {
-    constexpr auto volumeConfigKey{ "player/volume" };
     constexpr auto defaultVolume{ 30 };
     constexpr auto minVolume{ 0 };
     constexpr auto maxVolume{ 100 };
@@ -202,7 +197,7 @@ void MainWindow::setupPlaylistWidget()
     playlistWidget->header()->setSectionResizeMode(PlaylistColumn::DURATION,
                                                    QHeaderView::ResizeMode::ResizeToContents);
 
-    ui.playlist->addTab(playlistWidget.release(), "Default");
+    ui.playlist->addTab(playlistWidget.release(), playlist->name);
 }
 
 void MainWindow::setupMediaPlayer()
