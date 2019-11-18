@@ -5,6 +5,7 @@
 #include "ui_MainWindow.h"
 
 struct Playlist;
+struct IAudioMetaDataProvider;
 
 class QMediaPlayer;
 class QSettings;
@@ -48,4 +49,7 @@ private:
     std::unique_ptr<QSettings> settings_;
     std::unique_ptr<Playlist> playlist;
     std::unique_ptr<QMediaPlayer> mediaPlayer_;
+
+    // TODO: Shouldn't be a part of UI
+    std::unique_ptr<IAudioMetaDataProvider> audioMetaDataProvider;
 };

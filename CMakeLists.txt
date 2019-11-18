@@ -30,6 +30,10 @@ set(SOURCES
     src/PlaylistLoader.cpp
     src/PlaylistLoader.hpp
 
+    src/IAudioMetaDataProvider.hpp
+    src/AudioMetaDataProvider.cpp
+    src/AudioMetaDataProvider.hpp
+
     src/AudioPropertyReader.hpp
 
     src/TaglibAudioPropertyReader.cpp

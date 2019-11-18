@@ -15,6 +15,7 @@
 #include <QToolTip>
 #include <QtGlobal>
 
+#include "AudioMetaDataProvider.hpp"
 #include "Playlist.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistLoader.hpp"
@@ -52,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
 : QWidget{ parent }
 , settings_{ std::make_unique<QSettings>("OpenSource", "Foobar3000") }
 , playlist{ std::make_unique<Playlist>() }
+, audioMetaDataProvider{ std::make_unique<AudioMetaDataProvider>() }
 {
     ui.setupUi(this);
 
@@ -323,6 +325,6 @@ void MainWindow::loadPlaylist()
     const auto playlist = PlaylistLoader{}.loadFromFile("myfirstplaylist");
     for(const auto &path : playlist.audioFiles)
     {
-        qDebug() << path;
+        qDebug() << path << audioMetaDataProvider->getMetaData(path).artist;
     }
 }
