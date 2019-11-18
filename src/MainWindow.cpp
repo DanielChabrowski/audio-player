@@ -245,7 +245,7 @@ void MainWindow::playMediaFromCurrentPlaylist(int index)
     const auto &track = this->playlist->tracks.at(index);
 
     this->playlist->currentSongIndex = index;
-    this->mediaPlayer_->setMedia(QUrl::fromLocalFile(track.path));
+    this->mediaPlayer_->setMedia(QUrl{ track.path });
     this->mediaPlayer_->play();
 
     qDebug() << "Playing media: " << track.path;
