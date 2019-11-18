@@ -6,12 +6,12 @@
 
 AudioMetaDataProvider::~AudioMetaDataProvider() = default;
 
-AudioMetaData AudioMetaDataProvider::getMetaData(const QString &filepath)
+std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &filepath)
 {
     TagLib::FileRef ref{ filepath.toStdString().c_str() };
     if(ref.isNull() or not ref.tag())
     {
-        throw std::runtime_error("Not an audio file");
+        return {};
     }
 
     std::chrono::seconds duration{ 0 };
@@ -49,7 +49,7 @@ AudioMetaData AudioMetaDataProvider::getMetaData(const QString &filepath)
         }
     }
 
-    return {
+    return AudioMetaData{
         QString::fromStdWString(tags->title().toWString()),
         QString::fromStdWString(tags->artist().toWString()),
         std::move(albumData),

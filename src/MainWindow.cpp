@@ -182,8 +182,7 @@ void MainWindow::setupPlaylistWidget()
 
     auto playlistWidget =
     std::make_unique<PlaylistWidget>([this](int index) { playMediaFromCurrentPlaylist(index); });
-    auto playlistModel =
-    std::make_unique<PlaylistModel>(*audioMetaDataProvider, *playlist, playlistWidget.get());
+    auto playlistModel = std::make_unique<PlaylistModel>(*playlist, playlistWidget.get());
     auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
     playlistWidget->setModel(playlistModel.release());
@@ -243,19 +242,18 @@ void MainWindow::connectMediaPlayerToSeekbar()
 
 void MainWindow::playMediaFromCurrentPlaylist(int index)
 {
-    const auto &audioFilePath = this->playlist->audioFiles.at(index);
+    const auto &track = this->playlist->tracks.at(index);
 
     this->playlist->currentSongIndex = index;
-    this->mediaPlayer_->setMedia(QUrl::fromLocalFile(audioFilePath));
+    this->mediaPlayer_->setMedia(QUrl::fromLocalFile(track.path));
     this->mediaPlayer_->play();
 
-    qDebug() << "Playing media: " << audioFilePath;
+    qDebug() << "Playing media: " << track.path;
 
     this->ui.seekbar->setValue(0);
 
-    // TODO: This should be somehow cached so that we don't read meta data multiple times
-    const auto audioDuration = audioMetaDataProvider->getMetaData(audioFilePath).duration;
-    this->ui.seekbar->setMaximum(audioDuration.count() * 1000);
+    const auto audioDuration = track.audioMetaData ? track.audioMetaData->duration.count() : 0;
+    this->ui.seekbar->setMaximum(audioDuration * 1000);
 
     this->ui.playlist->update();
 }
@@ -274,7 +272,7 @@ void MainWindow::togglePlayPause()
 
 void MainWindow::onMediaFinish()
 {
-    const auto playlistSize = static_cast<int>(this->playlist->audioFiles.size());
+    const auto playlistSize = static_cast<int>(this->playlist->tracks.size());
     const auto currentSongIndex = this->playlist->currentSongIndex;
 
     auto nextSongIndex = currentSongIndex + 1;
@@ -293,9 +291,5 @@ void MainWindow::loadPlaylists()
     QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) +
     "/playlists";
 
-    playlist = PlaylistLoader{}.loadFromFile("myfirstplaylist");
-    for(const auto &path : playlist->audioFiles)
-    {
-        qDebug() << path << audioMetaDataProvider->getMetaData(path).artist;
-    }
+    playlist = PlaylistLoader{ *audioMetaDataProvider }.loadFromFile("myfirstplaylist");
 }

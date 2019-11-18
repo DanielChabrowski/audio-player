@@ -1,5 +1,7 @@
 #include "PlaylistLoader.hpp"
 
+#include "IAudioMetaDataProvider.hpp"
+
 #include <QFile>
 #include <QFileInfo>
 #include <QString>
@@ -7,6 +9,11 @@
 
 #include <stdexcept>
 #include <vector>
+
+PlaylistLoader::PlaylistLoader(IAudioMetaDataProvider &audioMetaDataProvider)
+: audioMetaDataProvider_{ audioMetaDataProvider }
+{
+}
 
 Playlist PlaylistLoader::loadFromFile(const QString &filename)
 {
@@ -16,7 +23,7 @@ Playlist PlaylistLoader::loadFromFile(const QString &filename)
         throw std::runtime_error("Playlist file not found");
     }
 
-    std::vector<QString> audioFilePaths;
+    std::vector<PlaylistTrack> audioFilePaths;
 
     QString line;
     QTextStream ss{ &playlistFile };
@@ -25,7 +32,7 @@ Playlist PlaylistLoader::loadFromFile(const QString &filename)
         // TODO: Does isEmpty return false on " " ?
         if(not line.isEmpty())
         {
-            audioFilePaths.emplace_back(line);
+            audioFilePaths.emplace_back(PlaylistTrack{ line, audioMetaDataProvider_.getMetaData(line) });
         }
     }
 

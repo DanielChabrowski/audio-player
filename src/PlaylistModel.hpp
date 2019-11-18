@@ -13,14 +13,13 @@ enum PlaylistColumn
 
 struct Playlist;
 struct AudioMetaData;
-struct IAudioMetaDataProvider;
 
 class PlaylistModel final : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    PlaylistModel(IAudioMetaDataProvider &, Playlist &, QObject * = nullptr);
+    PlaylistModel(Playlist &, QObject * = nullptr);
 
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;
@@ -32,15 +31,14 @@ public:
 
 private:
     QVariant roleAlignment(int column) const;
-    QVariant dataTitle(const QString &filepath, const AudioMetaData &) const;
-    QVariant dataArtistAlbum(const AudioMetaData &) const;
-    QVariant dataDuration(const AudioMetaData &) const;
-    QVariant dataTrack(const AudioMetaData &) const;
+    QVariant dataTitle(const QString &filepath, const std::optional<AudioMetaData> &) const;
+    QVariant dataArtistAlbum(const std::optional<AudioMetaData> &) const;
+    QVariant dataDuration(const std::optional<AudioMetaData> &) const;
+    QVariant dataTrack(const std::optional<AudioMetaData> &) const;
 
 public slots:
     void update();
 
 private:
-    IAudioMetaDataProvider &audioMetaDataProvider_;
     Playlist &playlist_;
 };

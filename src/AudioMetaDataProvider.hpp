@@ -6,5 +6,5 @@ class AudioMetaDataProvider final : public IAudioMetaDataProvider
 {
 public:
     ~AudioMetaDataProvider();
-    AudioMetaData getMetaData(const QString &filepath) override;
+    std::optional<AudioMetaData> getMetaData(const QString &filepath) override;
 };

@@ -4,9 +4,11 @@
 
 #include <QString>
 
+#include <optional>
+
 class IAudioMetaDataProvider
 {
 public:
     virtual ~IAudioMetaDataProvider() = default;
-    virtual AudioMetaData getMetaData(const QString &filepath) = 0;
+    virtual std::optional<AudioMetaData> getMetaData(const QString &filepath) = 0;
 };
