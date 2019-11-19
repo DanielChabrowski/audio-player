@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <optional>
+#include <unordered_map>
 
 #include "Playlist.hpp"
 
@@ -30,7 +31,7 @@ private:
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();
-    void setupPlaylistWidget();
+    void setupPlaylistWidget(Playlist *);
 
     void setupMediaPlayer();
     void setupGlobalShortcuts();
@@ -39,10 +40,10 @@ private:
 
     void connectMediaPlayerToSeekbar();
 
-    void playMediaFromCurrentPlaylist(int index);
+    void playMediaFromCurrentPlaylist(Playlist *, int index);
     void togglePlayPause();
 
-    void onMediaFinish();
+    void onMediaFinish(Playlist *);
 
     void loadPlaylists();
 
@@ -52,6 +53,6 @@ private:
     std::unique_ptr<QMediaPlayer> mediaPlayer_;
 
     // TODO: Shouldn't be a part of UI
-    std::optional<Playlist> playlist;
     std::unique_ptr<IAudioMetaDataProvider> audioMetaDataProvider;
+    std::unordered_map<int, Playlist> playlists_;
 };
