@@ -20,6 +20,7 @@ set(SOURCES
 
     src/ConfigurationKeys.hpp
 
+    src/Playlist.cpp
     src/Playlist.hpp
 
     src/PlaylistWidget.cpp

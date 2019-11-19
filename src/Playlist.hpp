@@ -13,10 +13,14 @@ struct PlaylistTrack
     std::optional<AudioMetaData> audioMetaData;
 };
 
-struct Playlist
+class Playlist
 {
+public:
     QString name;
     QString playlistPath;
     int currentSongIndex;
     std::vector<PlaylistTrack> tracks;
+
+public:
+    void save();
 };
