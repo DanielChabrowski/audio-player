@@ -2,6 +2,7 @@
 
 #include "IAudioMetaDataProvider.hpp"
 
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
@@ -19,7 +20,7 @@ Playlist::Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks,
     insertTracks(tracks);
 }
 
-void Playlist::insertTracks(std::size_t, std::vector<QUrl> tracksToAdd)
+void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
 {
     for(const auto &trackUrl : tracksToAdd)
     {
@@ -30,11 +31,33 @@ void Playlist::insertTracks(std::size_t, std::vector<QUrl> tracksToAdd)
             QFileInfo trackFileInfo{ trackPath };
             if(trackFileInfo.isFile())
             {
-                tracks.emplace_back(PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                tracks.insert(tracks.begin() + position,
+                              PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                ++position;
             }
             else if(trackFileInfo.isDir())
             {
-                // TODO: Adding directory
+                const std::function<void(const QString &)> addDirFunc =
+                [this, &position, &addDirFunc](const QString &dirPath) {
+                    for(const auto &entry :
+                        QDir{ dirPath }.entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot,
+                                                      QDir::DirsFirst))
+                    {
+                        if(entry.isFile())
+                        {
+                            const auto trackPath = entry.absoluteFilePath();
+                            tracks.insert(tracks.begin() + position,
+                                          PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                            ++position;
+                        }
+                        else if(entry.isDir())
+                        {
+                            addDirFunc(entry.absoluteFilePath());
+                        }
+                    }
+                };
+
+                addDirFunc(trackPath);
             }
         }
         else
@@ -46,9 +69,9 @@ void Playlist::insertTracks(std::size_t, std::vector<QUrl> tracksToAdd)
     save();
 }
 
-void Playlist::insertTracks(std::vector<QUrl> tracks)
+void Playlist::insertTracks(std::vector<QUrl> tracksToAdd)
 {
-    insertTracks(tracks.size() - 1, std::move(tracks));
+    insertTracks(tracks.size(), std::move(tracksToAdd));
 }
 
 void Playlist::save()
