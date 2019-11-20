@@ -145,7 +145,7 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
     playlist_.insertTracks(filepaths.toVector().toStdVector());
     update();
 
-    return false;
+    return true;
 }
 
 QVariant PlaylistModel::roleAlignment(int column) const

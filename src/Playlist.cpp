@@ -23,9 +23,27 @@ void Playlist::insertTracks(std::size_t, std::vector<QUrl> tracksToAdd)
 {
     for(const auto &trackUrl : tracksToAdd)
     {
-        const auto trackPath = trackUrl.toString();
-        tracks.emplace_back(PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+        if(trackUrl.isLocalFile())
+        {
+            const auto trackPath = trackUrl.path();
+
+            QFileInfo trackFileInfo{ trackPath };
+            if(trackFileInfo.isFile())
+            {
+                tracks.emplace_back(PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+            }
+            else if(trackFileInfo.isDir())
+            {
+                // TODO: Adding directory
+            }
+        }
+        else
+        {
+            tracks.emplace_back(PlaylistTrack{ trackUrl.toString(), std::nullopt });
+        }
     }
+
+    save();
 }
 
 void Playlist::insertTracks(std::vector<QUrl> tracks)
@@ -44,6 +62,6 @@ void Playlist::save()
     QTextStream ss{ &playlistFile };
     for(const auto &track : tracks)
     {
-        ss << track.path;
+        ss << track.path << '\n';
     }
 }
