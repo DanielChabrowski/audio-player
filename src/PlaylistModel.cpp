@@ -131,18 +131,25 @@ bool PlaylistModel::canDropMimeData(const QMimeData *mimeData, Qt::DropAction, i
 
 bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction action, int row, int, const QModelIndex &parent)
 {
-    Q_UNUSED(row);
-    Q_UNUSED(parent);
-
     if(Qt::IgnoreAction == action)
     {
         return true;
     }
 
+    int beginRow{ -1 };
+    if(parent.isValid())
+    {
+        beginRow = parent.row();
+    }
+    else if(row != -1)
+    {
+        beginRow = row;
+    }
+
     const auto &filepaths = mimeData->urls();
     qDebug() << "Dropped items:" << filepaths;
 
-    playlist_.insertTracks(filepaths.toVector().toStdVector());
+    playlist_.insertTracks(beginRow, filepaths.toVector().toStdVector());
     update();
 
     return true;
