@@ -308,7 +308,8 @@ void MainWindow::loadPlaylists()
     {
         // Add default playlist widget
         constexpr auto defaultPlaylistName{ "Default" };
-        const auto playlist = Playlist{ defaultPlaylistName, playlistDir + defaultPlaylistName, -1, {} };
+        const auto playlist =
+        Playlist{ defaultPlaylistName, playlistDir + defaultPlaylistName, *audioMetaDataProvider };
         playlists_.emplace(lastPlaylistIndex++, std::move(playlist));
         setupPlaylistWidget(&playlists_.at(lastPlaylistIndex - 1));
     }

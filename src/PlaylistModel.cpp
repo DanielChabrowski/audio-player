@@ -142,6 +142,9 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
     const auto &filepaths = mimeData->urls();
     qDebug() << "Dropped items:" << filepaths;
 
+    playlist_.insertTracks(filepaths.toVector().toStdVector());
+    update();
+
     return false;
 }
 

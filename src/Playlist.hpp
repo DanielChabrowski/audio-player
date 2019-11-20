@@ -3,9 +3,12 @@
 #include "AudioMetaData.hpp"
 
 #include <QString>
+#include <QUrl>
 
 #include <optional>
 #include <vector>
+
+class IAudioMetaDataProvider;
 
 struct PlaylistTrack
 {
@@ -16,11 +19,18 @@ struct PlaylistTrack
 class Playlist
 {
 public:
+    Playlist(QString name, QString playlistPath, IAudioMetaDataProvider &);
+    Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IAudioMetaDataProvider &);
+
     QString name;
     QString playlistPath;
-    int currentSongIndex;
     std::vector<PlaylistTrack> tracks;
+    int currentSongIndex{ -1 };
 
-public:
+    void insertTracks(std::size_t position, std::vector<QUrl>);
+    void insertTracks(std::vector<QUrl>);
     void save();
+
+private:
+    IAudioMetaDataProvider &audioMetaDataProvider_;
 };

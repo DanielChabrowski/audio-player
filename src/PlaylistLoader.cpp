@@ -23,7 +23,7 @@ Playlist PlaylistLoader::loadFromFile(const QString &filename)
         throw std::runtime_error("Playlist file not found");
     }
 
-    std::vector<PlaylistTrack> audioFilePaths;
+    std::vector<QUrl> audioFilePaths;
 
     QString line;
     QTextStream ss{ &playlistFile };
@@ -32,16 +32,15 @@ Playlist PlaylistLoader::loadFromFile(const QString &filename)
         // TODO: Does isEmpty return false on " " ?
         if(not line.isEmpty())
         {
-            audioFilePaths.emplace_back(PlaylistTrack{ line, audioMetaDataProvider_.getMetaData(line) });
+            audioFilePaths.emplace_back(QUrl{ line });
         }
     }
 
     QFileInfo playlistFileInfo{ playlistFile };
-    constexpr auto currentSongIndex{ -1 };
     return {
         playlistFileInfo.completeBaseName(),
         playlistFileInfo.absoluteFilePath(),
-        currentSongIndex,
         std::move(audioFilePaths),
+        audioMetaDataProvider_,
     };
 }
