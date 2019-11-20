@@ -60,18 +60,6 @@ void PlaylistWidget::leaveEvent(QEvent *event)
     QTreeView::leaveEvent(event);
 }
 
-void PlaylistWidget::dragMoveEvent(QDragMoveEvent *event)
-{
-    QTreeView::dragMoveEvent(event);
-    qDebug() << "DropMoveEvent";
-}
-
-void PlaylistWidget::dropEvent(QDropEvent *event)
-{
-    QTreeView::dropEvent(event);
-    qDebug() << "DropEvent";
-}
-
 void PlaylistWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     QTreeView::currentChanged(current, previous);

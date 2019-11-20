@@ -1,7 +1,10 @@
 #include "PlaylistModel.hpp"
 
+#include <QDebug>
 #include <QFileInfo>
+#include <QMimeData>
 #include <QSize>
+#include <QUrl>
 
 #include "Playlist.hpp"
 
@@ -104,9 +107,42 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-Qt::ItemFlags PlaylistModel::flags(const QModelIndex &) const
+Qt::ItemFlags PlaylistModel::flags(const QModelIndex &index) const
 {
-    return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsEnabled;
+    if(index.isValid())
+    {
+        return Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEnabled;
+    }
+    else
+    {
+        return Qt::ItemIsDropEnabled | Qt::ItemIsEnabled;
+    }
+}
+
+Qt::DropActions PlaylistModel::supportedDropActions() const
+{
+    return Qt::CopyAction | Qt::MoveAction;
+}
+
+bool PlaylistModel::canDropMimeData(const QMimeData *mimeData, Qt::DropAction, int, int, const QModelIndex &) const
+{
+    return mimeData->hasUrls();
+}
+
+bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction action, int row, int, const QModelIndex &parent)
+{
+    Q_UNUSED(row);
+    Q_UNUSED(parent);
+
+    if(Qt::IgnoreAction == action)
+    {
+        return true;
+    }
+
+    const auto &filepaths = mimeData->urls();
+    qDebug() << "Dropped items:" << filepaths;
+
+    return false;
 }
 
 QVariant PlaylistModel::roleAlignment(int column) const

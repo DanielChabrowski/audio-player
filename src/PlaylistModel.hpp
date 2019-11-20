@@ -28,6 +28,10 @@ public:
     QVariant data(const QModelIndex &, int = Qt::DisplayRole) const override;
 
     Qt::ItemFlags flags(const QModelIndex &) const override;
+    Qt::DropActions supportedDropActions() const override;
+
+    bool canDropMimeData(const QMimeData *, Qt::DropAction, int row, int column, const QModelIndex &) const override;
+    bool dropMimeData(const QMimeData *, Qt::DropAction, int row, int column, const QModelIndex &) override;
 
 private:
     QVariant roleAlignment(int column) const;

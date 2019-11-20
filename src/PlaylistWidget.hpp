@@ -15,8 +15,6 @@ public:
     void mouseMoveEvent(QMouseEvent *) override;
     void mouseDoubleClickEvent(QMouseEvent *) override;
     void leaveEvent(QEvent *) override;
-    void dragMoveEvent(QDragMoveEvent *) override;
-    void dropEvent(QDropEvent *) override;
     void currentChanged(const QModelIndex &, const QModelIndex &) override;
     void selectionChanged(const QItemSelection &, const QItemSelection &) override;
 

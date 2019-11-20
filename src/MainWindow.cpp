@@ -160,6 +160,7 @@ void MainWindow::setupAlbumsBrowser()
 
     const auto albumsView = new QTreeView(this);
     albumsView->setHeaderHidden(true);
+    albumsView->setDragEnabled(true);
     albumsView->setModel(dirModel);
 
     // Hide all columns except the first one
@@ -200,8 +201,6 @@ void MainWindow::setupPlaylistWidget(Playlist *playlist)
 void MainWindow::setupMediaPlayer()
 {
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
-
-    // Playback
 }
 
 void MainWindow::setupGlobalShortcuts()
