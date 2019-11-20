@@ -20,3 +20,8 @@ add_compile_options(
     -Wextra
     -Wpedantic
 )
+
+option(FORCE_COLORED_OUTPUT "Force compiler diagnostic colors" OFF)
+if(FORCE_COLORED_OUTPUT)
+    add_compile_options(-fdiagnostics-color=always)
+endif()
