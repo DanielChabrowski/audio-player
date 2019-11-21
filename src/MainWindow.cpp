@@ -201,6 +201,9 @@ void MainWindow::setupPlaylistWidget(Playlist *playlist)
 void MainWindow::setupMediaPlayer()
 {
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
+
+    connect(mediaPlayer_.get(), QOverload<const QString &, const QVariant &>::of(&QMediaObject::metaDataChanged),
+            [](const QString &key, const QVariant &value) { qDebug() << key << value; });
 }
 
 void MainWindow::setupGlobalShortcuts()
