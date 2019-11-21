@@ -136,14 +136,18 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
         return true;
     }
 
-    int beginRow{ -1 };
-    if(parent.isValid())
+    int beginRow{ 0 };
+    if(row != -1)
+    {
+        beginRow = row;
+    }
+    else if(parent.isValid())
     {
         beginRow = parent.row();
     }
-    else if(row != -1)
+    else
     {
-        beginRow = row;
+        beginRow = rowCount(QModelIndex());
     }
 
     const auto &filepaths = mimeData->urls();
