@@ -15,19 +15,8 @@ PlaylistWidget::PlaylistWidget(std::function<void(int)> itemSelectedCallback, QW
     setSelectionMode(ExtendedSelection);
     setDragDropMode(DragDrop);
 
-    const auto playShortcut = new QShortcut(Qt::Key_Return, this);
-
-    // Probably has to be in Widget context or controlled externally
-    playShortcut->setContext(Qt::ShortcutContext::WindowShortcut);
-
-    connect(playShortcut, &QShortcut::activated, [this]() {
-        const auto currentIndex = this->currentIndex();
-        if(currentIndex.isValid())
-        {
-            itemSelectedCallback_(currentIndex.row());
-            update();
-        }
-    });
+    enablePlayTrackShortcut();
+    enableDeleteTrackShortcut();
 }
 
 void PlaylistWidget::keyPressEvent(QKeyEvent *event)
@@ -68,4 +57,37 @@ void PlaylistWidget::currentChanged(const QModelIndex &current, const QModelInde
 void PlaylistWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QTreeView::selectionChanged(selected, deselected);
+}
+
+void PlaylistWidget::enablePlayTrackShortcut()
+{
+    const auto playShortcut = new QShortcut(Qt::Key_Return, this);
+
+    // Probably has to be in Widget context or controlled externally
+    playShortcut->setContext(Qt::ShortcutContext::WindowShortcut);
+
+    connect(playShortcut, &QShortcut::activated, [this]() {
+        const auto currentIndex = this->currentIndex();
+        if(currentIndex.isValid())
+        {
+            itemSelectedCallback_(currentIndex.row());
+            update();
+        }
+    });
+}
+
+void PlaylistWidget::enableDeleteTrackShortcut()
+{
+    const auto shortcut = new QShortcut(Qt::Key_Delete, this);
+    shortcut->setContext(Qt::ShortcutContext::WidgetShortcut);
+
+    connect(shortcut, &QShortcut::activated, [this]() {
+        const auto indexes = selectedIndexes();
+        if(indexes.isEmpty())
+        {
+            return;
+        }
+
+        qDebug() << "Delete tracks" << indexes;
+    });
 }

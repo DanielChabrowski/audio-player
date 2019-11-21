@@ -19,5 +19,9 @@ public:
     void selectionChanged(const QItemSelection &, const QItemSelection &) override;
 
 private:
+    void enablePlayTrackShortcut();
+    void enableDeleteTrackShortcut();
+
+private:
     std::function<void(int)> itemSelectedCallback_;
 };
