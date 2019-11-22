@@ -238,7 +238,7 @@ void MainWindow::playMediaFromCurrentPlaylist(Playlist *playlist, int index)
 
     playlist->currentSongIndex = index;
 
-    this->mediaPlayer_->setMedia(QUrl{ track.path });
+    this->mediaPlayer_->setMedia(QUrl::fromUserInput(track.path));
     this->mediaPlayer_->play();
 
     qDebug() << "Playing media: " << track.path;
