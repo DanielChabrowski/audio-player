@@ -4,12 +4,14 @@
 
 #include <functional>
 
+class Playlist;
+
 class PlaylistWidget : public QTreeView
 {
     Q_OBJECT
 
 public:
-    explicit PlaylistWidget(std::function<void(int)> itemSelectedCallback, QWidget * = nullptr);
+    explicit PlaylistWidget(Playlist &, std::function<void(int)> itemSelectedCallback, QWidget * = nullptr);
 
     void keyPressEvent(QKeyEvent *) override;
     void mouseMoveEvent(QMouseEvent *) override;
@@ -23,5 +25,6 @@ private:
     void enableDeleteTrackShortcut();
 
 private:
+    Playlist &playlist_;
     std::function<void(int)> itemSelectedCallback_;
 };

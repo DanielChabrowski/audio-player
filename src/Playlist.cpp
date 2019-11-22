@@ -75,6 +75,20 @@ void Playlist::insertTracks(std::vector<QUrl> tracksToAdd)
     insertTracks(tracks.size(), std::move(tracksToAdd));
 }
 
+void Playlist::removeTracks(std::vector<std::size_t> indexes)
+{
+    // Sort positions to remove to compute the offset index after each removal
+    std::sort(indexes.begin(), indexes.end());
+
+    std::size_t indexShift{ 0 };
+    for(const auto &position : indexes)
+    {
+        tracks.erase(tracks.begin() + (position - indexShift++));
+    }
+
+    save();
+}
+
 void Playlist::save()
 {
     QFile playlistFile{ playlistPath };

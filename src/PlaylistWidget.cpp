@@ -1,11 +1,14 @@
 #include "PlaylistWidget.hpp"
 
+#include "Playlist.hpp"
+
 #include <QDebug>
 #include <QKeyEvent>
 #include <QShortcut>
 
-PlaylistWidget::PlaylistWidget(std::function<void(int)> itemSelectedCallback, QWidget *parent)
+PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> itemSelectedCallback, QWidget *parent)
 : QTreeView{ parent }
+, playlist_{ playlist }
 , itemSelectedCallback_{ itemSelectedCallback }
 {
     setAllColumnsShowFocus(true);
@@ -82,12 +85,19 @@ void PlaylistWidget::enableDeleteTrackShortcut()
     shortcut->setContext(Qt::ShortcutContext::WidgetShortcut);
 
     connect(shortcut, &QShortcut::activated, [this]() {
-        const auto indexes = selectedIndexes();
+        const auto indexes = selectionModel()->selectedRows();
         if(indexes.isEmpty())
         {
             return;
         }
 
-        qDebug() << "Delete tracks" << indexes;
+        std::vector<std::size_t> indexesToRemove;
+        std::for_each(indexes.begin(), indexes.end(), [&indexesToRemove](const auto &modelIndex) {
+            indexesToRemove.push_back(modelIndex.row());
+        });
+
+        playlist_.removeTracks(indexesToRemove);
+        clearSelection();
+        update();
     });
 }

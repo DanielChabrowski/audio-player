@@ -179,8 +179,9 @@ void MainWindow::setupPlaylistWidget(Playlist *playlist)
 {
     ui.playlist->setFocusPolicy(Qt::NoFocus);
 
-    auto playlistWidget = std::make_unique<PlaylistWidget>(
-    [this, playlist](int index) { playMediaFromCurrentPlaylist(playlist, index); });
+    auto playlistWidget = std::make_unique<PlaylistWidget>(*playlist, [this, playlist](int index) {
+        playMediaFromCurrentPlaylist(playlist, index);
+    });
     auto playlistModel = std::make_unique<PlaylistModel>(*playlist, playlistWidget.get());
     auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
