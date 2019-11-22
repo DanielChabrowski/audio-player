@@ -62,7 +62,8 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
         }
         else
         {
-            tracks.emplace_back(PlaylistTrack{ trackUrl.toString(), std::nullopt });
+            tracks.insert(tracks.begin() + position, PlaylistTrack{ trackUrl.toString(), std::nullopt });
+            ++position;
         }
     }
 

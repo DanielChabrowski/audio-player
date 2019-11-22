@@ -32,7 +32,7 @@ Playlist PlaylistLoader::loadFromFile(const QString &filename)
         // TODO: Does isEmpty return false on " " ?
         if(not line.isEmpty())
         {
-            audioFilePaths.emplace_back(QUrl{ line });
+            audioFilePaths.emplace_back(QUrl::fromUserInput(line));
         }
     }
 
