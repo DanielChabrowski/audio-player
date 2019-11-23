@@ -294,12 +294,19 @@ void MainWindow::loadPlaylists()
     static int lastPlaylistIndex{ 0 };
 
     // TODO: Move to playlist provider
-    const auto playlistDir =
+    const auto playlistDirPath =
     QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) +
     "/playlists";
 
+    QDir playlistDir{ playlistDirPath };
+    if(not playlistDir.exists() and not playlistDir.mkpath(playlistDirPath))
+    {
+        qWarning() << "Could not create playlist directory" << playlistDirPath;
+        return;
+    }
+
     PlaylistLoader playlistLoader{ *audioMetaDataProvider };
-    for(const auto &entry : QDir{ playlistDir }.entryInfoList(QDir::Files | QDir::NoDotAndDotDot))
+    for(const auto &entry : playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot))
     {
         qDebug() << "Loading playlist" << entry.absoluteFilePath();
         const auto playlist = playlistLoader.loadFromFile(entry.absoluteFilePath());
@@ -313,7 +320,7 @@ void MainWindow::loadPlaylists()
         // Add default playlist widget
         constexpr auto defaultPlaylistName{ "Default" };
         const auto playlist =
-        Playlist{ defaultPlaylistName, playlistDir + defaultPlaylistName, *audioMetaDataProvider };
+        Playlist{ defaultPlaylistName, playlistDirPath + "/" + defaultPlaylistName, *audioMetaDataProvider };
         playlists_.emplace(lastPlaylistIndex++, std::move(playlist));
         setupPlaylistWidget(&playlists_.at(lastPlaylistIndex - 1));
     }
