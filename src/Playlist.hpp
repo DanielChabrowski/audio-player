@@ -22,10 +22,16 @@ public:
     Playlist(QString name, QString playlistPath, IAudioMetaDataProvider &);
     Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IAudioMetaDataProvider &);
 
-    QString name;
-    QString playlistPath;
-    std::vector<PlaylistTrack> tracks;
-    int currentSongIndex{ -1 };
+    const QString &getName() const;
+
+    std::size_t getTrackCount() const;
+    const std::vector<PlaylistTrack> &getTracks() const;
+    const PlaylistTrack *getTrack(std::size_t index) const;
+    const PlaylistTrack *getNextTrack() const;
+    const PlaylistTrack *getPreviousTrack() const;
+
+    int getCurrentTrackIndex() const;
+    void setCurrentTrackIndex(std::size_t newIndex);
 
     void insertTracks(std::size_t position, std::vector<QUrl>);
     void insertTracks(std::vector<QUrl>);
@@ -35,5 +41,9 @@ public:
     void save();
 
 private:
+    QString name_;
+    QString path_;
     IAudioMetaDataProvider &audioMetaDataProvider_;
+    std::vector<PlaylistTrack> tracks_;
+    int currentTrackIndex_{ -1 };
 };

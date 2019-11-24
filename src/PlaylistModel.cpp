@@ -23,7 +23,7 @@ PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
 
 int PlaylistModel::rowCount(const QModelIndex &) const
 {
-    return static_cast<int>(playlist_.tracks.size());
+    return static_cast<int>(playlist_.getTrackCount());
 }
 
 int PlaylistModel::columnCount(const QModelIndex &) const
@@ -55,29 +55,30 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
         return {};
     }
 
-    const auto playlistSize = static_cast<int>(playlist_.tracks.size());
+    const auto playlistSize = static_cast<int>(playlist_.getTrackCount());
     const auto row = index.row();
     if(row >= playlistSize || row < 0)
     {
         return {};
     }
     const auto col = index.column();
+    const auto currentTrackIndex = playlist_.getCurrentTrackIndex();
 
     if(Qt::DisplayRole == role)
     {
-        const auto &track = playlist_.tracks.at(row);
-        const auto &metaData = track.audioMetaData;
+        const auto *track = playlist_.getTrack(row);
+        const auto &metaData = track->audioMetaData;
 
         switch(col)
         {
         case PlaylistColumn::NOW_PLAYING:
         {
-            return row == playlist_.currentSongIndex ? QString{ '>' } : "";
+            return row == currentTrackIndex ? QString{ '>' } : "";
         }
 
         case PlaylistColumn::TITLE:
         {
-            return dataTitle(track.path, metaData);
+            return dataTitle(track->path, metaData);
         }
 
         case PlaylistColumn::ARTIST_ALBUM:

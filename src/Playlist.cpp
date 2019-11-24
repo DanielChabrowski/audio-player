@@ -8,8 +8,8 @@
 #include <QTextStream>
 
 Playlist::Playlist(QString name, QString playlistPath, IAudioMetaDataProvider &metaDataProvider)
-: name{ std::move(name) }
-, playlistPath{ std::move(playlistPath) }
+: name_{ std::move(name) }
+, path_{ std::move(playlistPath) }
 , audioMetaDataProvider_{ metaDataProvider }
 {
 }
@@ -18,6 +18,73 @@ Playlist::Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks,
 : Playlist(std::move(name), std::move(playlistPath), metaDataProvider)
 {
     insertTracks(tracks);
+}
+
+const QString &Playlist::getName() const
+{
+    return name_;
+}
+
+std::size_t Playlist::getTrackCount() const
+{
+    return tracks_.size();
+}
+
+const std::vector<PlaylistTrack> &Playlist::getTracks() const
+{
+    return tracks_;
+}
+
+const PlaylistTrack *Playlist::getTrack(std::size_t index) const
+{
+    if(index >= tracks_.size())
+    {
+        return nullptr;
+    }
+
+    return &tracks_[index];
+}
+
+const PlaylistTrack *Playlist::getNextTrack() const
+{
+    if(tracks_.empty())
+    {
+        return nullptr;
+    }
+
+    std::size_t nextTrackIndex = currentTrackIndex_ + 1;
+    if(nextTrackIndex > tracks_.size() - 1)
+    {
+        nextTrackIndex = 0;
+    }
+
+    return getTrack(nextTrackIndex);
+}
+
+const PlaylistTrack *Playlist::getPreviousTrack() const
+{
+    if(tracks_.empty())
+    {
+        return nullptr;
+    }
+
+    std::size_t prevTrackIndex = tracks_.size();
+    if(currentTrackIndex_ > 0)
+    {
+        prevTrackIndex = currentTrackIndex_ - 1;
+    }
+
+    return getTrack(prevTrackIndex);
+}
+
+int Playlist::getCurrentTrackIndex() const
+{
+    return currentTrackIndex_;
+}
+
+void Playlist::setCurrentTrackIndex(std::size_t newIndex)
+{
+    currentTrackIndex_ = newIndex;
 }
 
 void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
@@ -31,8 +98,8 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
             QFileInfo trackFileInfo{ trackPath };
             if(trackFileInfo.isFile())
             {
-                tracks.insert(tracks.begin() + position,
-                              PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                tracks_.insert(tracks_.begin() + position,
+                               PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
                 ++position;
             }
             else if(trackFileInfo.isDir())
@@ -46,8 +113,8 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
                         if(entry.isFile())
                         {
                             const auto trackPath = entry.absoluteFilePath();
-                            tracks.insert(tracks.begin() + position,
-                                          PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                            tracks_.insert(tracks_.begin() + position,
+                                           PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
                             ++position;
                         }
                         else if(entry.isDir())
@@ -62,7 +129,7 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
         }
         else
         {
-            tracks.insert(tracks.begin() + position, PlaylistTrack{ trackUrl.toString(), std::nullopt });
+            tracks_.insert(tracks_.begin() + position, PlaylistTrack{ trackUrl.toString(), std::nullopt });
             ++position;
         }
     }
@@ -72,7 +139,7 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
 
 void Playlist::insertTracks(std::vector<QUrl> tracksToAdd)
 {
-    insertTracks(tracks.size(), std::move(tracksToAdd));
+    insertTracks(tracks_.size(), std::move(tracksToAdd));
 }
 
 void Playlist::removeTracks(std::vector<std::size_t> indexes)
@@ -83,7 +150,7 @@ void Playlist::removeTracks(std::vector<std::size_t> indexes)
     std::size_t indexShift{ 0 };
     for(const auto &position : indexes)
     {
-        tracks.erase(tracks.begin() + (position - indexShift++));
+        tracks_.erase(tracks_.begin() + (position - indexShift++));
     }
 
     save();
@@ -91,14 +158,14 @@ void Playlist::removeTracks(std::vector<std::size_t> indexes)
 
 void Playlist::save()
 {
-    QFile playlistFile{ playlistPath };
+    QFile playlistFile{ path_ };
     if(not playlistFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         throw std::runtime_error("Could not save playlist");
     }
 
     QTextStream ss{ &playlistFile };
-    for(const auto &track : tracks)
+    for(const auto &track : tracks_)
     {
         ss << track.path << '\n';
     }
