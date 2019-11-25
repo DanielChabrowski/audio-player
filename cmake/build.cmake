@@ -20,9 +20,20 @@ add_compile_options(
     -Wall
     -Wextra
     -Wpedantic
+    -Wextra-semi
+    -Wredundant-decls
+    -Wnon-virtual-dtor
+    -Wnull-dereference
+    -Wzero-as-null-pointer-constant
+
+    $<$<CXX_COMPILER_ID:GNU>:-Wuseless-cast>
+    $<$<CXX_COMPILER_ID:GNU>:-Wsuggest-override>
+    $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
+    $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
 )
 
 option(FORCE_COLORED_OUTPUT "Force compiler diagnostic colors" OFF)
 if(FORCE_COLORED_OUTPUT)
-    add_compile_options(-fdiagnostics-color=always)
+    add_compile_options($<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
+    add_compile_options($<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>)
 endif()
