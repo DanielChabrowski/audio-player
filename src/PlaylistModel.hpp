@@ -11,7 +11,7 @@ enum PlaylistColumn
     DURATION
 };
 
-struct Playlist;
+class Playlist;
 struct AudioMetaData;
 
 class PlaylistModel final : public QAbstractListModel

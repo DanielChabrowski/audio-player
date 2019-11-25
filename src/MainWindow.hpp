@@ -8,7 +8,7 @@
 
 #include "ui_MainWindow.h"
 
-struct IAudioMetaDataProvider;
+class IAudioMetaDataProvider;
 
 class QMediaPlayer;
 class QSettings;

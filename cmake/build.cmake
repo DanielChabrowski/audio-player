@@ -17,6 +17,7 @@ set(CMAKE_AUTORCC ON)
 
 add_compile_options(
     -Werror
+    -Wall
     -Wextra
     -Wpedantic
 )
