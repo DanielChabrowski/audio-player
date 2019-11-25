@@ -233,21 +233,20 @@ void MainWindow::connectMediaPlayerToSeekbar()
     connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 }
 
-void MainWindow::playMediaFromCurrentPlaylist(Playlist *playlist, int index)
+void MainWindow::playMediaFromCurrentPlaylist(Playlist *playlist, std::size_t index)
 {
     const auto *track = playlist->getTrack(index);
-    playlist->setCurrentTrackIndex(index);
+    qDebug() << "Playing media: " << track->path;
 
     this->mediaPlayer_->setMedia(QUrl::fromUserInput(track->path));
     this->mediaPlayer_->play();
-
-    qDebug() << "Playing media: " << track->path;
 
     this->ui.seekbar->setValue(0);
 
     const auto audioDuration = track->audioMetaData ? track->audioMetaData->duration.count() : 0;
     this->ui.seekbar->setMaximum(audioDuration * 1000);
 
+    playlist->setCurrentTrackIndex(index);
     this->ui.playlist->update();
 
     disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
@@ -276,16 +275,11 @@ void MainWindow::togglePlayPause()
 
 void MainWindow::onMediaFinish(Playlist *playlist)
 {
-    const auto playlistSize = static_cast<int>(playlist->getTrackCount());
-    const auto currentSongIndex = playlist->getCurrentTrackIndex();
-
-    auto nextSongIndex = currentSongIndex + 1;
-    if(nextSongIndex > playlistSize - 1)
+    const auto nextTrackIndex = playlist->getNextTrackIndex();
+    if(nextTrackIndex)
     {
-        nextSongIndex = 0;
+        playMediaFromCurrentPlaylist(playlist, *nextTrackIndex);
     }
-
-    playMediaFromCurrentPlaylist(playlist, qBound(0, nextSongIndex, playlistSize - 1));
 }
 
 void MainWindow::loadPlaylists()

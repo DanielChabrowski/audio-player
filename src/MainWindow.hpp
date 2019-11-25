@@ -40,7 +40,7 @@ private:
 
     void connectMediaPlayerToSeekbar();
 
-    void playMediaFromCurrentPlaylist(Playlist *, int index);
+    void playMediaFromCurrentPlaylist(Playlist *, std::size_t index);
     void togglePlayPause();
 
     void onMediaFinish(Playlist *);

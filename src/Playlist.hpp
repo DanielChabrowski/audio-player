@@ -27,8 +27,8 @@ public:
     std::size_t getTrackCount() const;
     const std::vector<PlaylistTrack> &getTracks() const;
     const PlaylistTrack *getTrack(std::size_t index) const;
-    const PlaylistTrack *getNextTrack() const;
-    const PlaylistTrack *getPreviousTrack() const;
+    std::optional<std::size_t> getNextTrackIndex() const;
+    std::optional<std::size_t> getPreviousTrackIndex() const;
 
     int getCurrentTrackIndex() const;
     void setCurrentTrackIndex(std::size_t newIndex);

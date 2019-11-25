@@ -45,11 +45,11 @@ const PlaylistTrack *Playlist::getTrack(std::size_t index) const
     return &tracks_[index];
 }
 
-const PlaylistTrack *Playlist::getNextTrack() const
+std::optional<std::size_t> Playlist::getNextTrackIndex() const
 {
     if(tracks_.empty())
     {
-        return nullptr;
+        return std::nullopt;
     }
 
     std::size_t nextTrackIndex = currentTrackIndex_ + 1;
@@ -58,14 +58,14 @@ const PlaylistTrack *Playlist::getNextTrack() const
         nextTrackIndex = 0;
     }
 
-    return getTrack(nextTrackIndex);
+    return nextTrackIndex;
 }
 
-const PlaylistTrack *Playlist::getPreviousTrack() const
+std::optional<std::size_t> Playlist::getPreviousTrackIndex() const
 {
     if(tracks_.empty())
     {
-        return nullptr;
+        return std::nullopt;
     }
 
     std::size_t prevTrackIndex = tracks_.size();
@@ -74,7 +74,7 @@ const PlaylistTrack *Playlist::getPreviousTrack() const
         prevTrackIndex = currentTrackIndex_ - 1;
     }
 
-    return getTrack(prevTrackIndex);
+    return prevTrackIndex;
 }
 
 int Playlist::getCurrentTrackIndex() const
