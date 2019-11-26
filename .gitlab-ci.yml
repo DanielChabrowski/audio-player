@@ -9,10 +9,22 @@ check:
   script:
     - pre-commit run --all-files
 
-build:
+.build: &build
   stage: build
   before_script:
-    - apt update && apt install -y --no-install-recommends g++ cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
+    - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
   script:
-    - cmake . -GNinja
-    - ninja
+    - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER}
+    - ninja -v
+
+build:gcc:
+  <<: *build
+  variables:
+    COMPILER_PACKAGE: "g++"
+    COMPILER: "g++"
+
+build:clang:
+  <<: *build
+  variables:
+    COMPILER_PACKAGE: "clang"
+    COMPILER: "clang++"
