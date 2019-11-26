@@ -89,6 +89,8 @@ void Playlist::setCurrentTrackIndex(std::size_t newIndex)
 
 void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
 {
+    const int dropPosition = position;
+
     for(const auto &trackUrl : tracksToAdd)
     {
         if(trackUrl.isLocalFile())
@@ -132,6 +134,12 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
             tracks_.insert(tracks_.begin() + position, PlaylistTrack{ trackUrl.toString(), std::nullopt });
             ++position;
         }
+    }
+
+    if(dropPosition <= currentTrackIndex_)
+    {
+        const auto elementsAdded = position - dropPosition;
+        currentTrackIndex_ += elementsAdded;
     }
 
     save();
