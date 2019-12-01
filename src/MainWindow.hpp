@@ -1,14 +1,11 @@
 #pragma once
 
 #include <memory>
-#include <optional>
-#include <unordered_map>
-
-#include "Playlist.hpp"
 
 #include "ui_MainWindow.h"
 
-class IAudioMetaDataProvider;
+class Playlist;
+class PlaylistManager;
 
 class QMediaPlayer;
 class QSettings;
@@ -19,7 +16,7 @@ class MainWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QSettings &, PlaylistManager &);
     ~MainWindow();
 
 protected:
@@ -49,10 +46,7 @@ private:
 
 private:
     Ui::MainWindowForm ui;
-    std::unique_ptr<QSettings> settings_;
+    QSettings &settings_;
+    PlaylistManager &playlistManager_;
     std::unique_ptr<QMediaPlayer> mediaPlayer_;
-
-    // TODO: Shouldn't be a part of UI
-    std::unique_ptr<IAudioMetaDataProvider> audioMetaDataProvider;
-    std::unordered_map<int, Playlist> playlists_;
 };

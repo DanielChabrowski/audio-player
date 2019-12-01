@@ -15,17 +15,17 @@
 #include <QToolTip>
 #include <QtGlobal>
 
-#include "AudioMetaDataProvider.hpp"
 #include "ConfigurationKeys.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistLoader.hpp"
+#include "PlaylistManager.hpp"
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"
 
-MainWindow::MainWindow(QWidget *parent)
-: QWidget{ parent }
-, settings_{ std::make_unique<QSettings>("OpenSource", "Foobar3000") }
-, audioMetaDataProvider{ std::make_unique<AudioMetaDataProvider>() }
+MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
+: QWidget{ nullptr }
+, settings_{ settings }
+, playlistManager_{ playlistManager }
 {
     ui.setupUi(this);
 
@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     {
         // Restoring window size and position
-        restoreGeometry(settings_->value(geometryConfigKey).toByteArray());
+        restoreGeometry(settings_.value(geometryConfigKey).toByteArray());
     }
 
     setupMediaPlayer();
@@ -60,7 +60,7 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settings_->setValue(geometryConfigKey, saveGeometry());
+    settings_.setValue(geometryConfigKey, saveGeometry());
     QWidget::closeEvent(event);
 }
 
@@ -80,6 +80,19 @@ void MainWindow::setupMenu()
     });
     exitAction->setShortcut(QKeySequence(QKeySequence::Quit));
 
+    fileMenu->addSeparator();
+
+    auto *newPlaylistAction = fileMenu->addAction("Add new playlist", [this]() {
+        const auto index = playlistManager_.create("New playlist");
+        if(not index)
+        {
+            // TODO: Error handling
+            return;
+        }
+        setupPlaylistWidget(&playlistManager_.get(*index));
+    });
+    newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
+
     bar->addMenu(tr("Edit"));
     bar->addMenu(tr("View"));
     bar->addMenu(tr("Playback"));
@@ -95,7 +108,7 @@ void MainWindow::setupVolumeControl()
     constexpr auto minVolume{ 0 };
     constexpr auto maxVolume{ 100 };
 
-    const auto volume = qBound(minVolume, settings_->value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
+    const auto volume = qBound(minVolume, settings_.value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
     ui.volumeSlider->setMaximum(maxVolume);
     ui.volumeSlider->setValue(volume);
 
@@ -103,7 +116,7 @@ void MainWindow::setupVolumeControl()
 
     connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
         this->mediaPlayer_->setVolume(volume);
-        this->settings_->setValue(volumeConfigKey, volume);
+        this->settings_.setValue(volumeConfigKey, volume);
         qDebug() << "Volume set to " << volume;
     });
 }
@@ -284,37 +297,9 @@ void MainWindow::onMediaFinish(Playlist *playlist)
 
 void MainWindow::loadPlaylists()
 {
-    static int lastPlaylistIndex{ 0 };
-
-    // TODO: Move to playlist provider
-    const auto playlistDirPath =
-    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) +
-    "/playlists";
-
-    QDir playlistDir{ playlistDirPath };
-    if(not playlistDir.exists() and not playlistDir.mkpath(playlistDirPath))
+    auto &playlists = playlistManager_.getAll();
+    for(auto &playlist : playlists)
     {
-        qWarning() << "Could not create playlist directory" << playlistDirPath;
-        return;
-    }
-
-    PlaylistLoader playlistLoader{ *audioMetaDataProvider };
-    for(const auto &entry : playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot))
-    {
-        qDebug() << "Loading playlist" << entry.absoluteFilePath();
-        const auto playlist = playlistLoader.loadFromFile(entry.absoluteFilePath());
-        playlists_.emplace(lastPlaylistIndex++, std::move(playlist));
-
-        setupPlaylistWidget(&playlists_.at(lastPlaylistIndex - 1));
-    }
-
-    if(playlists_.size() == 0)
-    {
-        // Add default playlist widget
-        constexpr auto defaultPlaylistName{ "Default" };
-        const auto playlist =
-        Playlist{ defaultPlaylistName, playlistDirPath + "/" + defaultPlaylistName, *audioMetaDataProvider };
-        playlists_.emplace(lastPlaylistIndex++, std::move(playlist));
-        setupPlaylistWidget(&playlists_.at(lastPlaylistIndex - 1));
+        setupPlaylistWidget(&playlist.second);
     }
 }
