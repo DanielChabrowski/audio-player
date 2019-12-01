@@ -24,6 +24,7 @@ try
     auto playlist = playlistLoader_.loadFromFile(filepath);
 
     const auto newPlaylistIndex = lastPlaylistIndex_++;
+    playlist.setPlaylistId(newPlaylistIndex);
     playlists_.emplace(newPlaylistIndex, std::move(playlist));
     return newPlaylistIndex;
 }
@@ -40,6 +41,20 @@ std::optional<std::uint32_t> PlaylistManager::create(const QString &name)
         return std::nullopt;
     }
     return add(filepath);
+}
+
+void PlaylistManager::removeByName(const QString &name)
+{
+    for(const auto &[key, playlist] : playlists_)
+    {
+        if(playlist.getName() == name)
+        {
+            const auto &playlistPath = playlist.getPath();
+            QFile::remove(playlistPath);
+            playlists_.erase(key);
+            return;
+        }
+    }
 }
 
 Playlist &PlaylistManager::get(std::uint32_t index)

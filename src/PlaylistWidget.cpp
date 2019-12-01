@@ -22,6 +22,11 @@ PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> item
     enableDeleteTrackShortcut();
 }
 
+const Playlist &PlaylistWidget::getPlaylist() const
+{
+    return playlist_;
+}
+
 void PlaylistWidget::keyPressEvent(QKeyEvent *event)
 {
     QTreeView::keyPressEvent(event);

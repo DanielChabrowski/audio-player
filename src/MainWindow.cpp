@@ -89,7 +89,7 @@ void MainWindow::setupMenu()
             // TODO: Error handling
             return;
         }
-        setupPlaylistWidget(&playlistManager_.get(*index));
+        setupPlaylistWidget(playlistManager_.get(*index));
     });
     newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
 
@@ -188,14 +188,15 @@ void MainWindow::setupAlbumsBrowser()
     ui.albums->addTab(albumsView, "Albums");
 }
 
-void MainWindow::setupPlaylistWidget(Playlist *playlist)
+void MainWindow::setupPlaylistWidget(Playlist &playlist)
 {
     ui.playlist->setFocusPolicy(Qt::NoFocus);
 
-    auto playlistWidget = std::make_unique<PlaylistWidget>(*playlist, [this, playlist](int index) {
-        playMediaFromCurrentPlaylist(playlist, index);
+    const auto playlistId = playlist.getPlaylistId();
+    auto playlistWidget = std::make_unique<PlaylistWidget>(playlist, [this, playlistId](int index) {
+        playMediaFromPlaylist(playlistId, index);
     });
-    auto playlistModel = std::make_unique<PlaylistModel>(*playlist, playlistWidget.get());
+    auto playlistModel = std::make_unique<PlaylistModel>(playlist, playlistWidget.get());
     auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
     playlistWidget->setModel(playlistModel.release());
@@ -209,7 +210,7 @@ void MainWindow::setupPlaylistWidget(Playlist *playlist)
     playlistWidget->header()->setSectionResizeMode(PlaylistColumn::DURATION,
                                                    QHeaderView::ResizeMode::ResizeToContents);
 
-    ui.playlist->addTab(playlistWidget.release(), playlist->getName());
+    ui.playlist->addTab(playlistWidget.release(), playlist.getName());
 }
 
 void MainWindow::setupMediaPlayer()
@@ -224,6 +225,9 @@ void MainWindow::setupGlobalShortcuts()
 {
     const auto togglePlayPause = new QShortcut(Qt::Key_Space, this);
     connect(togglePlayPause, &QShortcut::activated, this, &MainWindow::togglePlayPause);
+
+    const auto removePlaylist = new QShortcut(QKeySequence::Close, this);
+    connect(removePlaylist, &QShortcut::activated, this, &MainWindow::removeCurrentPlaylist);
 }
 
 void MainWindow::setTheme(const QString &filename)
@@ -246,9 +250,11 @@ void MainWindow::connectMediaPlayerToSeekbar()
     connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 }
 
-void MainWindow::playMediaFromCurrentPlaylist(Playlist *playlist, std::size_t index)
+void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)
 {
-    const auto *track = playlist->getTrack(index);
+    auto &playlist = playlistManager_.get(playlistId);
+
+    const auto *track = playlist.getTrack(index);
     qDebug() << "Playing media: " << track->path;
 
     this->mediaPlayer_->setMedia(QUrl::fromUserInput(track->path));
@@ -259,17 +265,17 @@ void MainWindow::playMediaFromCurrentPlaylist(Playlist *playlist, std::size_t in
     const auto audioDuration = track->audioMetaData ? track->audioMetaData->duration.count() : 0;
     this->ui.seekbar->setMaximum(audioDuration * 1000);
 
-    playlist->setCurrentTrackIndex(index);
+    playlist.setCurrentTrackIndex(index);
     this->ui.playlist->update();
 
     disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
     connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
-            [this, playlist](const QMediaPlayer::MediaStatus status) {
+            [this, playlistId](const QMediaPlayer::MediaStatus status) {
                 using Status = QMediaPlayer::MediaStatus;
                 if(Status::EndOfMedia == status or Status::InvalidMedia == status)
                 {
                     qDebug() << "QMediaPlayer status changed to " << status;
-                    onMediaFinish(playlist);
+                    onMediaFinish(playlistId);
                 }
             });
 }
@@ -286,12 +292,26 @@ void MainWindow::togglePlayPause()
     }
 }
 
-void MainWindow::onMediaFinish(Playlist *playlist)
+void MainWindow::removeCurrentPlaylist()
 {
-    const auto nextTrackIndex = playlist->getNextTrackIndex();
+    const auto *currentWidget = ui.playlist->currentWidget();
+    if(not currentWidget)
+    {
+        return;
+    }
+
+    const auto *currentPlaylistWidget = qobject_cast<const PlaylistWidget *>(currentWidget);
+    const auto &currentPlaylist = currentPlaylistWidget->getPlaylist();
+    Q_UNUSED(currentPlaylist);
+}
+
+void MainWindow::onMediaFinish(std::uint32_t playlistId)
+{
+    const auto &playlist = playlistManager_.get(playlistId);
+    const auto nextTrackIndex = playlist.getNextTrackIndex();
     if(nextTrackIndex)
     {
-        playMediaFromCurrentPlaylist(playlist, *nextTrackIndex);
+        playMediaFromPlaylist(playlistId, *nextTrackIndex);
     }
 }
 
@@ -300,6 +320,6 @@ void MainWindow::loadPlaylists()
     auto &playlists = playlistManager_.getAll();
     for(auto &playlist : playlists)
     {
-        setupPlaylistWidget(&playlist.second);
+        setupPlaylistWidget(playlist.second);
     }
 }

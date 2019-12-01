@@ -23,6 +23,11 @@ public:
     Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IAudioMetaDataProvider &);
 
     const QString &getName() const;
+    const QString &getPath() const;
+
+    // TODO: Should be assigned only once
+    void setPlaylistId(std::uint32_t id);
+    std::uint32_t getPlaylistId() const;
 
     std::size_t getTrackCount() const;
     const std::vector<PlaylistTrack> &getTracks() const;
@@ -46,4 +51,5 @@ private:
     IAudioMetaDataProvider &audioMetaDataProvider_;
     std::vector<PlaylistTrack> tracks_;
     int currentTrackIndex_{ -1 };
+    std::uint32_t playlistId;
 };

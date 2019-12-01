@@ -28,7 +28,7 @@ private:
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();
-    void setupPlaylistWidget(Playlist *);
+    void setupPlaylistWidget(Playlist &);
 
     void setupMediaPlayer();
     void setupGlobalShortcuts();
@@ -37,10 +37,11 @@ private:
 
     void connectMediaPlayerToSeekbar();
 
-    void playMediaFromCurrentPlaylist(Playlist *, std::size_t index);
+    void playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index);
     void togglePlayPause();
+    void removeCurrentPlaylist();
 
-    void onMediaFinish(Playlist *);
+    void onMediaFinish(std::uint32_t playlistId);
 
     void loadPlaylists();
 

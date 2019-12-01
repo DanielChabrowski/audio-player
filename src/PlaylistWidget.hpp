@@ -13,6 +13,8 @@ class PlaylistWidget : public QTreeView
 public:
     explicit PlaylistWidget(Playlist &, std::function<void(int)> itemSelectedCallback, QWidget * = nullptr);
 
+    const Playlist &getPlaylist() const;
+
     void keyPressEvent(QKeyEvent *) override;
     void mouseMoveEvent(QMouseEvent *) override;
     void mouseDoubleClickEvent(QMouseEvent *) override;
