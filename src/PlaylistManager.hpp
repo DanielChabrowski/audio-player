@@ -19,9 +19,10 @@ public:
     std::optional<std::uint32_t> add(const QString &filepath);
     std::optional<std::uint32_t> create(const QString &name);
 
+    void removeById(std::uint32_t id);
     void removeByName(const QString &name);
 
-    Playlist &get(std::uint32_t id);
+    Playlist *get(std::uint32_t id);
     PlaylistContainer &getAll();
 
 private:

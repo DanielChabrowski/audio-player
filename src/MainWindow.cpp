@@ -89,7 +89,7 @@ void MainWindow::setupMenu()
             // TODO: Error handling
             return;
         }
-        setupPlaylistWidget(playlistManager_.get(*index));
+        setupPlaylistWidget(*playlistManager_.get(*index));
     });
     newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
 
@@ -252,9 +252,13 @@ void MainWindow::connectMediaPlayerToSeekbar()
 
 void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)
 {
-    auto &playlist = playlistManager_.get(playlistId);
+    auto *playlist = playlistManager_.get(playlistId);
+    if(not playlist)
+    {
+        return;
+    }
 
-    const auto *track = playlist.getTrack(index);
+    const auto *track = playlist->getTrack(index);
     qDebug() << "Playing media: " << track->path;
 
     this->mediaPlayer_->setMedia(QUrl::fromUserInput(track->path));
@@ -265,7 +269,7 @@ void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t ind
     const auto audioDuration = track->audioMetaData ? track->audioMetaData->duration.count() : 0;
     this->ui.seekbar->setMaximum(audioDuration * 1000);
 
-    playlist.setCurrentTrackIndex(index);
+    playlist->setCurrentTrackIndex(index);
     this->ui.playlist->update();
 
     disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
@@ -302,13 +306,22 @@ void MainWindow::removeCurrentPlaylist()
 
     const auto *currentPlaylistWidget = qobject_cast<const PlaylistWidget *>(currentWidget);
     const auto &currentPlaylist = currentPlaylistWidget->getPlaylist();
-    Q_UNUSED(currentPlaylist);
+    const auto playlistId = currentPlaylist.getPlaylistId();
+
+    ui.playlist->removeTab(ui.playlist->currentIndex());
+    playlistManager_.removeById(playlistId);
 }
 
 void MainWindow::onMediaFinish(std::uint32_t playlistId)
 {
-    const auto &playlist = playlistManager_.get(playlistId);
-    const auto nextTrackIndex = playlist.getNextTrackIndex();
+    const auto *playlist = playlistManager_.get(playlistId);
+    if(not playlist)
+    {
+        // TODO: Update/notify that nothing's playing
+        return;
+    }
+
+    const auto nextTrackIndex = playlist->getNextTrackIndex();
     if(nextTrackIndex)
     {
         playMediaFromPlaylist(playlistId, *nextTrackIndex);

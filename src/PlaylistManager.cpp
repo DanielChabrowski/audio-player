@@ -43,6 +43,18 @@ std::optional<std::uint32_t> PlaylistManager::create(const QString &name)
     return add(filepath);
 }
 
+void PlaylistManager::removeById(std::uint32_t id)
+{
+    auto it = playlists_.find(id);
+    if(it == playlists_.end())
+    {
+        return;
+    }
+
+    QFile::remove(it->second.getPath());
+    playlists_.erase(id);
+}
+
 void PlaylistManager::removeByName(const QString &name)
 {
     for(const auto &[key, playlist] : playlists_)
@@ -57,9 +69,10 @@ void PlaylistManager::removeByName(const QString &name)
     }
 }
 
-Playlist &PlaylistManager::get(std::uint32_t index)
+Playlist *PlaylistManager::get(std::uint32_t id)
 {
-    return playlists_.at(index);
+    auto it = playlists_.find(id);
+    return it != playlists_.end() ? &it->second : nullptr;
 }
 
 std::unordered_map<std::uint32_t, Playlist> &PlaylistManager::getAll()
