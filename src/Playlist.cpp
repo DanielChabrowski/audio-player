@@ -25,6 +25,21 @@ const QString &Playlist::getName() const
     return name_;
 }
 
+const QString &Playlist::getPath() const
+{
+    return path_;
+}
+
+void Playlist::setPlaylistId(std::uint32_t id)
+{
+    playlistId = id;
+}
+
+std::uint32_t Playlist::getPlaylistId() const
+{
+    return playlistId;
+}
+
 std::size_t Playlist::getTrackCount() const
 {
     return tracks_.size();
