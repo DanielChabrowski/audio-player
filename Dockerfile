@@ -1,5 +1,14 @@
-FROM debian:testing-slim
+ARG BASE=debian:testing-slim
+FROM ${BASE}
 
-RUN \
-    apt update \
-    && apt install -y --no-install-recommends g++ cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
+RUN : \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        cmake \
+        g++ \
+        libtag1-dev \
+        ninja-build \
+        qtbase5-dev \
+        qtmultimedia5-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
