@@ -36,6 +36,8 @@ private:
     void setTheme(const QString &filename);
 
     void connectMediaPlayerToSeekbar();
+    void disableSeekbar();
+    void enableSeekbar(std::chrono::seconds trackDuration);
 
     void playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index);
     void togglePlayPause();

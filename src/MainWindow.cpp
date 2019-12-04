@@ -123,6 +123,8 @@ void MainWindow::setupVolumeControl()
 
 void MainWindow::setupSeekbar()
 {
+    disableSeekbar();
+
     connect(ui.seekbar, &QSlider::sliderPressed, [this]() {
         disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr);
     });
@@ -250,6 +252,18 @@ void MainWindow::connectMediaPlayerToSeekbar()
     connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 }
 
+void MainWindow::disableSeekbar()
+{
+    ui.seekbar->setValue(0);
+    ui.seekbar->setDisabled(true);
+}
+
+void MainWindow::enableSeekbar(std::chrono::seconds trackDuration)
+{
+    this->ui.seekbar->setMaximum(trackDuration.count() * 1000);
+    this->ui.seekbar->setDisabled(false);
+}
+
 void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)
 {
     auto *playlist = playlistManager_.get(playlistId);
@@ -264,10 +278,9 @@ void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t ind
     this->mediaPlayer_->setMedia(QUrl::fromUserInput(track->path));
     this->mediaPlayer_->play();
 
-    this->ui.seekbar->setValue(0);
-
-    const auto audioDuration = track->audioMetaData ? track->audioMetaData->duration.count() : 0;
-    this->ui.seekbar->setMaximum(audioDuration * 1000);
+    const auto trackDuration =
+    track->audioMetaData ? track->audioMetaData->duration : std::chrono::seconds{ 0 };
+    enableSeekbar(trackDuration);
 
     playlist->setCurrentTrackIndex(index);
     this->ui.playlist->update();
@@ -275,10 +288,12 @@ void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t ind
     disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
     connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
             [this, playlistId](const QMediaPlayer::MediaStatus status) {
+                qDebug() << "QMediaPlayer status changed to " << status;
+
                 using Status = QMediaPlayer::MediaStatus;
                 if(Status::EndOfMedia == status or Status::InvalidMedia == status)
                 {
-                    qDebug() << "QMediaPlayer status changed to " << status;
+                    disableSeekbar();
                     onMediaFinish(playlistId);
                 }
             });
