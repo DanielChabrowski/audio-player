@@ -20,7 +20,6 @@ add_compile_options(
     -Wall
     -Wextra
     -Wpedantic
-    -Wextra-semi
     -Wredundant-decls
     -Wnon-virtual-dtor
     -Wnull-dereference
