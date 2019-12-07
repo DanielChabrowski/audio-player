@@ -16,6 +16,7 @@ check:
   script:
     - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER}
     - ninja -v
+    - ctest
 
 build:gcc:
   <<: *build
