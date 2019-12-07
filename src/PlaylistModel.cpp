@@ -1,18 +1,42 @@
 #include "PlaylistModel.hpp"
 
+#include "Playlist.hpp"
+
+#include <QDataStream>
 #include <QDebug>
 #include <QFileInfo>
 #include <QMimeData>
 #include <QSize>
 #include <QUrl>
 
-#include "Playlist.hpp"
+#include <memory>
 
 namespace
 {
 const char *const labels[] = {
     "", "Artist/album", "Track", "Title", "Duration",
 };
+
+constexpr auto playlistIndexesMimeType{ "application/playlist.indexes" };
+
+std::vector<std::size_t> decodePlaylistIndexesMimeData(const QMimeData &mimeData)
+{
+    QByteArray encodedData = mimeData.data(playlistIndexesMimeType);
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+
+    std::vector<std::size_t> indexes;
+    while(!stream.atEnd())
+    {
+        int row;
+        stream >> row;
+        indexes.emplace_back(static_cast<std::size_t>(row));
+    }
+
+    // Remove duplicated rows, QModelIndexList contains indexes for all columns
+    indexes.erase(std::unique(indexes.begin(), indexes.end()), indexes.end());
+
+    return indexes;
+}
 } // namespace
 
 PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
@@ -125,9 +149,28 @@ Qt::DropActions PlaylistModel::supportedDropActions() const
     return Qt::CopyAction | Qt::MoveAction;
 }
 
+QMimeData *PlaylistModel::mimeData(const QModelIndexList &indexes) const
+{
+    auto mimeData = std::make_unique<QMimeData>();
+
+    QByteArray encodedData;
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    for(const auto &index : indexes)
+    {
+        if(index.isValid())
+        {
+            stream << index.row();
+        }
+    }
+
+    mimeData->setData(playlistIndexesMimeType, encodedData);
+    return mimeData.release();
+}
+
 bool PlaylistModel::canDropMimeData(const QMimeData *mimeData, Qt::DropAction, int, int, const QModelIndex &) const
 {
-    return mimeData->hasUrls();
+    return mimeData->hasUrls() or mimeData->hasFormat(playlistIndexesMimeType);
 }
 
 bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction action, int row, int, const QModelIndex &parent)
@@ -151,12 +194,23 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
         beginRow = rowCount(QModelIndex());
     }
 
-    const auto &filepaths = mimeData->urls();
-    qDebug() << "Dropped items:" << filepaths;
+    if(mimeData->hasUrls())
+    {
+        const auto &filepaths = mimeData->urls();
+        playlist_.insertTracks(beginRow, filepaths.toVector().toStdVector());
+    }
+    else if(mimeData->hasFormat(playlistIndexesMimeType))
+    {
+        auto itemsToMove = decodePlaylistIndexesMimeData(*mimeData);
+        playlist_.moveTracks(std::move(itemsToMove), beginRow);
+    }
+    else
+    {
+        qWarning() << "Unrecognized drop mime data";
+        return false;
+    }
 
-    playlist_.insertTracks(beginRow, filepaths.toVector().toStdVector());
     update();
-
     return true;
 }
 

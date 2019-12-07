@@ -16,7 +16,9 @@ PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> item
     setUniformRowHeights(true);
     setFrameShape(QFrame::NoFrame);
     setSelectionMode(ExtendedSelection);
+    setDropIndicatorShown(true);
     setDragDropMode(DragDrop);
+    setDragEnabled(true);
 
     enablePlayTrackShortcut();
     enableDeleteTrackShortcut();

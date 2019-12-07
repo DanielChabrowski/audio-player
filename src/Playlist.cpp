@@ -165,6 +165,23 @@ void Playlist::insertTracks(std::vector<QUrl> tracksToAdd)
     insertTracks(tracks_.size(), std::move(tracksToAdd));
 }
 
+void Playlist::moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex)
+{
+    std::sort(indexes.begin(), indexes.end());
+    indexes.erase(std::unique(indexes.begin(), indexes.end()), indexes.end());
+
+    std::size_t offset{ 0 };
+    for(const auto index : indexes)
+    {
+        const auto trackPos = tracks_.begin() + index - offset;
+        std::rotate(trackPos, trackPos + 1, tracks_.end());
+        ++offset;
+    }
+
+    const auto dropPos = tracks_.begin() + std::min(moveToIndex, tracks_.size() - offset);
+    std::rotate(dropPos, tracks_.end() - offset, tracks_.end());
+}
+
 void Playlist::removeTracks(std::vector<std::size_t> indexes)
 {
     // Sort positions to remove to compute the offset index after each removal

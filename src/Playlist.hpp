@@ -41,6 +41,8 @@ public:
     void insertTracks(std::size_t position, std::vector<QUrl>);
     void insertTracks(std::vector<QUrl>);
 
+    void moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex);
+
     void removeTracks(std::vector<std::size_t> indexes);
 
     void save();
