@@ -1,3 +1,5 @@
+include(sanitizers)
+
 add_compile_options(
     -Werror
     -Wall
