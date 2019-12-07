@@ -12,7 +12,7 @@ check:
 .build: &build
   stage: build
   before_script:
-    - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
+    - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} git cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
   script:
     - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER}
     - ninja -v
