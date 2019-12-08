@@ -1,4 +1,4 @@
-include(sanitizers)
+include(cmake/build_configs/sanitizers.cmake)
 
 add_compile_options(
     -Werror
