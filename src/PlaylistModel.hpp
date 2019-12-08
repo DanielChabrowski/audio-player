@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <optional>
 
 enum PlaylistColumn
 {

@@ -2,21 +2,18 @@ cmake_minimum_required(VERSION 3.7)
 
 project(foobar CXX)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 option(BUILD_TESTING "Build tests" ON)
 
 find_package(Qt5 COMPONENTS Widgets Multimedia CONFIG REQUIRED)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(Taglib taglib REQUIRED IMPORTED_TARGET)
-
-include(cmake/build.cmake)
+find_package(Taglib REQUIRED)
 
 if(BUILD_TESTING)
-    include(cmake/googletest.cmake)
+    include(googletest)
 endif()
 
-include(cmake/sanitizers.cmake)
-include(cmake/warnings.cmake)
+include(build)
 
 set(SOURCES
     src/main.cpp
@@ -62,7 +59,7 @@ target_link_libraries(foobar
   PRIVATE
     Qt5::Widgets
     Qt5::Multimedia
-    PkgConfig::Taglib
+    Taglib::Taglib
 )
 
 if(BUILD_TESTING)
