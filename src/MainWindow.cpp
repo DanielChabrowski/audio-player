@@ -17,7 +17,6 @@
 
 #include "ConfigurationKeys.hpp"
 #include "PlaylistHeader.hpp"
-#include "PlaylistLoader.hpp"
 #include "PlaylistManager.hpp"
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"

@@ -36,8 +36,8 @@ set(SOURCES
     src/PlaylistHeader.cpp
     src/PlaylistHeader.hpp
 
-    src/PlaylistLoader.cpp
-    src/PlaylistLoader.hpp
+    src/FilesystemPlaylistIO.cpp
+    src/FilesystemPlaylistIO.hpp
 
     src/PlaylistManager.cpp
     src/PlaylistManager.hpp

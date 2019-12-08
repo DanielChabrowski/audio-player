@@ -1,13 +1,13 @@
 #include "PlaylistManager.hpp"
 
 #include "FileUtilities.hpp"
-#include "PlaylistLoader.hpp"
+#include "IPlaylistIO.hpp"
 
 #include <QDir>
 #include <QFile>
 
-PlaylistManager::PlaylistManager(PlaylistLoader &playlistLoader, QString playlistDirectory)
-: playlistLoader_{ playlistLoader }
+PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirectory)
+: playlistIO_{ playlistIO }
 , playlistDirectory_{ std::move(playlistDirectory) }
 {
     loadFromDirectory();
@@ -21,7 +21,7 @@ PlaylistManager::PlaylistManager(PlaylistLoader &playlistLoader, QString playlis
 std::optional<std::uint32_t> PlaylistManager::add(const QString &filepath)
 try
 {
-    auto playlist = playlistLoader_.loadFromFile(filepath);
+    auto playlist = playlistIO_.load(filepath);
 
     const auto newPlaylistIndex = lastPlaylistIndex_++;
     playlist.setPlaylistId(newPlaylistIndex);
