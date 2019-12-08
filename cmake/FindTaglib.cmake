@@ -4,7 +4,7 @@ if(WIN32 AND NOT CYGWIN)
 
     add_library(Taglib::Taglib STATIC IMPORTED GLOBAL)
     set_target_properties(Taglib::Taglib PROPERTIES
-        IMPORTED_LOCATION_DEBUG ${TAGLIB_LIBRARY}
+        IMPORTED_LOCATION ${TAGLIB_LIBRARY}
         INTERFACE_INCLUDE_DIRECTORIES "${TAGLIB_INCLUDE_DIR}"
     )
 else()
