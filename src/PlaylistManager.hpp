@@ -7,14 +7,14 @@
 #include <optional>
 #include <unordered_map>
 
-class PlaylistLoader;
+class IPlaylistIO;
 
 class PlaylistManager
 {
 public:
     using PlaylistContainer = std::unordered_map<std::uint32_t, Playlist>;
 
-    PlaylistManager(PlaylistLoader &, QString playlistDirectory);
+    PlaylistManager(IPlaylistIO &, QString playlistDirectory);
 
     std::optional<std::uint32_t> add(const QString &filepath);
     std::optional<std::uint32_t> create(const QString &name);
@@ -30,9 +30,8 @@ private:
     void loadFromDirectory();
 
 private:
-    PlaylistLoader &playlistLoader_;
+    IPlaylistIO &playlistIO_;
     QString playlistDirectory_;
-
     std::uint32_t lastPlaylistIndex_{ 0 };
     PlaylistContainer playlists_;
 };

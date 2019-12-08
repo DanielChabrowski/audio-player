@@ -1,6 +1,6 @@
 #include "AudioMetaDataProvider.hpp"
+#include "FilesystemPlaylistIO.hpp"
 #include "MainWindow.hpp"
-#include "PlaylistLoader.hpp"
 #include "PlaylistManager.hpp"
 
 #include <QApplication>
@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
     QSettings appSettings{ "OpenSource", "Foobar3000" };
 
     AudioMetaDataProvider metaDataProvider{};
-    PlaylistLoader playlistLoader{ metaDataProvider };
+    FilesystemPlaylistIO playlistIO{ metaDataProvider };
 
     const auto playlistDirPath =
     QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) +
     "/playlists";
-    PlaylistManager playlistManager{ playlistLoader, playlistDirPath };
+    PlaylistManager playlistManager{ playlistIO, playlistDirPath };
 
     MainWindow window{ appSettings, playlistManager };
     window.show();

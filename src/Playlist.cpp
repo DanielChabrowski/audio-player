@@ -1,21 +1,16 @@
 #include "Playlist.hpp"
 
-#include "IAudioMetaDataProvider.hpp"
+#include "IPlaylistIO.hpp"
 
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QTextStream>
-
-Playlist::Playlist(QString name, QString playlistPath, IAudioMetaDataProvider &metaDataProvider)
+Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 : name_{ std::move(name) }
 , path_{ std::move(playlistPath) }
-, audioMetaDataProvider_{ metaDataProvider }
+, playlistIO_{ playlistIO }
 {
 }
 
-Playlist::Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IAudioMetaDataProvider &metaDataProvider)
-: Playlist(std::move(name), std::move(playlistPath), metaDataProvider)
+Playlist::Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IPlaylistIO &playlistIO)
+: Playlist(std::move(name), std::move(playlistPath), playlistIO)
 {
     insertTracks(tracks);
 }
@@ -104,57 +99,14 @@ void Playlist::setCurrentTrackIndex(std::size_t newIndex)
 
 void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
 {
-    const int dropPosition = position;
+    auto loadedTracks = playlistIO_.loadTracks(tracksToAdd);
+    const auto tracksAdded = loadedTracks.size();
+    tracks_.insert(tracks_.begin() + position, std::make_move_iterator(loadedTracks.begin()),
+                   std::make_move_iterator(loadedTracks.end()));
 
-    for(const auto &trackUrl : tracksToAdd)
+    if(static_cast<int>(position) <= currentTrackIndex_)
     {
-        if(trackUrl.isLocalFile())
-        {
-            const auto trackPath = trackUrl.path();
-
-            QFileInfo trackFileInfo{ trackPath };
-            if(trackFileInfo.isFile())
-            {
-                tracks_.insert(tracks_.begin() + position,
-                               PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
-                ++position;
-            }
-            else if(trackFileInfo.isDir())
-            {
-                const std::function<void(const QString &)> addDirFunc =
-                [this, &position, &addDirFunc](const QString &dirPath) {
-                    for(const auto &entry :
-                        QDir{ dirPath }.entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot,
-                                                      QDir::DirsFirst))
-                    {
-                        if(entry.isFile())
-                        {
-                            const auto trackPath = entry.absoluteFilePath();
-                            tracks_.insert(tracks_.begin() + position,
-                                           PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
-                            ++position;
-                        }
-                        else if(entry.isDir())
-                        {
-                            addDirFunc(entry.absoluteFilePath());
-                        }
-                    }
-                };
-
-                addDirFunc(trackPath);
-            }
-        }
-        else
-        {
-            tracks_.insert(tracks_.begin() + position, PlaylistTrack{ trackUrl.toString(), std::nullopt });
-            ++position;
-        }
-    }
-
-    if(dropPosition <= currentTrackIndex_)
-    {
-        const auto elementsAdded = position - dropPosition;
-        currentTrackIndex_ += elementsAdded;
+        currentTrackIndex_ += tracksAdded;
     }
 
     save();
@@ -180,6 +132,8 @@ void Playlist::moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIn
 
     const auto dropPos = tracks_.begin() + std::min(moveToIndex, tracks_.size() - offset);
     std::rotate(dropPos, tracks_.end() - offset, tracks_.end());
+
+    save();
 }
 
 void Playlist::removeTracks(std::vector<std::size_t> indexes)
@@ -203,15 +157,5 @@ void Playlist::removeTracks(std::vector<std::size_t> indexes)
 
 void Playlist::save()
 {
-    QFile playlistFile{ path_ };
-    if(not playlistFile.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        throw std::runtime_error("Could not save playlist");
-    }
-
-    QTextStream ss{ &playlistFile };
-    for(const auto &track : tracks_)
-    {
-        ss << track.path << '\n';
-    }
+    playlistIO_.save(*this);
 }

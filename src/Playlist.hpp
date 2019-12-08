@@ -8,7 +8,7 @@
 #include <optional>
 #include <vector>
 
-class IAudioMetaDataProvider;
+class IPlaylistIO;
 
 struct PlaylistTrack
 {
@@ -19,8 +19,8 @@ struct PlaylistTrack
 class Playlist
 {
 public:
-    Playlist(QString name, QString playlistPath, IAudioMetaDataProvider &);
-    Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IAudioMetaDataProvider &);
+    Playlist(QString name, QString playlistPath, IPlaylistIO &);
+    Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IPlaylistIO &);
 
     const QString &getName() const;
     const QString &getPath() const;
@@ -45,12 +45,13 @@ public:
 
     void removeTracks(std::vector<std::size_t> indexes);
 
+private:
     void save();
 
 private:
     QString name_;
     QString path_;
-    IAudioMetaDataProvider &audioMetaDataProvider_;
+    IPlaylistIO &playlistIO_;
     std::vector<PlaylistTrack> tracks_;
     int currentTrackIndex_{ -1 };
     std::uint32_t playlistId;
