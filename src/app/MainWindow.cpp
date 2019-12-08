@@ -164,7 +164,7 @@ void MainWindow::setupPlaybackControlButtons()
 void MainWindow::setupAlbumsBrowser()
 {
     const auto albumLocation =
-    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0);
+        QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0);
 
     qDebug() << "Loading album view for:" << albumLocation;
 
@@ -278,7 +278,7 @@ void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t ind
     this->mediaPlayer_->play();
 
     const auto trackDuration =
-    track->audioMetaData ? track->audioMetaData->duration : std::chrono::seconds{ 0 };
+        track->audioMetaData ? track->audioMetaData->duration : std::chrono::seconds{ 0 };
     enableSeekbar(trackDuration);
 
     playlist->setCurrentTrackIndex(index);

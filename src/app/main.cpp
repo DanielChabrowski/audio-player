@@ -17,8 +17,7 @@ int main(int argc, char *argv[])
     FilesystemPlaylistIO playlistIO{ metaDataProvider };
 
     const auto playlistDirPath =
-    QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) +
-    "/playlists";
+        QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) + "/playlists";
     PlaylistManager playlistManager{ playlistIO, playlistDirPath };
 
     MainWindow window{ appSettings, playlistManager };

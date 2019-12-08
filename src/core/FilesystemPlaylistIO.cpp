@@ -90,8 +90,8 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
                         if(entry.isFile())
                         {
                             const auto trackPath = entry.absoluteFilePath();
-                            tracks.emplace_back(
-                            PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                            tracks.emplace_back(PlaylistTrack{
+                                trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
                         }
                         else if(entry.isDir())
                         {

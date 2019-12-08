@@ -141,9 +141,10 @@ void Playlist::removeTracks(std::vector<std::size_t> indexes)
     // Sort positions to remove to compute the offset index after each removal
     std::sort(indexes.begin(), indexes.end());
 
-    const auto currentIndexShift =
-    std::count_if(indexes.cbegin(), indexes.cend(),
-                  [currentIndex = this->currentTrackIndex_](const int x) { return x < currentIndex; });
+    const auto currentIndexShift = std::count_if(indexes.cbegin(), indexes.cend(),
+                                                 [currentIndex = this->currentTrackIndex_](const int x) {
+                                                     return x < currentIndex;
+                                                 });
     currentTrackIndex_ -= currentIndexShift;
 
     std::size_t indexShift{ 0 };
