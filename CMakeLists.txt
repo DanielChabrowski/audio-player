@@ -9,11 +9,11 @@ option(BUILD_TESTING "Build tests" ON)
 find_package(Qt5 COMPONENTS Widgets Multimedia CONFIG REQUIRED)
 find_package(Taglib REQUIRED)
 
-include(build)
-
 if(BUILD_TESTING)
     include(googletest)
 endif()
+
+include(build)
 
 set(SOURCES
     src/main.cpp
