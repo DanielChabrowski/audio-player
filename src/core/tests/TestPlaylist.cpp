@@ -13,7 +13,17 @@ using namespace ::testing;
 namespace
 {
 const PlaylistTrack trackWithoutMetadata{ "TrackPath", std::nullopt };
+
+std::vector<PlaylistTrack> createTracks(std::size_t count)
+{
+    std::vector<PlaylistTrack> newTracks;
+    for(std::size_t i = 0; i < count; ++i)
+    {
+        newTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(i), std::nullopt });
+    }
+    return newTracks;
 }
+} // namespace
 
 struct PlaylistTests : Test
 {
@@ -67,4 +77,24 @@ TEST_F(PlaylistTests, insertTracksAtPosition)
     EXPECT_EQ("NewTrack3", tracks.at(3).path);
     EXPECT_EQ("NewTrack2", tracks.at(4).path);
     EXPECT_EQ("NewTrack3", tracks.at(5).path);
+}
+
+TEST_F(PlaylistTests, removeTracks)
+{
+    const std::vector<QUrl> tracksToLoad{};
+    const auto newTracksCount{ 5 };
+    const auto newTracks = createTracks(newTracksCount);
+
+    EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
+    EXPECT_CALL(playlistIOMock, save).Times(2).WillRepeatedly(Return(true));
+
+    Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
+    ASSERT_EQ(newTracksCount, playlist.getTrackCount());
+
+    const std::vector<std::size_t> indexesToRemove{ 0, 2, 4 };
+    playlist.removeTracks(indexesToRemove);
+    ASSERT_EQ(newTracksCount - indexesToRemove.size(), playlist.getTrackCount());
+    const auto &tracks = playlist.getTracks();
+    EXPECT_EQ("NewTrack1", tracks.at(0).path);
+    EXPECT_EQ("NewTrack3", tracks.at(1).path);
 }
