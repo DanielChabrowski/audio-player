@@ -23,6 +23,17 @@ std::vector<PlaylistTrack> createTracks(std::size_t count)
     }
     return newTracks;
 }
+
+void validateTracks(const Playlist &playlist, std::vector<QString> trackPaths)
+{
+    const auto &tracks = playlist.getTracks();
+    ASSERT_EQ(trackPaths.size(), tracks.size());
+
+    for(std::size_t i = 0; i < tracks.size(); ++i)
+    {
+        EXPECT_EQ(trackPaths[i], tracks[i].path);
+    }
+}
 } // namespace
 
 struct PlaylistTests : Test
@@ -68,15 +79,8 @@ TEST_F(PlaylistTests, insertTracksAtPosition)
     EXPECT_EQ(newTracksCount, playlist.getTrackCount());
 
     playlist.insertTracks(1, tracksToLoad);
-    ASSERT_EQ(newTracksCount * 2, playlist.getTrackCount());
 
-    const auto &tracks = playlist.getTracks();
-    EXPECT_EQ("NewTrack1", tracks.at(0).path);
-    EXPECT_EQ("NewTrack1", tracks.at(1).path);
-    EXPECT_EQ("NewTrack2", tracks.at(2).path);
-    EXPECT_EQ("NewTrack3", tracks.at(3).path);
-    EXPECT_EQ("NewTrack2", tracks.at(4).path);
-    EXPECT_EQ("NewTrack3", tracks.at(5).path);
+    validateTracks(playlist, { "NewTrack1", "NewTrack1", "NewTrack2", "NewTrack3", "NewTrack2", "NewTrack3" });
 }
 
 TEST_F(PlaylistTests, removeTracks)
@@ -93,8 +97,25 @@ TEST_F(PlaylistTests, removeTracks)
 
     const std::vector<std::size_t> indexesToRemove{ 0, 2, 4 };
     playlist.removeTracks(indexesToRemove);
-    ASSERT_EQ(newTracksCount - indexesToRemove.size(), playlist.getTrackCount());
-    const auto &tracks = playlist.getTracks();
-    EXPECT_EQ("NewTrack1", tracks.at(0).path);
-    EXPECT_EQ("NewTrack3", tracks.at(1).path);
+
+    validateTracks(playlist, { "NewTrack1", "NewTrack3" });
+}
+
+TEST_F(PlaylistTests, moveTracks)
+{
+    const std::vector<QUrl> tracksToLoad{};
+    const auto newTracksCount{ 5 };
+    const auto newTracks = createTracks(newTracksCount);
+
+    EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
+    EXPECT_CALL(playlistIOMock, save).Times(2).WillRepeatedly(Return(true));
+
+    Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
+    ASSERT_EQ(newTracksCount, playlist.getTrackCount());
+
+    const std::vector<std::size_t> indexesToMove{ 0, 2, 4 };
+    constexpr std::size_t moveToPosition{ 1 };
+    playlist.moveTracks(indexesToMove, moveToPosition);
+
+    validateTracks(playlist, { "NewTrack1", "NewTrack0", "NewTrack2", "NewTrack4", "NewTrack3" });
 }
