@@ -78,7 +78,7 @@ std::optional<std::size_t> Playlist::getPreviousTrackIndex() const
         return std::nullopt;
     }
 
-    std::size_t prevTrackIndex = tracks_.size();
+    std::size_t prevTrackIndex = tracks_.size() - 1;
     if(currentTrackIndex_ > 0)
     {
         prevTrackIndex = currentTrackIndex_ - 1;

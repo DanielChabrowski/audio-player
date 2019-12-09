@@ -138,3 +138,63 @@ TEST_F(PlaylistTests, moveTracksOnNonexistentIndex)
 
     validateTracks(playlist, { "NewTrack1", "NewTrack3", "NewTrack0", "NewTrack2", "NewTrack4" });
 }
+
+TEST_F(PlaylistTests, getNextTrackIndexOnEmptyPlaylist)
+{
+    const Playlist playlist{ "TestName", "TestPath", playlistIOMock };
+    EXPECT_EQ(std::nullopt, playlist.getNextTrackIndex());
+}
+
+TEST_F(PlaylistTests, getNextTrackIndexRollsOverOnLastTrack)
+{
+    const std::vector<QUrl> tracksToLoad{};
+    const auto newTracksCount{ 2 };
+    const auto newTracks = createTracks(newTracksCount);
+
+    EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
+    EXPECT_CALL(playlistIOMock, save).WillRepeatedly(Return(true));
+
+    Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
+
+    auto nextIndex = playlist.getNextTrackIndex();
+    EXPECT_EQ(0, nextIndex);
+    playlist.setCurrentTrackIndex(*nextIndex);
+
+    nextIndex = playlist.getNextTrackIndex();
+    EXPECT_EQ(1, nextIndex);
+    playlist.setCurrentTrackIndex(*nextIndex);
+
+    nextIndex = playlist.getNextTrackIndex();
+    EXPECT_EQ(0, nextIndex);
+    playlist.setCurrentTrackIndex(*nextIndex);
+}
+
+TEST_F(PlaylistTests, getPreviousTrackIndexOnEmptyPlaylist)
+{
+    const Playlist playlist{ "TestName", "TestPath", playlistIOMock };
+    EXPECT_EQ(std::nullopt, playlist.getPreviousTrackIndex());
+}
+
+TEST_F(PlaylistTests, getPreviousTrackIndexRollsOverOnFirstTrack)
+{
+    const std::vector<QUrl> tracksToLoad{};
+    const auto newTracksCount{ 2 };
+    const auto newTracks = createTracks(newTracksCount);
+
+    EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
+    EXPECT_CALL(playlistIOMock, save).WillRepeatedly(Return(true));
+
+    Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
+
+    auto prevIndex = playlist.getPreviousTrackIndex();
+    EXPECT_EQ(1, prevIndex);
+    playlist.setCurrentTrackIndex(*prevIndex);
+
+    prevIndex = playlist.getPreviousTrackIndex();
+    EXPECT_EQ(0, prevIndex);
+    playlist.setCurrentTrackIndex(*prevIndex);
+
+    prevIndex = playlist.getPreviousTrackIndex();
+    EXPECT_EQ(1, prevIndex);
+    playlist.setCurrentTrackIndex(*prevIndex);
+}
