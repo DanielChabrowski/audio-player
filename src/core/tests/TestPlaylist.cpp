@@ -119,3 +119,22 @@ TEST_F(PlaylistTests, moveTracks)
 
     validateTracks(playlist, { "NewTrack1", "NewTrack0", "NewTrack2", "NewTrack4", "NewTrack3" });
 }
+
+TEST_F(PlaylistTests, moveTracksOnNonexistentIndex)
+{
+    const std::vector<QUrl> tracksToLoad{};
+    const auto newTracksCount{ 5 };
+    const auto newTracks = createTracks(newTracksCount);
+
+    EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
+    EXPECT_CALL(playlistIOMock, save).Times(2).WillRepeatedly(Return(true));
+
+    Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
+    ASSERT_EQ(newTracksCount, playlist.getTrackCount());
+
+    const std::vector<std::size_t> indexesToMove{ 0, 2, 4 };
+    constexpr std::size_t moveToPosition{ 999 };
+    playlist.moveTracks(indexesToMove, moveToPosition);
+
+    validateTracks(playlist, { "NewTrack1", "NewTrack3", "NewTrack0", "NewTrack2", "NewTrack4" });
+}
