@@ -12,8 +12,6 @@ using namespace ::testing;
 
 namespace
 {
-const PlaylistTrack trackWithoutMetadata{ "TrackPath", std::nullopt };
-
 std::vector<PlaylistTrack> createTracks(std::size_t count)
 {
     std::vector<PlaylistTrack> newTracks;
@@ -48,7 +46,7 @@ TEST_F(PlaylistTests, insertTracks)
     Playlist playlist{ "TestName", "TestPath", playlistIOMock };
     const std::vector<QUrl> tracksToAdd{ QUrl{ "Track1" }, QUrl{ "Track2" } };
     const auto tracksToAddCount{ tracksToAdd.size() };
-    const std::vector<PlaylistTrack> loadedTracks{ trackWithoutMetadata, trackWithoutMetadata };
+    const auto loadedTracks = createTracks(tracksToAddCount);
 
     EXPECT_EQ(0, playlist.getTrackCount());
 
@@ -63,12 +61,8 @@ TEST_F(PlaylistTests, insertTracks)
 TEST_F(PlaylistTests, insertTracksAtPosition)
 {
     const std::vector<QUrl> tracksToLoad{ QUrl{ "Track1" }, QUrl{ "Track2" }, QUrl{ "Track3" } };
-
-    const PlaylistTrack newTrack1{ "NewTrack1", std::nullopt };
-    const PlaylistTrack newTrack2{ "NewTrack2", std::nullopt };
-    const PlaylistTrack newTrack3{ "NewTrack3", std::nullopt };
-    const std::vector<PlaylistTrack> newTracks{ newTrack1, newTrack2, newTrack3 };
-    const auto newTracksCount{ newTracks.size() };
+    const auto newTracksCount{ 3 };
+    const auto newTracks = createTracks(newTracksCount);
 
     Playlist playlist{ "TestName", "TestPath", playlistIOMock };
 
@@ -80,7 +74,7 @@ TEST_F(PlaylistTests, insertTracksAtPosition)
 
     playlist.insertTracks(1, tracksToLoad);
 
-    validateTracks(playlist, { "NewTrack1", "NewTrack1", "NewTrack2", "NewTrack3", "NewTrack2", "NewTrack3" });
+    validateTracks(playlist, { "NewTrack0", "NewTrack0", "NewTrack1", "NewTrack2", "NewTrack1", "NewTrack2" });
 }
 
 TEST_F(PlaylistTests, removeTracks)
