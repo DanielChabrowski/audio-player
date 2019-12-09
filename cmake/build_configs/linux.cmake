@@ -14,4 +14,6 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:GNU>:-Wsuggest-override>
     $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
     $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
+
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-gnu-zero-variadic-macro-arguments>
 )
