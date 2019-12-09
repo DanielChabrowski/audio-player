@@ -32,3 +32,6 @@ add_subdirectory(
 
 add_library(GTest::GTest ALIAS gtest)
 add_library(GTest::Main ALIAS gtest_main)
+
+add_library(GMock::GMock ALIAS gmock)
+add_library(GMock::Main ALIAS gmock_main)
