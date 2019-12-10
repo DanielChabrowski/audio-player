@@ -200,11 +200,11 @@ struct PlaylistInsertCurrentIndexChangeTest : public TestWithParam<IndexChangeIn
     StrictMock<PlaylistIOMock> playlistIOMock{};
 };
 
-INSTANTIATE_TEST_CASE_P(CurrentTrackChangeInsert,
-                        PlaylistInsertCurrentIndexChangeTest,
-                        Values(IndexChangeInsertParams{ 0, 0, 2 },
-                               IndexChangeInsertParams{ 0, 1, 0 },
-                               IndexChangeInsertParams{ 1, 0, 3 }));
+INSTANTIATE_TEST_SUITE_P(CurrentTrackChangeInsert,
+                         PlaylistInsertCurrentIndexChangeTest,
+                         Values(IndexChangeInsertParams{ 0, 0, 2 },
+                                IndexChangeInsertParams{ 0, 1, 0 },
+                                IndexChangeInsertParams{ 1, 0, 3 }));
 
 TEST_P(PlaylistInsertCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert)
 {
@@ -233,12 +233,12 @@ struct PlaylistRemoveCurrentIndexChangeTest : public TestWithParam<IndexChangeRe
     StrictMock<PlaylistIOMock> playlistIOMock{};
 };
 
-INSTANTIATE_TEST_CASE_P(CurrentTrackChangeRemove,
-                        PlaylistRemoveCurrentIndexChangeTest,
-                        Values(IndexChangeRemoveParams{ 1, { 1 }, 1 }, // Needs to be fixed
-                               IndexChangeRemoveParams{ 1, { 2, 3 }, 1 },
-                               IndexChangeRemoveParams{ 2, { 0, 1 }, 0 },
-                               IndexChangeRemoveParams{ 2, { 1, 3 }, 1 }));
+INSTANTIATE_TEST_SUITE_P(CurrentTrackChangeRemove,
+                         PlaylistRemoveCurrentIndexChangeTest,
+                         Values(IndexChangeRemoveParams{ 1, { 1 }, 1 }, // Needs to be fixed
+                                IndexChangeRemoveParams{ 1, { 2, 3 }, 1 },
+                                IndexChangeRemoveParams{ 2, { 0, 1 }, 0 },
+                                IndexChangeRemoveParams{ 2, { 1, 3 }, 1 }));
 
 TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert)
 {
