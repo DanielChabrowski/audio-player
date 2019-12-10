@@ -225,3 +225,37 @@ TEST_P(PlaylistInsertCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert
     playlist.insertTracks(dropPosition, tracksToLoad);
     EXPECT_EQ(indexAfterInsert, playlist.getCurrentTrackIndex());
 }
+
+using IndexChangeRemoveParams = std::tuple<std::size_t, std::vector<std::size_t>, std::size_t>;
+
+struct PlaylistRemoveCurrentIndexChangeTest : public TestWithParam<IndexChangeRemoveParams>
+{
+    StrictMock<PlaylistIOMock> playlistIOMock{};
+};
+
+INSTANTIATE_TEST_CASE_P(CurrentTrackChangeRemove,
+                        PlaylistRemoveCurrentIndexChangeTest,
+                        Values(IndexChangeRemoveParams{ 1, { 1 }, 1 }, // Needs to be fixed
+                               IndexChangeRemoveParams{ 1, { 2, 3 }, 1 },
+                               IndexChangeRemoveParams{ 2, { 0, 1 }, 0 },
+                               IndexChangeRemoveParams{ 2, { 1, 3 }, 1 }));
+
+TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert)
+{
+    const auto param = GetParam();
+    const auto initialIndex{ std::get<0>(param) };
+    const auto indexesToRemove{ std::get<1>(param) };
+    const auto indexAfterRemove{ std::get<2>(param) };
+
+    const std::vector<QUrl> tracksToLoad{};
+    const auto newTracksCount{ 4 };
+    const auto newTracks = createTracks(newTracksCount);
+
+    EXPECT_CALL(playlistIOMock, loadTracks).WillRepeatedly(Return(newTracks));
+    EXPECT_CALL(playlistIOMock, save).WillRepeatedly(Return(true));
+    Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
+
+    playlist.setCurrentTrackIndex(initialIndex);
+    playlist.removeTracks(indexesToRemove);
+    EXPECT_EQ(indexAfterRemove, playlist.getCurrentTrackIndex());
+}
