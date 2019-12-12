@@ -1,3 +1,4 @@
+#include "ApplicationStyle.hpp"
 #include "AudioMetaDataProvider.hpp"
 #include "FilesystemPlaylistIO.hpp"
 #include "MainWindow.hpp"
@@ -10,6 +11,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QApplication::setStyle(new ApplicationStyle);
 
     QSettings appSettings{ "OpenSource", "Foobar3000" };
 

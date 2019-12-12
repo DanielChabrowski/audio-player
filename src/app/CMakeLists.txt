@@ -3,6 +3,9 @@ find_package(Qt5 COMPONENTS Widgets Multimedia CONFIG REQUIRED)
 set(SOURCES
     main.cpp
 
+    ApplicationStyle.cpp
+    ApplicationStyle.hpp
+
     MainWindow.cpp
     MainWindow.hpp
     MainWindow.ui
