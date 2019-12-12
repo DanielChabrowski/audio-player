@@ -16,7 +16,7 @@ check:
   script:
     - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER} -DSANITIZE_ADDRESS=On
     - ninja -v
-    - ctest
+    - ASAN_OPTIONS=verbose=1 ctest -V
 
 build:gcc:
   <<: *build
