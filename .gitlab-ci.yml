@@ -14,9 +14,9 @@ check:
   before_script:
     - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} git ca-certificates cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
   script:
-    - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER}
+    - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER} -DSANITIZE_ADDRESS=On
     - ninja -v
-    - ctest
+    - ASAN_OPTIONS=verbose=1 ctest -V
 
 build:gcc:
   <<: *build
