@@ -42,6 +42,7 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
     setupVolumeControl();
     setupSeekbar();
     setupAlbumsBrowser();
+    setupPlaylistWidget();
 
     connectMediaPlayerToSeekbar();
 
@@ -88,7 +89,7 @@ void MainWindow::setupMenu()
             // TODO: Error handling
             return;
         }
-        setupPlaylistWidget(*playlistManager_.get(*index));
+        setupPlaylistTab(*playlistManager_.get(*index));
     });
     newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
 
@@ -189,10 +190,30 @@ void MainWindow::setupAlbumsBrowser()
     ui.albums->addTab(albumsView, "Albums");
 }
 
-void MainWindow::setupPlaylistWidget(Playlist &playlist)
+void MainWindow::setupPlaylistWidget()
 {
     ui.playlist->setFocusPolicy(Qt::NoFocus);
 
+    auto *tabbar = ui.playlist->tabBar();
+    tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tabbar, &QTabBar::customContextMenuRequested, [this, tabbar](const QPoint &point) {
+        const auto tabIndex = tabbar->tabAt(point);
+        auto widget = ui.playlist->widget(tabIndex);
+        const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
+        const auto &playlist = playlistWidget->getPlaylist();
+        const auto playlistId = playlist.getPlaylistId();
+
+        QMenu menu;
+        menu.addAction("Remove playlist", [this, playlistId, tabIndex]() {
+            ui.playlist->removeTab(tabIndex);
+            playlistManager_.removeById(playlistId);
+        });
+        menu.exec(tabbar->mapToGlobal(point));
+    });
+}
+
+void MainWindow::setupPlaylistTab(Playlist &playlist)
+{
     const auto playlistId = playlist.getPlaylistId();
     auto playlistWidget = std::make_unique<PlaylistWidget>(playlist, [this, playlistId](int index) {
         playMediaFromPlaylist(playlistId, index);
@@ -347,6 +368,6 @@ void MainWindow::loadPlaylists()
     auto &playlists = playlistManager_.getAll();
     for(auto &playlist : playlists)
     {
-        setupPlaylistWidget(playlist.second);
+        setupPlaylistTab(playlist.second);
     }
 }

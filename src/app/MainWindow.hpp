@@ -28,7 +28,8 @@ private:
     void setupSeekbar();
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();
-    void setupPlaylistWidget(Playlist &);
+    void setupPlaylistWidget();
+    void setupPlaylistTab(Playlist &);
 
     void setupMediaPlayer();
     void setupGlobalShortcuts();
