@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QFileSystemModel>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
@@ -196,6 +197,26 @@ void MainWindow::setupPlaylistWidget()
 
     auto *tabbar = ui.playlist->tabBar();
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(tabbar, &QTabBar::tabBarDoubleClicked, [this, tabbar](int index) {
+        const auto tabRect = tabbar->tabRect(index);
+        const auto tabPosWithinTabWidget = ui.playlist->mapToParent(tabRect.topLeft());
+
+        auto renameLineEdit = new QLineEdit(this);
+        renameLineEdit->show();
+        renameLineEdit->move(tabPosWithinTabWidget);
+        renameLineEdit->resize(tabRect.width(), tabRect.height());
+        renameLineEdit->setText(tabbar->tabText(index));
+        renameLineEdit->selectAll();
+        renameLineEdit->setFocus();
+
+        connect(renameLineEdit, &QLineEdit::editingFinished, [tabbar, index, renameLineEdit]() {
+            // TODO: Rename the playlist
+            tabbar->setTabText(index, renameLineEdit->text());
+            renameLineEdit->deleteLater();
+        });
+    });
+
     connect(tabbar, &QTabBar::customContextMenuRequested, [this, tabbar](const QPoint &point) {
         const auto tabIndex = tabbar->tabAt(point);
         auto widget = ui.playlist->widget(tabIndex);
@@ -208,6 +229,7 @@ void MainWindow::setupPlaylistWidget()
             ui.playlist->removeTab(tabIndex);
             playlistManager_.removeById(playlistId);
         });
+
         menu.exec(tabbar->mapToGlobal(point));
     });
 }
