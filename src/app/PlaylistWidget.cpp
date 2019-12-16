@@ -72,9 +72,7 @@ void PlaylistWidget::selectionChanged(const QItemSelection &selected, const QIte
 void PlaylistWidget::enablePlayTrackShortcut()
 {
     const auto playShortcut = new QShortcut(Qt::Key_Return, this);
-
-    // Probably has to be in Widget context or controlled externally
-    playShortcut->setContext(Qt::ShortcutContext::WindowShortcut);
+    playShortcut->setContext(Qt::ShortcutContext::WidgetShortcut);
 
     connect(playShortcut, &QShortcut::activated, [this]() {
         const auto currentIndex = this->currentIndex();
