@@ -19,6 +19,9 @@ set(SOURCES
     PlaylistModel.cpp
     PlaylistModel.hpp
 
+    EscapableLineEdit.cpp
+    EscapableLineEdit.hpp
+
     resources/Resources.qrc
 )
 

@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QFileSystemModel>
 #include <QLabel>
-#include <QLineEdit>
 #include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
@@ -17,6 +16,7 @@
 #include <QtGlobal>
 
 #include "ConfigurationKeys.hpp"
+#include "EscapableLineEdit.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistManager.hpp"
 #include "PlaylistModel.hpp"
@@ -200,19 +200,23 @@ void MainWindow::setupPlaylistWidget()
 
     connect(tabbar, &QTabBar::tabBarDoubleClicked, [this, tabbar](int index) {
         const auto tabRect = tabbar->tabRect(index);
-        const auto tabPosWithinTabWidget = ui.playlist->mapToParent(tabRect.topLeft());
 
-        auto renameLineEdit = new QLineEdit(this);
+        auto renameLineEdit = new EscapableLineEdit(tabbar);
         renameLineEdit->show();
-        renameLineEdit->move(tabPosWithinTabWidget);
+        renameLineEdit->move(tabRect.topLeft());
         renameLineEdit->resize(tabRect.width(), tabRect.height());
         renameLineEdit->setText(tabbar->tabText(index));
         renameLineEdit->selectAll();
         renameLineEdit->setFocus();
 
-        connect(renameLineEdit, &QLineEdit::editingFinished, [tabbar, index, renameLineEdit]() {
+        connect(renameLineEdit, &EscapableLineEdit::editingFinished, [tabbar, index, renameLineEdit]() {
             // TODO: Rename the playlist
-            tabbar->setTabText(index, renameLineEdit->text());
+            const QString renamedValue = renameLineEdit->text();
+            if(tabbar->tabText(index) != renamedValue)
+            {
+                tabbar->setTabText(index, renamedValue);
+            }
+
             renameLineEdit->deleteLater();
         });
     });
