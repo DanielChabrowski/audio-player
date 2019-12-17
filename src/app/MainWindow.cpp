@@ -198,28 +198,8 @@ void MainWindow::setupPlaylistWidget()
     auto *tabbar = ui.playlist->tabBar();
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(tabbar, &QTabBar::tabBarDoubleClicked, [tabbar](int index) {
-        const auto tabRect = tabbar->tabRect(index);
-
-        auto renameLineEdit = new EscapableLineEdit(tabbar);
-        renameLineEdit->show();
-        renameLineEdit->move(tabRect.topLeft());
-        renameLineEdit->resize(tabRect.width(), tabRect.height());
-        renameLineEdit->setText(tabbar->tabText(index));
-        renameLineEdit->selectAll();
-        renameLineEdit->setFocus();
-
-        connect(renameLineEdit, &EscapableLineEdit::editingFinished, [tabbar, index, renameLineEdit]() {
-            // TODO: Rename the playlist
-            const QString renamedValue = renameLineEdit->text();
-            if(tabbar->tabText(index) != renamedValue)
-            {
-                tabbar->setTabText(index, renamedValue);
-            }
-
-            renameLineEdit->deleteLater();
-        });
-    });
+    connect(tabbar, &QTabBar::tabBarDoubleClicked,
+            [this](int tabIndex) { togglePlaylistRenameControl(tabIndex); });
 
     connect(tabbar, &QTabBar::customContextMenuRequested, [this, tabbar](const QPoint &point) {
         const auto tabIndex = tabbar->tabAt(point);
@@ -229,6 +209,7 @@ void MainWindow::setupPlaylistWidget()
         const auto playlistId = playlist.getPlaylistId();
 
         QMenu menu;
+        menu.addAction("Rename playlist", [this, tabIndex] { togglePlaylistRenameControl(tabIndex); });
         menu.addAction("Remove playlist", [this, playlistId, tabIndex]() {
             ui.playlist->removeTab(tabIndex);
             playlistManager_.removeById(playlistId);
@@ -308,6 +289,31 @@ void MainWindow::enableSeekbar(std::chrono::seconds trackDuration)
 {
     this->ui.seekbar->setMaximum(trackDuration.count() * 1000);
     this->ui.seekbar->setDisabled(false);
+}
+
+void MainWindow::togglePlaylistRenameControl(int tabIndex)
+{
+    auto *tabbar = ui.playlist->tabBar();
+    const auto tabRect = tabbar->tabRect(tabIndex);
+
+    auto renameLineEdit = new EscapableLineEdit(tabbar);
+    renameLineEdit->show();
+    renameLineEdit->move(tabRect.topLeft());
+    renameLineEdit->resize(tabRect.width(), tabRect.height());
+    renameLineEdit->setText(tabbar->tabText(tabIndex));
+    renameLineEdit->selectAll();
+    renameLineEdit->setFocus();
+
+    connect(renameLineEdit, &EscapableLineEdit::editingFinished, [tabbar, tabIndex, renameLineEdit]() {
+        // TODO: Rename the playlist
+        const QString renamedValue = renameLineEdit->text();
+        if(tabbar->tabText(tabIndex) != renamedValue)
+        {
+            tabbar->setTabText(tabIndex, renamedValue);
+        }
+
+        renameLineEdit->deleteLater();
+    });
 }
 
 void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)

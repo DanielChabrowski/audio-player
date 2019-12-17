@@ -39,6 +39,7 @@ private:
     void connectMediaPlayerToSeekbar();
     void disableSeekbar();
     void enableSeekbar(std::chrono::seconds trackDuration);
+    void togglePlaylistRenameControl(int tabIndex);
 
     void playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index);
     void togglePlayPause();
