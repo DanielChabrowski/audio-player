@@ -198,7 +198,7 @@ void MainWindow::setupPlaylistWidget()
     auto *tabbar = ui.playlist->tabBar();
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(tabbar, &QTabBar::tabBarDoubleClicked, [this, tabbar](int index) {
+    connect(tabbar, &QTabBar::tabBarDoubleClicked, [tabbar](int index) {
         const auto tabRect = tabbar->tabRect(index);
 
         auto renameLineEdit = new EscapableLineEdit(tabbar);
