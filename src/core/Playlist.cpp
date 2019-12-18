@@ -1,6 +1,7 @@
 #include "Playlist.hpp"
 
 #include "IPlaylistIO.hpp"
+#include <random>
 
 Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 : name_{ std::move(name) }
@@ -55,20 +56,29 @@ const PlaylistTrack *Playlist::getTrack(std::size_t index) const
     return &tracks_[index];
 }
 
-std::optional<std::size_t> Playlist::getNextTrackIndex() const
+std::optional<std::size_t> Playlist::getNextTrackIndex(PlayMode playMode) const
 {
     if(tracks_.empty())
     {
         return std::nullopt;
     }
 
-    std::size_t nextTrackIndex = currentTrackIndex_ + 1;
-    if(nextTrackIndex > tracks_.size() - 1)
+    switch(playMode)
     {
-        nextTrackIndex = 0;
+    case PlayMode::Normal:
+    {
+        std::size_t nextTrackIndex = currentTrackIndex_ + 1;
+        return nextTrackIndex < tracks_.size() ? nextTrackIndex : 0;
     }
-
-    return nextTrackIndex;
+    case PlayMode::Random:
+    {
+        return getRandomIndex();
+    }
+    default:
+    {
+        return 0;
+    }
+    }
 }
 
 std::optional<std::size_t> Playlist::getPreviousTrackIndex() const
@@ -159,4 +169,13 @@ void Playlist::removeTracks(std::vector<std::size_t> indexes)
 void Playlist::save()
 {
     playlistIO_.save(*this);
+}
+
+std::size_t Playlist::getRandomIndex() const
+{
+    std::random_device randomDevice;
+    std::mt19937 generator(randomDevice());
+    std::uniform_int_distribution<std::size_t> distribution(0, tracks_.size());
+    auto nextIndex = distribution(generator);
+    return nextIndex;
 }
