@@ -40,7 +40,7 @@ public:
     const PlaylistTrack *getTrack(std::size_t index) const;
 
     std::optional<std::size_t> getNextTrackIndex(PlayMode playMode = PlayMode::Normal) const;
-    std::optional<std::size_t> getPreviousTrackIndex() const;
+    std::optional<std::size_t> getPreviousTrackIndex(PlayMode playMode = PlayMode::Normal) const;
 
     int getCurrentTrackIndex() const;
     void setCurrentTrackIndex(std::size_t newIndex);

@@ -100,10 +100,8 @@ void MainWindow::setupMenu()
     auto *playbackMenu = bar->addMenu("Playback");
     auto *randomPlay = playbackMenu->addAction("Random play");
 
-    PlayMode currentPlayMode = static_cast<PlayMode>(
-        settings_.value(playModeConfigKey, static_cast<int>(PlayMode::Normal)).toInt());
     randomPlay->setCheckable(true);
-    randomPlay->setChecked(currentPlayMode == PlayMode::Random);
+    randomPlay->setChecked(getCurrentPlayMode() == PlayMode::Random);
 
     connect(randomPlay, &QAction::toggled, [this](bool checked) {
         this->settings_.setValue(playModeConfigKey, static_cast<int>(checked));
@@ -400,9 +398,7 @@ void MainWindow::onMediaFinish(std::uint32_t playlistId)
         return;
     }
 
-    PlayMode currentPlayMode = static_cast<PlayMode>(
-        settings_.value(playModeConfigKey, static_cast<int>(PlayMode::Normal)).toInt());
-    const auto nextTrackIndex = playlist->getNextTrackIndex(currentPlayMode);
+    const auto nextTrackIndex = playlist->getNextTrackIndex(getCurrentPlayMode());
     if(nextTrackIndex)
     {
         playMediaFromPlaylist(playlistId, *nextTrackIndex);
@@ -416,4 +412,10 @@ void MainWindow::loadPlaylists()
     {
         setupPlaylistTab(playlist.second);
     }
+}
+
+PlayMode MainWindow::getCurrentPlayMode()
+{
+    constexpr auto defaultPlayMode = static_cast<int>(PlayMode::Normal);
+    return static_cast<PlayMode>(settings_.value(playModeConfigKey, defaultPlayMode).toInt());
 }

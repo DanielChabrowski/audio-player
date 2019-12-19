@@ -74,27 +74,31 @@ std::optional<std::size_t> Playlist::getNextTrackIndex(PlayMode playMode) const
     {
         return getRandomIndex();
     }
-    default:
-    {
-        return 0;
     }
-    }
+
+    return std::nullopt;
 }
 
-std::optional<std::size_t> Playlist::getPreviousTrackIndex() const
+std::optional<std::size_t> Playlist::getPreviousTrackIndex(PlayMode playMode) const
 {
     if(tracks_.empty())
     {
         return std::nullopt;
     }
 
-    std::size_t prevTrackIndex = tracks_.size() - 1;
-    if(currentTrackIndex_ > 0)
+    switch(playMode)
     {
-        prevTrackIndex = currentTrackIndex_ - 1;
+    case PlayMode::Normal:
+    {
+        return currentTrackIndex_ > 0 ? currentTrackIndex_ - 1 : tracks_.size() - 1;
+    }
+    case PlayMode::Random:
+    {
+        return getRandomIndex();
+    }
     }
 
-    return prevTrackIndex;
+    return std::nullopt;
 }
 
 int Playlist::getCurrentTrackIndex() const
@@ -173,9 +177,10 @@ void Playlist::save()
 
 std::size_t Playlist::getRandomIndex() const
 {
-    std::random_device randomDevice;
-    std::mt19937 generator(randomDevice());
-    std::uniform_int_distribution<std::size_t> distribution(0, tracks_.size());
-    auto nextIndex = distribution(generator);
+    using DistributionType = std::uniform_int_distribution<std::size_t>;
+    static std::random_device randomDevice;
+    static std::mt19937 generator(randomDevice());
+    static DistributionType distribution(0, 0);
+    auto nextIndex = distribution(generator, DistributionType::param_type(0, tracks_.size() - 1));
     return nextIndex;
 }
