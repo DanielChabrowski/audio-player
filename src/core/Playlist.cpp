@@ -178,9 +178,7 @@ void Playlist::save()
 std::size_t Playlist::getRandomIndex() const
 {
     using DistributionType = std::uniform_int_distribution<std::size_t>;
-    static std::random_device randomDevice;
-    static std::mt19937 generator(randomDevice());
-    static DistributionType distribution(0, 0);
-    auto nextIndex = distribution(generator, DistributionType::param_type(0, tracks_.size() - 1));
-    return nextIndex;
+    static std::mt19937 generator{ std::random_device{}() };
+    static DistributionType distribution{};
+    return distribution(generator, DistributionType::param_type{ 0, tracks_.size() - 1 });
 }
