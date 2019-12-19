@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Playlist.hpp>
 #include <memory>
 
 #include "ui_MainWindow.h"
@@ -46,8 +47,9 @@ private:
     void removeCurrentPlaylist();
 
     void onMediaFinish(std::uint32_t playlistId);
-
     void loadPlaylists();
+
+    PlayMode getCurrentPlayMode();
 
 private:
     Ui::MainWindowForm ui;

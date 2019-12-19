@@ -1,6 +1,7 @@
 #include "Playlist.hpp"
 
 #include "IPlaylistIO.hpp"
+#include <random>
 
 Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 : name_{ std::move(name) }
@@ -55,36 +56,49 @@ const PlaylistTrack *Playlist::getTrack(std::size_t index) const
     return &tracks_[index];
 }
 
-std::optional<std::size_t> Playlist::getNextTrackIndex() const
+std::optional<std::size_t> Playlist::getNextTrackIndex(PlayMode playMode) const
 {
     if(tracks_.empty())
     {
         return std::nullopt;
     }
 
-    std::size_t nextTrackIndex = currentTrackIndex_ + 1;
-    if(nextTrackIndex > tracks_.size() - 1)
+    switch(playMode)
     {
-        nextTrackIndex = 0;
+    case PlayMode::Normal:
+    {
+        std::size_t nextTrackIndex = currentTrackIndex_ + 1;
+        return nextTrackIndex < tracks_.size() ? nextTrackIndex : 0;
+    }
+    case PlayMode::Random:
+    {
+        return getRandomIndex();
+    }
     }
 
-    return nextTrackIndex;
+    return std::nullopt;
 }
 
-std::optional<std::size_t> Playlist::getPreviousTrackIndex() const
+std::optional<std::size_t> Playlist::getPreviousTrackIndex(PlayMode playMode) const
 {
     if(tracks_.empty())
     {
         return std::nullopt;
     }
 
-    std::size_t prevTrackIndex = tracks_.size() - 1;
-    if(currentTrackIndex_ > 0)
+    switch(playMode)
     {
-        prevTrackIndex = currentTrackIndex_ - 1;
+    case PlayMode::Normal:
+    {
+        return currentTrackIndex_ > 0 ? currentTrackIndex_ - 1 : tracks_.size() - 1;
+    }
+    case PlayMode::Random:
+    {
+        return getRandomIndex();
+    }
     }
 
-    return prevTrackIndex;
+    return std::nullopt;
 }
 
 int Playlist::getCurrentTrackIndex() const
@@ -159,4 +173,14 @@ void Playlist::removeTracks(std::vector<std::size_t> indexes)
 void Playlist::save()
 {
     playlistIO_.save(*this);
+}
+
+std::size_t Playlist::getRandomIndex() const
+{
+    using DistributionType = std::uniform_int_distribution<std::size_t>;
+    static std::random_device randomDevice;
+    static std::mt19937 generator(randomDevice());
+    static DistributionType distribution(0, 0);
+    auto nextIndex = distribution(generator, DistributionType::param_type(0, tracks_.size() - 1));
+    return nextIndex;
 }

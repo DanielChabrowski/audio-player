@@ -96,7 +96,17 @@ void MainWindow::setupMenu()
 
     bar->addMenu(tr("Edit"));
     bar->addMenu(tr("View"));
-    bar->addMenu(tr("Playback"));
+
+    auto *playbackMenu = bar->addMenu("Playback");
+    auto *randomPlay = playbackMenu->addAction("Random play");
+
+    randomPlay->setCheckable(true);
+    randomPlay->setChecked(getCurrentPlayMode() == PlayMode::Random);
+
+    connect(randomPlay, &QAction::toggled, [this](bool checked) {
+        this->settings_.setValue(playModeConfigKey, static_cast<int>(checked));
+    });
+
     bar->addMenu(tr("Library"));
     bar->addMenu(tr("Help"));
 
@@ -388,7 +398,7 @@ void MainWindow::onMediaFinish(std::uint32_t playlistId)
         return;
     }
 
-    const auto nextTrackIndex = playlist->getNextTrackIndex();
+    const auto nextTrackIndex = playlist->getNextTrackIndex(getCurrentPlayMode());
     if(nextTrackIndex)
     {
         playMediaFromPlaylist(playlistId, *nextTrackIndex);
@@ -402,4 +412,10 @@ void MainWindow::loadPlaylists()
     {
         setupPlaylistTab(playlist.second);
     }
+}
+
+PlayMode MainWindow::getCurrentPlayMode()
+{
+    constexpr auto defaultPlayMode = static_cast<int>(PlayMode::Normal);
+    return static_cast<PlayMode>(settings_.value(playModeConfigKey, defaultPlayMode).toInt());
 }

@@ -16,6 +16,12 @@ struct PlaylistTrack
     std::optional<AudioMetaData> audioMetaData;
 };
 
+enum class PlayMode
+{
+    Normal,
+    Random
+};
+
 class Playlist
 {
 public:
@@ -32,8 +38,9 @@ public:
     std::size_t getTrackCount() const;
     const std::vector<PlaylistTrack> &getTracks() const;
     const PlaylistTrack *getTrack(std::size_t index) const;
-    std::optional<std::size_t> getNextTrackIndex() const;
-    std::optional<std::size_t> getPreviousTrackIndex() const;
+
+    std::optional<std::size_t> getNextTrackIndex(PlayMode playMode = PlayMode::Normal) const;
+    std::optional<std::size_t> getPreviousTrackIndex(PlayMode playMode = PlayMode::Normal) const;
 
     int getCurrentTrackIndex() const;
     void setCurrentTrackIndex(std::size_t newIndex);
@@ -47,6 +54,7 @@ public:
 
 private:
     void save();
+    std::size_t getRandomIndex() const;
 
 private:
     QString name_;
