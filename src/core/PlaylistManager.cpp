@@ -69,6 +69,23 @@ void PlaylistManager::removeByName(const QString &name)
     }
 }
 
+bool PlaylistManager::rename(std::uint32_t id, const QString &newName)
+{
+    auto *playlist = get(id);
+    if(not playlist)
+    {
+        return false;
+    }
+
+    const bool hasRenamed = playlistIO_.rename(*playlist, newName);
+    if(hasRenamed)
+    {
+        playlist->name_ = newName;
+        playlist->path_ = createPlaylistPath(newName);
+    }
+    return hasRenamed;
+}
+
 Playlist *PlaylistManager::get(std::uint32_t id)
 {
     auto it = playlists_.find(id);
@@ -80,6 +97,12 @@ std::unordered_map<std::uint32_t, Playlist> &PlaylistManager::getAll()
     return playlists_;
 }
 
+QString PlaylistManager::createPlaylistPath(const QString &playlistName)
+{
+    const QDir playlistDir{ playlistDirectory_ };
+    return playlistDir.absolutePath() + '/' + playlistName;
+}
+
 QString PlaylistManager::createPlaylistFile(const QString &playlistName)
 {
     QDir playlistDir{ playlistDirectory_ };
@@ -88,7 +111,7 @@ QString PlaylistManager::createPlaylistFile(const QString &playlistName)
         return {};
     }
 
-    QFile playlistFile{ getUniqueFilename(playlistDir.absolutePath() + '/' + playlistName) };
+    QFile playlistFile{ getUniqueFilename(createPlaylistPath(playlistName)) };
     if(not playlistFile.open(QIODevice::ReadWrite))
     {
         return {};

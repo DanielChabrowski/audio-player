@@ -50,6 +50,7 @@ private:
     void loadPlaylists();
 
     PlayMode getCurrentPlayMode();
+    std::optional<std::uint32_t> getPlaylistIdByTabIndex(int tabIndex);
 
 private:
     Ui::MainWindowForm ui;

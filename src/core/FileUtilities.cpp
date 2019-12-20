@@ -11,7 +11,13 @@ QString getUniqueFilename(const QString &filename)
     }
 
     QFileInfo fileInfo{ filename };
-    const QString suffix = '.' + fileInfo.completeSuffix();
+
+    QString suffix = fileInfo.completeSuffix();
+    if(not suffix.isEmpty())
+    {
+        suffix.prepend('.');
+    }
+
     const QString filepath = fileInfo.path() + '/' + fileInfo.baseName();
 
     QString ret;

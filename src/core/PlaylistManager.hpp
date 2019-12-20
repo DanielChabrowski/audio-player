@@ -22,10 +22,13 @@ public:
     void removeById(std::uint32_t id);
     void removeByName(const QString &name);
 
+    bool rename(std::uint32_t id, const QString &newName);
+
     Playlist *get(std::uint32_t id);
     PlaylistContainer &getAll();
 
 private:
+    QString createPlaylistPath(const QString &playlistName);
     QString createPlaylistFile(const QString &playlistName);
     void loadFromDirectory();
 
