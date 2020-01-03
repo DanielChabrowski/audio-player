@@ -182,12 +182,26 @@ void MainWindow::setupAlbumsBrowser()
 
     const auto dirModel = new QFileSystemModel(this);
     dirModel->setReadOnly(true);
+    dirModel->setNameFilterDisables(false);
     dirModel->setRootPath(albumLocation);
+
+    auto albumsLayout = new QVBoxLayout;
+    albumsLayout->setContentsMargins(0, 0, 0, 0);
 
     const auto albumsView = new QTreeView(this);
     albumsView->setHeaderHidden(true);
     albumsView->setDragEnabled(true);
     albumsView->setModel(dirModel);
+    albumsLayout->addWidget(albumsView);
+
+    const auto albumsSearch = new QLineEdit(this);
+    connect(albumsSearch, &QLineEdit::textChanged, [dirModel](const QString &text) {
+        QString nameWildcard = text;
+        nameWildcard.replace(QRegExp{ "\\s" }, "*");
+        dirModel->setNameFilters({ QString{ "*%1*" }.arg(std::move(nameWildcard)) });
+    });
+
+    albumsLayout->addWidget(albumsSearch);
 
     // Hide all columns except the first one
     const auto columnCount = dirModel->columnCount();
@@ -198,7 +212,10 @@ void MainWindow::setupAlbumsBrowser()
 
     albumsView->setRootIndex(dirModel->index(albumLocation));
 
-    ui.albums->addTab(albumsView, "Albums");
+    auto albumsWidget = new QWidget(this);
+    albumsWidget->setLayout(albumsLayout);
+
+    ui.albums->addTab(albumsWidget, "Albums");
 }
 
 void MainWindow::setupPlaylistWidget()
