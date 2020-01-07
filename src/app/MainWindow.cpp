@@ -258,8 +258,18 @@ void MainWindow::setupMediaPlayer()
 {
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
 
-    connect(mediaPlayer_.get(), QOverload<const QString &, const QVariant &>::of(&QMediaObject::metaDataChanged),
-            [](const QString &key, const QVariant &value) { qDebug() << key << value; });
+    constexpr bool defaultDebugAudioMetadata{ false };
+    const bool debugAudioMetadata =
+        settings_.value(debugAudioMetadataKey, defaultDebugAudioMetadata).toBool();
+
+    if(debugAudioMetadata)
+    {
+        connect(mediaPlayer_.get(),
+                QOverload<const QString &, const QVariant &>::of(&QMediaObject::metaDataChanged),
+                [](const QString &key, const QVariant &value) {
+                    qDebug() << "Metadata changed" << key << value;
+                });
+    }
 }
 
 void MainWindow::setupGlobalShortcuts()
