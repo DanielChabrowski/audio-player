@@ -90,7 +90,12 @@ void MainWindow::setupMenu()
             // TODO: Error handling
             return;
         }
-        setupPlaylistTab(*playlistManager_.get(*index));
+
+        const auto newTabIndex = setupPlaylistTab(*playlistManager_.get(*index));
+        if(newTabIndex != -1)
+        {
+            ui.playlist->setCurrentIndex(newTabIndex);
+        }
     });
     newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
 
@@ -226,7 +231,7 @@ void MainWindow::setupPlaylistWidget()
     });
 }
 
-void MainWindow::setupPlaylistTab(Playlist &playlist)
+int MainWindow::setupPlaylistTab(Playlist &playlist)
 {
     const auto playlistId = playlist.getPlaylistId();
     auto playlistWidget = std::make_unique<PlaylistWidget>(playlist, [this, playlistId](int index) {
@@ -246,7 +251,7 @@ void MainWindow::setupPlaylistTab(Playlist &playlist)
     playlistWidget->header()->setSectionResizeMode(PlaylistColumn::DURATION,
                                                    QHeaderView::ResizeMode::ResizeToContents);
 
-    ui.playlist->addTab(playlistWidget.release(), playlist.getName());
+    return ui.playlist->addTab(playlistWidget.release(), playlist.getName());
 }
 
 void MainWindow::setupMediaPlayer()

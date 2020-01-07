@@ -30,7 +30,7 @@ private:
     void setupPlaybackControlButtons();
     void setupAlbumsBrowser();
     void setupPlaylistWidget();
-    void setupPlaylistTab(Playlist &);
+    int setupPlaylistTab(Playlist &);
 
     void setupMediaPlayer();
     void setupGlobalShortcuts();
