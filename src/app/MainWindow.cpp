@@ -387,18 +387,21 @@ void MainWindow::togglePlayPause()
 
 void MainWindow::removeCurrentPlaylist()
 {
-    const auto *currentWidget = ui.playlist->currentWidget();
-    if(not currentWidget)
+    const auto currentTabIndex = ui.playlist->currentIndex();
+    if(currentTabIndex == -1)
     {
         return;
     }
 
-    const auto *currentPlaylistWidget = qobject_cast<const PlaylistWidget *>(currentWidget);
-    const auto &currentPlaylist = currentPlaylistWidget->getPlaylist();
-    const auto playlistId = currentPlaylist.getPlaylistId();
+    const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
+    if(not playlistId)
+    {
+        ui.playlist->removeTab(currentTabIndex);
+        return;
+    }
 
-    ui.playlist->removeTab(ui.playlist->currentIndex());
-    playlistManager_.removeById(playlistId);
+    ui.playlist->removeTab(currentTabIndex);
+    playlistManager_.removeById(*playlistId);
 }
 
 void MainWindow::onMediaFinish(std::uint32_t playlistId)
