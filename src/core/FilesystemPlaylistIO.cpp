@@ -65,6 +65,13 @@ bool FilesystemPlaylistIO::save(const Playlist &playlist)
     return true;
 }
 
+bool FilesystemPlaylistIO::rename(const Playlist &playlist, const QString &newName)
+{
+    const QFileInfo playlistFileInfo{ playlist.getPath() };
+    auto playlistDir{ playlistFileInfo.absoluteDir() };
+    return playlistDir.rename(playlist.getName(), newName);
+}
+
 std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QUrl> &urls)
 {
     std::vector<PlaylistTrack> tracks;

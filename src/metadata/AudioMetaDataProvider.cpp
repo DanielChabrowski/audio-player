@@ -22,7 +22,7 @@ std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &f
     }
 
     const auto *tags = ref.tag();
-    AudioAlbumMetaData albumData{ QString::fromStdWString(tags->album().toWString()), -1, -1, -1, -1 };
+    AudioAlbumMetaData albumData{ TStringToQString(tags->album()), -1, -1, -1, -1 };
 
     const auto properties = ref.file()->properties();
     for(const auto &property : properties)
@@ -50,8 +50,8 @@ std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &f
     }
 
     return AudioMetaData{
-        QString::fromStdWString(tags->title().toWString()),
-        QString::fromStdWString(tags->artist().toWString()),
+        TStringToQString(tags->title()),
+        TStringToQString(tags->artist()),
         std::move(albumData),
         duration,
     };

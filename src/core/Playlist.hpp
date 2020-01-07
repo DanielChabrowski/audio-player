@@ -63,4 +63,6 @@ private:
     std::vector<PlaylistTrack> tracks_;
     int currentTrackIndex_{ -1 };
     std::uint32_t playlistId;
+
+    friend class PlaylistManager;
 };
