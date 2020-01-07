@@ -33,3 +33,9 @@ target_link_libraries(foobar
     Qt5::Multimedia
     player::core
 )
+
+add_custom_target(
+    run
+    COMMAND foobar
+    USES_TERMINAL
+)
