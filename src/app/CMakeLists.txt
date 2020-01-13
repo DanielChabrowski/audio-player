@@ -34,6 +34,11 @@ target_link_libraries(foobar
     player::core
 )
 
+install(
+    TARGETS foobar
+    RUNTIME DESTINATION bin
+)
+
 add_custom_target(
     run
     COMMAND foobar

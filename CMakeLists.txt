@@ -15,3 +15,8 @@ find_package(Qt5 COMPONENTS Core CONFIG REQUIRED)
 include(build)
 
 add_subdirectory(src)
+
+install(
+    FILES share/foobar.desktop
+    DESTINATION /usr/share/applications
+)
