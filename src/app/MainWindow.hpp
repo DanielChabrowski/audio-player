@@ -12,7 +12,7 @@ class QMediaPlayer;
 class QSettings;
 class QCloseEvent;
 
-class MainWindow : public QWidget
+class MainWindow final : public QWidget
 {
     Q_OBJECT
 
