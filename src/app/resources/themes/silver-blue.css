@@ -1,0 +1,12 @@
+QTreeView {
+    color: #b0af9d;
+    background-color: #19232c;
+    alternate-background-color: #131d26;
+}
+
+QTreeView::item:selected,
+QTreeView::branch:selected {
+    color: #ffffff;
+    background-color: #344754;
+    border: none;
+}
