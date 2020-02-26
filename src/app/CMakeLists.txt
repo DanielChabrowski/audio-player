@@ -39,6 +39,11 @@ install(
     RUNTIME DESTINATION bin
 )
 
+install(
+    FILES share/foobar.desktop
+    DESTINATION /usr/share/applications
+)
+
 add_custom_target(
     run
     COMMAND foobar
