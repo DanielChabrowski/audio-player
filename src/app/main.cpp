@@ -5,6 +5,7 @@
 #include "PlaylistManager.hpp"
 
 #include <QApplication>
+#include <QDebug>
 #include <QSettings>
 #include <QStandardPaths>
 
@@ -13,14 +14,20 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QApplication::setStyle(new ApplicationStyle);
 
-    QSettings appSettings{ "OpenSource", "Foobar3000" };
+    constexpr auto applicationName = "foobar";
+    QSettings appSettings{ applicationName, applicationName };
+    qInfo() << "Configuration file:" << appSettings.fileName();
 
-    AudioMetaDataProvider metaDataProvider{};
+    AudioMetaDataProvider metaDataProvider;
     FilesystemPlaylistIO playlistIO{ metaDataProvider };
 
-    const auto playlistDirPath =
-        QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0) + "/playlists";
-    PlaylistManager playlistManager{ playlistIO, playlistDirPath };
+    const auto configLocation =
+        QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0);
+    const auto playlistsDirectory =
+        QString{ "%1/%2/%3" }.arg(configLocation).arg(applicationName).arg("playlists");
+    qInfo() << "Playlists directory:" << playlistsDirectory;
+
+    PlaylistManager playlistManager{ playlistIO, playlistsDirectory };
 
     MainWindow window{ appSettings, playlistManager };
     window.show();
