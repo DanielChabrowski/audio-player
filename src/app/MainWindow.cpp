@@ -53,7 +53,7 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
         QTime startTime = QTime::currentTime();
         loadPlaylists();
         auto elapsedTime = startTime.msecsTo(QTime::currentTime());
-        qDebug() << "Loaded playlist in: " << elapsedTime << "ms";
+        qDebug() << "Loaded playlists in: " << elapsedTime << "ms";
     }
 }
 

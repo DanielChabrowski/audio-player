@@ -40,7 +40,7 @@ install(
 )
 
 install(
-    FILES share/foobar.desktop
+    FILES ${CMAKE_SOURCE_DIR}/share/foobar.desktop
     DESTINATION /usr/share/applications
 )
 
