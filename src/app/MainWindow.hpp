@@ -48,9 +48,13 @@ private:
 
     void onMediaFinish(std::uint32_t playlistId);
     void loadPlaylists();
+    void enablePlaylistChangeTracking();
+
+    void restoreLastPlaylist();
 
     PlayMode getCurrentPlayMode();
     std::optional<std::uint32_t> getPlaylistIdByTabIndex(int tabIndex);
+    std::optional<int> getTabIndexByPlaylistName(const QString &name);
 
 private:
     Ui::MainWindowForm ui;

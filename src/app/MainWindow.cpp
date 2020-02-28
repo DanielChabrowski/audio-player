@@ -55,6 +55,9 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
         auto elapsedTime = startTime.msecsTo(QTime::currentTime());
         qDebug() << "Loaded playlists in: " << elapsedTime << "ms";
     }
+
+    restoreLastPlaylist();
+    enablePlaylistChangeTracking();
 }
 
 MainWindow::~MainWindow() = default;
@@ -444,6 +447,45 @@ void MainWindow::loadPlaylists()
     }
 }
 
+void MainWindow::enablePlaylistChangeTracking()
+{
+    // Tracking cannot be enabled before playlists are loaded
+    // Otherwise last playlist name is updated with loaded playlists
+
+    auto *tabbar = ui.playlist->tabBar();
+    connect(tabbar, &QTabBar::currentChanged, [this](int newIndex) {
+        const auto playlistId = getPlaylistIdByTabIndex(newIndex);
+        if(not playlistId)
+        {
+            qDebug() << "No playlist at tab index:" << newIndex;
+            return;
+        }
+
+        const auto *playlist = playlistManager_.get(*playlistId);
+        if(not playlist)
+        {
+            qCritical() << "No playlist with given playlistId:" << *playlistId;
+            return;
+        }
+        settings_.setValue(playlistLastPlaylist, playlist->getName());
+        qDebug() << "Updated last playlist:" << playlist->getName();
+    });
+}
+
+void MainWindow::restoreLastPlaylist()
+{
+    if(settings_.contains(playlistLastPlaylist))
+    {
+        const auto lastPlaylistName = settings_.value(playlistLastPlaylist).toString();
+        const auto playlistTabIndex = getTabIndexByPlaylistName(lastPlaylistName);
+        if(playlistTabIndex)
+        {
+            qDebug() << "Restoring playlist:" << lastPlaylistName;
+            ui.playlist->setCurrentIndex(*playlistTabIndex);
+        }
+    }
+}
+
 PlayMode MainWindow::getCurrentPlayMode()
 {
     constexpr auto defaultPlayMode = static_cast<int>(PlayMode::Normal);
@@ -461,4 +503,26 @@ std::optional<std::uint32_t> MainWindow::getPlaylistIdByTabIndex(int tabIndex)
     const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
     const auto &playlist = playlistWidget->getPlaylist();
     return playlist.getPlaylistId();
+}
+
+std::optional<int> MainWindow::getTabIndexByPlaylistName(const QString &name)
+{
+    for(int tabIndex = 0; tabIndex < ui.playlist->count(); ++tabIndex)
+    {
+        auto *widget = ui.playlist->widget(tabIndex);
+        if(not widget)
+        {
+            return std::nullopt;
+        }
+
+        const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
+        const auto &playlist = playlistWidget->getPlaylist();
+
+        if(name == playlist.getName())
+        {
+            return tabIndex;
+        }
+    }
+
+    return std::nullopt;
 }
