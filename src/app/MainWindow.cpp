@@ -90,7 +90,7 @@ void MainWindow::setupMenu()
         const auto index = playlistManager_.create("New playlist");
         if(not index)
         {
-            // TODO: Error handling
+            qCritical() << "Playlist could not be created";
             return;
         }
 
