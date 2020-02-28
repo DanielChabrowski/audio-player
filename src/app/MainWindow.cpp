@@ -192,21 +192,19 @@ void MainWindow::setupAlbumsBrowser()
     dirModel->setReadOnly(true);
     dirModel->setRootPath(albumLocation);
 
-    const auto albumsView = new QTreeView(this);
-    albumsView->setHeaderHidden(true);
-    albumsView->setDragEnabled(true);
-    albumsView->setModel(dirModel);
+    auto &albums = ui.albums;
+    albums->setHeaderHidden(true);
+    albums->setDragEnabled(true);
+    albums->setModel(dirModel);
 
     // Hide all columns except the first one
     const auto columnCount = dirModel->columnCount();
     for(int i = 1; i < columnCount; ++i)
     {
-        albumsView->setColumnHidden(i, true);
+        albums->setColumnHidden(i, true);
     }
 
-    albumsView->setRootIndex(dirModel->index(albumLocation));
-
-    ui.albums->addTab(albumsView, "Albums");
+    albums->setRootIndex(dirModel->index(albumLocation));
 }
 
 void MainWindow::setupPlaylistWidget()
