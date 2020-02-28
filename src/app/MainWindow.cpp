@@ -492,33 +492,33 @@ PlayMode MainWindow::getCurrentPlayMode()
     return static_cast<PlayMode>(settings_.value(playModeConfigKey, defaultPlayMode).toInt());
 }
 
+const Playlist *MainWindow::getPlaylistByTabIndex(int tabIndex)
+{
+    const auto *widget = ui.playlist->widget(tabIndex);
+    if(not widget)
+    {
+        return nullptr;
+    }
+    const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
+    return &playlistWidget->getPlaylist();
+}
+
 std::optional<std::uint32_t> MainWindow::getPlaylistIdByTabIndex(int tabIndex)
 {
-    auto *widget = ui.playlist->widget(tabIndex);
-    if(not widget)
+    const auto *playlist = getPlaylistByTabIndex(tabIndex);
+    if(not playlist)
     {
         return std::nullopt;
     }
-
-    const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
-    const auto &playlist = playlistWidget->getPlaylist();
-    return playlist.getPlaylistId();
+    return playlist->getPlaylistId();
 }
 
 std::optional<int> MainWindow::getTabIndexByPlaylistName(const QString &name)
 {
     for(int tabIndex = 0; tabIndex < ui.playlist->count(); ++tabIndex)
     {
-        auto *widget = ui.playlist->widget(tabIndex);
-        if(not widget)
-        {
-            return std::nullopt;
-        }
-
-        const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
-        const auto &playlist = playlistWidget->getPlaylist();
-
-        if(name == playlist.getName())
+        const auto *playlist = getPlaylistByTabIndex(tabIndex);
+        if(playlist && name == playlist->getName())
         {
             return tabIndex;
         }
