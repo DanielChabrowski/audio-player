@@ -1,11 +1,14 @@
 #pragma once
 
-constexpr auto geometryConfigKey{ "window/geometry" };
+namespace config
+{
+constexpr auto geometryKey{ "window/geometry" };
 
-constexpr auto volumeConfigKey{ "player/volume" };
+constexpr auto volumeKey{ "player/volume" };
 
-constexpr auto playModeConfigKey{ "player/play_mode" };
+constexpr auto playModeKey{ "player/play_mode" };
 
-constexpr auto playlistLastPlaylist{ "playlist/last_playlist" };
+constexpr auto lastPlaylistKey{ "playlist/last_playlist" };
 
 constexpr auto debugAudioMetadataKey{ "debug/audiometadata" };
+} // namespace config

@@ -33,7 +33,7 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
 
     {
         // Restoring window size and position
-        restoreGeometry(settings_.value(geometryConfigKey).toByteArray());
+        restoreGeometry(settings_.value(config::geometryKey).toByteArray());
     }
 
     setupMediaPlayer();
@@ -64,7 +64,7 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settings_.setValue(geometryConfigKey, saveGeometry());
+    settings_.setValue(config::geometryKey, saveGeometry());
     QWidget::closeEvent(event);
 }
 
@@ -112,7 +112,7 @@ void MainWindow::setupMenu()
     randomPlay->setChecked(getCurrentPlayMode() == PlayMode::Random);
 
     connect(randomPlay, &QAction::toggled, [this](bool checked) {
-        this->settings_.setValue(playModeConfigKey, static_cast<int>(checked));
+        this->settings_.setValue(config::playModeKey, static_cast<int>(checked));
     });
 
     bar->addMenu(tr("Library"));
@@ -127,7 +127,7 @@ void MainWindow::setupVolumeControl()
     constexpr auto minVolume{ 0 };
     constexpr auto maxVolume{ 100 };
 
-    const auto volume = qBound(minVolume, settings_.value(volumeConfigKey, defaultVolume).toInt(), maxVolume);
+    const auto volume = qBound(minVolume, settings_.value(config::volumeKey, defaultVolume).toInt(), maxVolume);
     ui.volumeSlider->setMaximum(maxVolume);
     ui.volumeSlider->setValue(volume);
 
@@ -135,7 +135,7 @@ void MainWindow::setupVolumeControl()
 
     connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
         this->mediaPlayer_->setVolume(volume);
-        this->settings_.setValue(volumeConfigKey, volume);
+        this->settings_.setValue(config::volumeKey, volume);
         qDebug() << "Volume set to " << volume;
     });
 }
@@ -261,7 +261,7 @@ void MainWindow::setupMediaPlayer()
 
     constexpr bool defaultDebugAudioMetadata{ false };
     const bool debugAudioMetadata =
-        settings_.value(debugAudioMetadataKey, defaultDebugAudioMetadata).toBool();
+        settings_.value(config::debugAudioMetadataKey, defaultDebugAudioMetadata).toBool();
 
     if(debugAudioMetadata)
     {
@@ -465,16 +465,16 @@ void MainWindow::enablePlaylistChangeTracking()
             qCritical() << "No playlist with given playlistId:" << *playlistId;
             return;
         }
-        settings_.setValue(playlistLastPlaylist, playlist->getName());
+        settings_.setValue(config::lastPlaylistKey, playlist->getName());
         qDebug() << "Updated last playlist:" << playlist->getName();
     });
 }
 
 void MainWindow::restoreLastPlaylist()
 {
-    if(settings_.contains(playlistLastPlaylist))
+    if(settings_.contains(config::lastPlaylistKey))
     {
-        const auto lastPlaylistName = settings_.value(playlistLastPlaylist).toString();
+        const auto lastPlaylistName = settings_.value(config::lastPlaylistKey).toString();
         const auto playlistTabIndex = getTabIndexByPlaylistName(lastPlaylistName);
         if(playlistTabIndex)
         {
@@ -487,7 +487,7 @@ void MainWindow::restoreLastPlaylist()
 PlayMode MainWindow::getCurrentPlayMode()
 {
     constexpr auto defaultPlayMode = static_cast<int>(PlayMode::Normal);
-    return static_cast<PlayMode>(settings_.value(playModeConfigKey, defaultPlayMode).toInt());
+    return static_cast<PlayMode>(settings_.value(config::playModeKey, defaultPlayMode).toInt());
 }
 
 const Playlist *MainWindow::getPlaylistByTabIndex(int tabIndex)
