@@ -316,6 +316,13 @@ void MainWindow::enableSeekbar(std::chrono::seconds trackDuration)
 
 void MainWindow::togglePlaylistRenameControl(int tabIndex)
 {
+    const auto playlistId{ getPlaylistIdByTabIndex(tabIndex) };
+    if(not playlistId)
+    {
+        qWarning() << "No playlist exist on tabIndex:" << tabIndex;
+        return;
+    }
+
     auto *tabbar = ui.playlist->tabBar();
     const auto tabRect = tabbar->tabRect(tabIndex);
 
@@ -327,28 +334,30 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
     renameLineEdit->selectAll();
     renameLineEdit->setFocus();
 
-    connect(renameLineEdit, &EscapableLineEdit::editingFinished, [this, tabbar, tabIndex, renameLineEdit]() {
-        const QString oldValue = tabbar->tabText(tabIndex);
-        const QString newValue = renameLineEdit->text();
-        if(oldValue != newValue)
-        {
-            const auto playlistId = getPlaylistIdByTabIndex(tabIndex);
-            if(not playlistId)
-            {
+    connect(renameLineEdit, &EscapableLineEdit::editingFinished,
+            [this, tabbar, playlistId = playlistId.value(), renameLineEdit]() {
+                const auto tabIndex = getTabIndexByPlaylistId(playlistId);
+                if(not tabIndex)
+                {
+                    qWarning() << "Playlist not found";
+                    renameLineEdit->deleteLater();
+                    return;
+                }
+
+                const QString oldValue = tabbar->tabText(*tabIndex);
+                const QString newValue = renameLineEdit->text();
+                if(oldValue != newValue)
+                {
+                    const auto renameResult = playlistManager_.rename(playlistId, newValue);
+                    if(renameResult)
+                    {
+                        tabbar->setTabText(*tabIndex, newValue);
+                        qDebug() << "Playlist" << oldValue << "renamed to" << newValue;
+                    }
+                }
+
                 renameLineEdit->deleteLater();
-                return;
-            }
-
-            const auto renameResult = playlistManager_.rename(*playlistId, newValue);
-            if(renameResult)
-            {
-                tabbar->setTabText(tabIndex, newValue);
-                qDebug() << "Playlist" << oldValue << "renamed to" << newValue;
-            }
-        }
-
-        renameLineEdit->deleteLater();
-    });
+            });
 
     connect(renameLineEdit, &EscapableLineEdit::cancelEdit,
             [renameLineEdit]() { renameLineEdit->deleteLater(); });
@@ -517,6 +526,20 @@ std::optional<int> MainWindow::getTabIndexByPlaylistName(const QString &name)
     {
         const auto *playlist = getPlaylistByTabIndex(tabIndex);
         if(playlist && name == playlist->getName())
+        {
+            return tabIndex;
+        }
+    }
+
+    return std::nullopt;
+}
+
+std::optional<int> MainWindow::getTabIndexByPlaylistId(std::uint32_t playlistId)
+{
+    for(int tabIndex = 0; tabIndex < ui.playlist->count(); ++tabIndex)
+    {
+        const auto *playlist = getPlaylistByTabIndex(tabIndex);
+        if(playlist && playlistId == playlist->getPlaylistId())
         {
             return tabIndex;
         }

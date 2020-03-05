@@ -56,6 +56,7 @@ private:
     const Playlist *getPlaylistByTabIndex(int tabIndex);
     std::optional<std::uint32_t> getPlaylistIdByTabIndex(int tabIndex);
     std::optional<int> getTabIndexByPlaylistName(const QString &name);
+    std::optional<int> getTabIndexByPlaylistId(std::uint32_t playlistId);
 
 private:
     Ui::MainWindowForm ui;
