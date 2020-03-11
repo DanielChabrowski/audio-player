@@ -197,7 +197,7 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
     if(mimeData->hasUrls())
     {
         const auto &filepaths = mimeData->urls();
-        playlist_.insertTracks(beginRow, filepaths.toVector().toStdVector());
+        playlist_.insertTracks(beginRow, std::vector<QUrl>{ filepaths.cbegin(), filepaths.cend() });
     }
     else if(mimeData->hasFormat(playlistIndexesMimeType))
     {
