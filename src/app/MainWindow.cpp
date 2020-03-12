@@ -353,6 +353,13 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
                     {
                         tabbar->setTabText(*tabIndex, newValue);
                         qDebug() << "Playlist" << oldValue << "renamed to" << newValue;
+
+                        const auto lastPlaylistName = settings_.value(config::lastPlaylistKey).toString();
+                        if(lastPlaylistName == oldValue)
+                        {
+                            settings_.setValue(config::lastPlaylistKey, newValue);
+                            qDebug() << "Updated last playlist:" << newValue;
+                        }
                     }
                 }
 
