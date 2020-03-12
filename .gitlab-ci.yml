@@ -1,10 +1,9 @@
 check:
-  image: python:latest
+  image: alpine:latest
   stage: .pre
   before_script:
-    - apt update && apt install -y --no-install-recommends git clang-format-8
-    - ln -s /usr/bin/clang-format-8 /usr/bin/clang-format
-    - pip install pre-commit
+    - apk update && apk add --no-cache git python3 clang
+    - pip3 install pre-commit
   script:
     - pre-commit run --all-files
 
