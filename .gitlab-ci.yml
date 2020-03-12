@@ -1,20 +1,30 @@
-image: debian:testing-slim
-
 check:
+  image: python:latest
   stage: .pre
   before_script:
-    - apt update && apt install -y --no-install-recommends git python3 python3-pip python3-setuptools python3-wheel clang-format-8
+    - apt update && apt install -y --no-install-recommends git clang-format-8
     - ln -s /usr/bin/clang-format-8 /usr/bin/clang-format
-    - pip3 install pre-commit
+    - pip install pre-commit
   script:
     - pre-commit run --all-files
 
 .build: &build
+  image: debian:testing-slim
   stage: build
   before_script:
     - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} git ca-certificates cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
   script:
     - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER} -DSANITIZE_ADDRESS=On
+    - ninja -v
+    - ASAN_OPTIONS=verbose=1 ctest -V
+
+.arch-build: &arch-build
+  image: archlinux/base
+  stage: build
+  before_script:
+    - pacman -Suy git cmake ninja gcc python3 taglib qt5-base qt5-multimedia
+  script:
+    - cmake . --warn-uninitialized -GNinja -DSANITIZE_ADDRESS=On
     - ninja -v
     - ASAN_OPTIONS=verbose=1 ctest -V
 
@@ -29,3 +39,6 @@ build:clang:
   variables:
     COMPILER_PACKAGE: "clang"
     COMPILER: "clang++"
+
+archbuild:
+  <<: *arch-build
