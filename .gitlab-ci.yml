@@ -21,7 +21,7 @@ check:
   image: archlinux/base
   stage: build
   before_script:
-    - pacman -Suy --noconfirm git cmake ninja gcc python3 taglib qt5-base qt5-multimedia
+    - pacman -Suy --noconfirm git pkg-config cmake ninja gcc python3 taglib qt5-base qt5-multimedia
   script:
     - cmake . --warn-uninitialized -GNinja -DSANITIZE_ADDRESS=On
     - ninja -v
