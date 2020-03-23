@@ -2,3 +2,4 @@
 Name=Foobar
 Exec=foobar
 Categories=Audio;Player;
+Icon=/usr/share/icons/foobar/icon.svg

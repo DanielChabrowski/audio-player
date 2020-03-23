@@ -12,7 +12,8 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QApplication::setStyle(new ApplicationStyle);
+    app.setStyle(new ApplicationStyle);
+    app.setWindowIcon(QIcon{ ":/icons/icon.svg" });
 
     constexpr auto applicationName = "foobar";
     QSettings appSettings{ applicationName, applicationName };

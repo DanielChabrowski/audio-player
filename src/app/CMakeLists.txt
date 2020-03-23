@@ -40,6 +40,11 @@ install(
 )
 
 install(
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/icon.svg
+    DESTINATION /usr/share/icons/foobar
+)
+
+install(
     FILES ${CMAKE_SOURCE_DIR}/share/foobar.desktop
     DESTINATION /usr/share/applications
 )
