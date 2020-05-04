@@ -27,7 +27,7 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
 , settings_{ settings }
 , playlistManager_{ playlistManager }
 {
-    ui.setupUi(this);
+    setupWindow();
 
     setTheme(":/themes/gray-orange.css");
 
@@ -66,6 +66,75 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     settings_.setValue(config::geometryKey, saveGeometry());
     QWidget::closeEvent(event);
+}
+
+void MainWindow::setupWindow()
+{
+    setWindowTitle("Foobar");
+    setGeometry(0, 0, 1100, 470);
+
+    QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sizePolicy.setHorizontalStretch(0);
+    sizePolicy.setVerticalStretch(0);
+    setSizePolicy(sizePolicy);
+
+    auto *layout = new QGridLayout(this);
+    layout->setMargin(9);
+    layout->setSpacing(6);
+
+    auto *topHLayout = new QHBoxLayout();
+
+    ui.menuLayout = new QHBoxLayout();
+    topHLayout->addLayout(ui.menuLayout);
+
+    ui.buttonsLayout = new QHBoxLayout();
+    topHLayout->addLayout(ui.buttonsLayout);
+
+    ui.volumeSlider = new QSlider(this);
+    {
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(ui.volumeSlider->sizePolicy().hasHeightForWidth());
+        ui.volumeSlider->setSizePolicy(sizePolicy);
+        ui.volumeSlider->setOrientation(Qt::Horizontal);
+
+        topHLayout->addWidget(ui.volumeSlider);
+    }
+
+    ui.seekbar = new QSlider(this);
+    {
+        ui.seekbar->setOrientation(Qt::Horizontal);
+
+        topHLayout->addWidget(ui.seekbar);
+    }
+
+    layout->addLayout(topHLayout, 0, 5, 1, 1);
+
+    auto *bottomHLayout = new QHBoxLayout();
+    bottomHLayout->setSpacing(2);
+
+    ui.albums = new QTreeView(this);
+    {
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(ui.albums->sizePolicy().hasHeightForWidth());
+        ui.albums->setSizePolicy(sizePolicy);
+        ui.albums->setMinimumSize(QSize(225, 0));
+
+        bottomHLayout->addWidget(ui.albums);
+    }
+
+    ui.playlist = new QTabWidget(this);
+    {
+        ui.playlist->setMovable(true);
+        ui.playlist->setCurrentIndex(-1);
+
+        bottomHLayout->addWidget(ui.playlist);
+    }
+
+    layout->addLayout(bottomHLayout, 1, 5, 1, 1);
 }
 
 void MainWindow::setupMenu()

@@ -1,9 +1,13 @@
 #pragma once
 
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QTabWidget>
+#include <QTreeView>
+#include <QWidget>
+
 #include <Playlist.hpp>
 #include <memory>
-
-#include "ui_MainWindow.h"
 
 class Playlist;
 class PlaylistManager;
@@ -24,6 +28,7 @@ protected:
     void closeEvent(QCloseEvent *) override;
 
 private:
+    void setupWindow();
     void setupMenu();
     void setupVolumeControl();
     void setupSeekbar();
@@ -59,7 +64,16 @@ private:
     std::optional<int> getTabIndexByPlaylistId(std::uint32_t playlistId);
 
 private:
-    Ui::MainWindowForm ui;
+    struct
+    {
+        QHBoxLayout *menuLayout;
+        QHBoxLayout *buttonsLayout;
+        QSlider *volumeSlider;
+        QSlider *seekbar;
+        QTreeView *albums;
+        QTabWidget *playlist;
+    } ui;
+
     QSettings &settings_;
     PlaylistManager &playlistManager_;
     std::unique_ptr<QMediaPlayer> mediaPlayer_;

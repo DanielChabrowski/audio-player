@@ -8,7 +8,6 @@ set(SOURCES
 
     MainWindow.cpp
     MainWindow.hpp
-    MainWindow.ui
 
     PlaylistWidget.cpp
     PlaylistWidget.hpp
