@@ -2,7 +2,6 @@
 
 #include <QHBoxLayout>
 #include <QSlider>
-#include <QTabWidget>
 #include <QTreeView>
 #include <QWidget>
 
@@ -11,6 +10,7 @@
 
 class Playlist;
 class PlaylistManager;
+class MultilineTabWidget;
 
 class QMediaPlayer;
 class QSettings;
@@ -71,7 +71,7 @@ private:
         QSlider *volumeSlider;
         QSlider *seekbar;
         QTreeView *albums;
-        QTabWidget *playlist;
+        MultilineTabWidget *playlist;
     } ui;
 
     QSettings &settings_;

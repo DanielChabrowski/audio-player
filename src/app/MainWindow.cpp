@@ -18,6 +18,7 @@
 
 #include "ConfigurationKeys.hpp"
 #include "EscapableLineEdit.hpp"
+#include "MultilineTabBar.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistManager.hpp"
 #include "PlaylistModel.hpp"
@@ -127,9 +128,9 @@ void MainWindow::setupWindow()
         bottomHLayout->addWidget(ui.albums);
     }
 
-    ui.playlist = new QTabWidget(this);
+    ui.playlist = new MultilineTabWidget(this);
     {
-        ui.playlist->setMovable(true);
+        // ui.playlist->setMovable(true);
         ui.playlist->setCurrentIndex(-1);
 
         bottomHLayout->addWidget(ui.playlist);
@@ -299,7 +300,7 @@ void MainWindow::setupPlaylistWidget()
     auto *tabbar = ui.playlist->tabBar();
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(tabbar, &QTabBar::tabBarDoubleClicked,
+    connect(tabbar, &MultilineTabBar::tabDoubleClicked,
             [this](int tabIndex) { togglePlaylistRenameControl(tabIndex); });
 
     connect(tabbar, &QTabBar::customContextMenuRequested, [this, tabbar](const QPoint &point) {
@@ -552,7 +553,7 @@ void MainWindow::enablePlaylistChangeTracking()
     // Otherwise last playlist name is updated with loaded playlists
 
     auto *tabbar = ui.playlist->tabBar();
-    connect(tabbar, &QTabBar::currentChanged, [this](int newIndex) {
+    connect(tabbar, &MultilineTabBar::currentChanged, [this](int newIndex) {
         const auto playlistId = getPlaylistIdByTabIndex(newIndex);
         if(not playlistId)
         {
