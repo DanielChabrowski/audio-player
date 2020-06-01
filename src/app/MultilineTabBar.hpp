@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QApplication>
 #include <QDebug>
 #include <QMouseEvent>
 #include <QPainter>
@@ -24,16 +25,21 @@ public:
     MultilineTabBar(QWidget *parent)
     : QWidget{ parent }
     {
-        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     }
 
     virtual ~MultilineTabBar() = default;
 
     QSize sizeHint() const override
     {
-        const QSize sh = tabSizeHint(0);
-        qDebug() << "sizeHint: " << sh;
-        return { sh.width() * tabs_.count(), sh.height() };
+        QRect r;
+        for(int i = 0; i < tabs_.count(); ++i)
+        {
+            qDebug() << "Before" << r << "United" << r.united(tabs_[i].rect);
+            r = r.united(tabs_[i].rect);
+        }
+        qDebug() << "sizeHint: " << r.size();
+        return r.size();
     }
 
     QSize minimumSizeHint() const override
@@ -41,6 +47,11 @@ public:
         const QSize sh = tabSizeHint(0);
         qDebug() << "minimumSizeHint: " << sh;
         return { sh.width(), sh.height() };
+    }
+
+    void resizeEvent(QResizeEvent *) override
+    {
+        recalculateTabsLayout();
     }
 
     void paintEvent(QPaintEvent *) override
@@ -98,7 +109,7 @@ public:
     QSize tabSizeHint(int index) const
     {
         // constexpr qreal fontSize = 10.f;
-        constexpr int spacing = 8;
+        constexpr int spacing = 12;
 
         // QFont boldFont(font());
         // boldFont.setPointSizeF(fontSize);
@@ -108,7 +119,7 @@ public:
         const int textWidth = fm.horizontalAdvance(tabText(index));
 
         auto hSpace = style()->proxy()->pixelMetric(QStyle::PM_TabBarTabHSpace);
-        return { textWidth + hSpace, 4 + spacing + fm.height() };
+        return { textWidth + hSpace, spacing + fm.height() };
     }
 
     int tabAt(QPoint p)
@@ -157,9 +168,7 @@ private:
             auto &tab = tabs_[i];
             auto sizeHint = tabSizeHint(i);
 
-            qDebug() << "Widget width:" << maximumWidth();
-
-            if(hOffset + sizeHint.width() > maximumWidth())
+            if(hOffset + sizeHint.width() > width())
             {
                 hOffset = 0;
                 vOffset += sizeHint.height();
