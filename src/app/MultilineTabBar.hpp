@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QApplication>
-#include <QDebug>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStackedWidget>
@@ -32,26 +31,37 @@ public:
 
     QSize sizeHint() const override
     {
+        const_cast<MultilineTabBar *>(this)->recalculateTabsLayout();
+
         QRect r;
         for(int i = 0; i < tabs_.count(); ++i)
         {
-            qDebug() << "Before" << r << "United" << r.united(tabs_[i].rect);
             r = r.united(tabs_[i].rect);
         }
-        qDebug() << "sizeHint: " << r.size();
         return r.size();
     }
 
     QSize minimumSizeHint() const override
     {
         const QSize sh = tabSizeHint(0);
-        qDebug() << "minimumSizeHint: " << sh;
         return { sh.width(), sh.height() };
+    }
+
+    void showEvent(QShowEvent *) override
+    {
+        recalculateTabsLayout();
+
+        if(isVisible())
+        {
+            update();
+            updateGeometry();
+        }
     }
 
     void resizeEvent(QResizeEvent *) override
     {
         recalculateTabsLayout();
+        updateGeometry();
     }
 
     void paintEvent(QPaintEvent *) override
@@ -60,8 +70,6 @@ public:
 
         for(int i = 0; i < tabs_.count(); ++i)
         {
-            // constexpr int textFlags = Qt::AlignCenter | Qt::TextWordWrap;
-
             const auto tabRect = this->tabRect(i);
             QStyleOptionTab tab;
             tab.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
@@ -75,8 +83,6 @@ public:
             tab.text = tabText(i);
             tab.rect = tabRect;
             p.drawControl(QStyle::CE_TabBarTab, tab);
-            // p.drawText(tabRect, textFlags, tabText(i));
-            qDebug() << "Drawing" << tabText(i) << "at" << tabRect;
         }
     }
 
@@ -154,7 +160,26 @@ public:
     {
         tabs_.append(std::move(tab));
         recalculateTabsLayout();
+        updateGeometry();
         return tabs_.size() - 1;
+    }
+
+    void removeTab(int tabIndex)
+    {
+        tabs_.removeAt(tabIndex);
+        recalculateTabsLayout();
+        updateGeometry();
+    }
+
+    int currentIndex()
+    {
+        return currentIndex_;
+    }
+
+    void setCurrentIndex(int tabIndex)
+    {
+        currentIndex_ = tabIndex;
+        emit currentChanged(tabIndex);
     }
 
 private:
@@ -162,6 +187,9 @@ private:
     {
         int hOffset = 0;
         int vOffset = 0;
+
+        int rowUsedSpace = 0;
+        int rowFirstTab = 0;
 
         for(int i = 0; i < tabs_.count(); ++i)
         {
@@ -172,6 +200,34 @@ private:
             {
                 hOffset = 0;
                 vOffset += sizeHint.height();
+
+                const int leftoverSpace = width() - rowUsedSpace - 1;
+                const int tabsInRow = i - rowFirstTab;
+                const int spacePerTab = leftoverSpace / tabsInRow;
+                const int spaceRemainder = leftoverSpace % tabsInRow;
+
+                // Give leftover space back to tabs in a row
+                for(int rowTabIndex = rowFirstTab; rowTabIndex < i; ++rowTabIndex)
+                {
+                    auto &rowTab = tabs_[rowTabIndex];
+                    const int moveBy = spacePerTab * (rowTabIndex - rowFirstTab);
+                    rowTab.rect.moveLeft(rowTab.rect.x() + moveBy);
+                    rowTab.rect.setWidth(rowTab.rect.width() + spacePerTab);
+                }
+
+                // Give leftover space to the last tab
+                if(spaceRemainder > 0)
+                {
+                    auto &lastRowTab = tabs_[i - 1];
+                    lastRowTab.rect.setWidth(lastRowTab.rect.width() + spaceRemainder);
+                }
+
+                rowFirstTab = i;
+                rowUsedSpace = sizeHint.width();
+            }
+            else
+            {
+                rowUsedSpace += sizeHint.width();
             }
 
             tab.rect = QRect{ QPoint{ hOffset, vOffset }, sizeHint };
@@ -214,6 +270,7 @@ public:
         setLayout(mainLayout2);
 
         connect(tabBar_, &MultilineTabBar::currentChanged, this, &MultilineTabWidget::swichWidget);
+        connect(stack_, &QStackedWidget::widgetRemoved, this, &MultilineTabWidget::privRemoveTab);
     }
 
     virtual ~MultilineTabWidget() = default;
@@ -231,22 +288,28 @@ public:
     int addTab(QWidget *widget, QString tabText)
     {
         stack_->addWidget(widget);
-        tabBar_->addTab(Tab{ std::move(tabText), QRect{} });
-        qDebug() << "Width after add" << width();
-        return 0;
+        const int tabIndex = tabBar_->addTab(Tab{ std::move(tabText), QRect{} });
+        update();
+        return tabIndex;
     }
 
-    void removeTab(int)
+    void removeTab(int tabIndex)
     {
+        auto *widget = stack_->widget(tabIndex);
+        if(widget)
+        {
+            stack_->removeWidget(widget);
+        }
     }
 
     int currentIndex()
     {
-        return 0;
+        return tabBar_->currentIndex();
     }
 
-    void setCurrentIndex(int)
+    void setCurrentIndex(int tabIndex)
     {
+        tabBar_->setCurrentIndex(tabIndex);
     }
 
     MultilineTabBar *tabBar() const
@@ -259,6 +322,14 @@ private:
     {
         stack_->setCurrentIndex(index);
     }
+
+    void privRemoveTab(int tabIndex)
+    {
+        tabBar_->removeTab(tabIndex);
+        update();
+        updateGeometry();
+    }
+
 
 private:
     MultilineTabBar *tabBar_;
