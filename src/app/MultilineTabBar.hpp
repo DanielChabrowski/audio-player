@@ -43,8 +43,13 @@ public:
 
     QSize minimumSizeHint() const override
     {
-        const QSize sh = tabSizeHint(0);
-        return { sh.width(), sh.height() };
+        if(tabs_.count() > 0)
+        {
+            const QSize sh = tabSizeHint(0);
+            return { sh.width(), sh.height() };
+        }
+
+        return { 0, 0 };
     }
 
     void showEvent(QShowEvent *) override
@@ -166,9 +171,13 @@ public:
 
     void removeTab(int tabIndex)
     {
-        tabs_.removeAt(tabIndex);
-        recalculateTabsLayout();
-        updateGeometry();
+        if(validIndex(tabIndex))
+        {
+            tabs_.removeAt(tabIndex);
+            setCurrentIndex(std::clamp(currentIndex_ - 1, 0, tabs_.size()));
+            recalculateTabsLayout();
+            updateGeometry();
+        }
     }
 
     int currentIndex()
@@ -183,6 +192,11 @@ public:
     }
 
 private:
+    inline bool validIndex(int index) const
+    {
+        return index >= 0 && index < tabs_.count();
+    }
+
     void recalculateTabsLayout()
     {
         int hOffset = 0;
