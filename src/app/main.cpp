@@ -15,7 +15,12 @@ int main(int argc, char *argv[])
     app.setStyle(new ApplicationStyle);
     app.setWindowIcon(QIcon{ ":/icons/icon.svg" });
 
+#ifdef NDEBUG
     constexpr auto applicationName = "foobar";
+#else
+    constexpr auto applicationName = "foobar-debug";
+#endif
+
     QSettings appSettings{ applicationName, applicationName };
     qInfo() << "Configuration file:" << appSettings.fileName();
 
