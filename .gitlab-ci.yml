@@ -2,7 +2,7 @@ check:
   image: alpine:latest
   stage: .pre
   before_script:
-    - apk update && apk add --no-cache git python3 clang
+    - apk update && apk add --no-cache git python3 py3-pip clang
     - pip3 install pre-commit
   script:
     - pre-commit run --all-files
