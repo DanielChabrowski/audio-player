@@ -38,7 +38,9 @@ public:
         {
             r = r.united(tabs_[i].rect);
         }
-        return r.size();
+
+        QSize sz = QApplication::globalStrut();
+        return r.size().expandedTo(sz);
     }
 
     QSize minimumSizeHint() const override
@@ -210,13 +212,13 @@ private:
             auto &tab = tabs_[i];
             auto sizeHint = tabSizeHint(i);
 
-            if(hOffset + sizeHint.width() > width())
+            const int tabsInRow = i - rowFirstTab;
+            if(tabsInRow != 0 and hOffset + sizeHint.width() > width())
             {
                 hOffset = 0;
                 vOffset += sizeHint.height();
 
                 const int leftoverSpace = width() - rowUsedSpace - 1;
-                const int tabsInRow = i - rowFirstTab;
                 const int spacePerTab = leftoverSpace / tabsInRow;
                 const int spaceRemainder = leftoverSpace % tabsInRow;
 
