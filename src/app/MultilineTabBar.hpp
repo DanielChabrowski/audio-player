@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QApplication>
+#include <QDebug>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStackedWidget>
@@ -287,9 +288,35 @@ public:
 
         connect(tabBar_, &MultilineTabBar::currentChanged, this, &MultilineTabWidget::swichWidget);
         connect(stack_, &QStackedWidget::widgetRemoved, this, &MultilineTabWidget::privRemoveTab);
+
+        QStyleOptionTabWidgetFrame option;
+        panelRect = style()->subElementRect(QStyle::SE_TabWidgetTabPane, &option, this);
     }
 
     virtual ~MultilineTabWidget() = default;
+
+    void resizeEvent(QResizeEvent *) override
+    {
+        QStyleOptionTabWidgetFrame option;
+        panelRect = style()->subElementRect(QStyle::SE_TabWidgetTabPane, &option, this);
+    }
+
+    void paintEvent(QPaintEvent *) override
+    {
+        QStylePainter p{ this };
+
+        QStyleOptionTabWidgetFrame opt;
+        opt.rect = stack_->geometry();
+        opt.shape = QTabBar::Shape::RoundedNorth;
+        opt.tabBarRect = tabBar_->geometry();
+        opt.tabBarSize = tabBar_->size();
+        opt.lineWidth = 40;
+        opt.midLineWidth = 50;
+        opt.selectedTabRect = tabBar_->tabRect(tabBar_->currentIndex());
+
+        qDebug() << stack_->geometry();
+        p.drawPrimitive(QStyle::PE_FrameTabWidget, opt);
+    }
 
     QWidget *widget(int index)
     {
@@ -350,4 +377,6 @@ private:
 private:
     MultilineTabBar *tabBar_;
     QStackedWidget *stack_;
+
+    QRect panelRect;
 };
