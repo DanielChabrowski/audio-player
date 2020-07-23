@@ -38,12 +38,12 @@ public:
 
     QRect tabRect(int index)
     {
-        return tabs_.at(index).rect;
+        return validIndex(index) ? tabs_.at(index).rect : QRect();
     }
 
-    const QString &tabText(int index) const
+    QString tabText(int index) const
     {
-        return tabs_.at(index).text;
+        return validIndex(index) ? tabs_.at(index).text : QString();
     }
 
     void setTabText(int, QString)
