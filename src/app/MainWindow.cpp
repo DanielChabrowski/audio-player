@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 
+#include <QActionGroup>
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
@@ -175,13 +176,25 @@ void MainWindow::setupMenu()
     bar->addMenu(tr("View"));
 
     auto *playbackMenu = bar->addMenu("Playback");
-    auto *randomPlay = playbackMenu->addAction("Random play");
+
+    auto *actionGroup = new QActionGroup(playbackMenu);
+
+    auto *randomPlay = actionGroup->addAction("Random play");
+    auto *repeatTrack = actionGroup->addAction("Repeat track");
 
     randomPlay->setCheckable(true);
     randomPlay->setChecked(getCurrentPlayMode() == PlayMode::Random);
 
+    repeatTrack->setCheckable(true);
+    repeatTrack->setChecked(getCurrentPlayMode() == PlayMode::RepeatTrack);
+
     connect(randomPlay, &QAction::toggled, [this](bool checked) {
         this->settings_.setValue(config::playModeKey, static_cast<int>(checked));
+    });
+
+    connect(repeatTrack, &QAction::toggled, [this](bool checked) {
+        this->settings_.setValue(config::playModeKey,
+                                 static_cast<int>(checked ? PlayMode::RepeatTrack : PlayMode::Normal));
     });
 
     bar->addMenu(tr("Library"));

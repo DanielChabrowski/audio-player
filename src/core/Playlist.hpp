@@ -19,7 +19,8 @@ struct PlaylistTrack
 enum class PlayMode
 {
     Normal,
-    Random
+    Random,
+    RepeatTrack,
 };
 
 class Playlist
