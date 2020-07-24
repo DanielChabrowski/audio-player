@@ -65,7 +65,7 @@ std::optional<std::size_t> Playlist::getNextTrackIndex(PlayMode playMode) const
 
     switch(playMode)
     {
-    case PlayMode::Normal:
+    case PlayMode::RepeatPlaylist:
     {
         std::size_t nextTrackIndex = currentTrackIndex_ + 1;
         return nextTrackIndex < tracks_.size() ? nextTrackIndex : 0;
@@ -73,6 +73,10 @@ std::optional<std::size_t> Playlist::getNextTrackIndex(PlayMode playMode) const
     case PlayMode::Random:
     {
         return getRandomIndex();
+    }
+    case PlayMode::RepeatTrack:
+    {
+        return currentTrackIndex_;
     }
     }
 
@@ -88,13 +92,17 @@ std::optional<std::size_t> Playlist::getPreviousTrackIndex(PlayMode playMode) co
 
     switch(playMode)
     {
-    case PlayMode::Normal:
+    case PlayMode::RepeatPlaylist:
     {
         return currentTrackIndex_ > 0 ? currentTrackIndex_ - 1 : tracks_.size() - 1;
     }
     case PlayMode::Random:
     {
         return getRandomIndex();
+    }
+    case PlayMode::RepeatTrack:
+    {
+        return currentTrackIndex_;
     }
     }
 

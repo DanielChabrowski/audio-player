@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 
+#include <QActionGroup>
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
@@ -175,14 +176,29 @@ void MainWindow::setupMenu()
     bar->addMenu(tr("View"));
 
     auto *playbackMenu = bar->addMenu("Playback");
-    auto *randomPlay = playbackMenu->addAction("Random play");
 
-    randomPlay->setCheckable(true);
-    randomPlay->setChecked(getCurrentPlayMode() == PlayMode::Random);
+    auto *actionGroup = new QActionGroup(this);
 
-    connect(randomPlay, &QAction::toggled, [this](bool checked) {
-        this->settings_.setValue(config::playModeKey, static_cast<int>(checked));
-    });
+    const auto currentPlayMode = getCurrentPlayMode();
+
+    auto addPlaybackAction = [this, actionGroup, currentPlayMode](QString label, PlayMode mode) {
+        auto *action = actionGroup->addAction(label);
+        action->setCheckable(true);
+        action->setChecked(currentPlayMode == mode);
+
+        connect(action, &QAction::toggled, [this, mode](bool checked) {
+            if(checked)
+            {
+                this->settings_.setValue(config::playModeKey, static_cast<int>(mode));
+            }
+        });
+    };
+
+    addPlaybackAction("Repeat playlist", PlayMode::RepeatPlaylist);
+    addPlaybackAction("Repeat track", PlayMode::RepeatTrack);
+    addPlaybackAction("Random play", PlayMode::Random);
+
+    playbackMenu->addActions(actionGroup->actions());
 
     bar->addMenu(tr("Library"));
     bar->addMenu(tr("Help"));
@@ -571,7 +587,7 @@ void MainWindow::restoreLastPlaylist()
 
 PlayMode MainWindow::getCurrentPlayMode()
 {
-    constexpr auto defaultPlayMode = static_cast<int>(PlayMode::Normal);
+    constexpr auto defaultPlayMode = static_cast<int>(PlayMode::RepeatPlaylist);
     return static_cast<PlayMode>(settings_.value(config::playModeKey, defaultPlayMode).toInt());
 }
 
