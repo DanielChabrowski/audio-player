@@ -177,25 +177,28 @@ void MainWindow::setupMenu()
 
     auto *playbackMenu = bar->addMenu("Playback");
 
-    auto *actionGroup = new QActionGroup(playbackMenu);
+    auto *actionGroup = new QActionGroup(this);
 
-    auto *randomPlay = actionGroup->addAction("Random play");
-    auto *repeatTrack = actionGroup->addAction("Repeat track");
+    const auto currentPlayMode = getCurrentPlayMode();
 
-    randomPlay->setCheckable(true);
-    randomPlay->setChecked(getCurrentPlayMode() == PlayMode::Random);
+    auto addPlaybackAction = [this, actionGroup, currentPlayMode](QString label, PlayMode mode) {
+        auto *action = actionGroup->addAction(label);
+        action->setCheckable(true);
+        action->setChecked(currentPlayMode == mode);
 
-    repeatTrack->setCheckable(true);
-    repeatTrack->setChecked(getCurrentPlayMode() == PlayMode::RepeatTrack);
+        connect(action, &QAction::toggled, [this, mode](bool checked) {
+            if(checked)
+            {
+                this->settings_.setValue(config::playModeKey, static_cast<int>(mode));
+            }
+        });
+    };
 
-    connect(randomPlay, &QAction::toggled, [this](bool checked) {
-        this->settings_.setValue(config::playModeKey, static_cast<int>(checked));
-    });
+    addPlaybackAction("Repeat playlist", PlayMode::RepeatPlaylist);
+    addPlaybackAction("Repeat track", PlayMode::RepeatTrack);
+    addPlaybackAction("Random play", PlayMode::Random);
 
-    connect(repeatTrack, &QAction::toggled, [this](bool checked) {
-        this->settings_.setValue(config::playModeKey,
-                                 static_cast<int>(checked ? PlayMode::RepeatTrack : PlayMode::Normal));
-    });
+    playbackMenu->addActions(actionGroup->actions());
 
     bar->addMenu(tr("Library"));
     bar->addMenu(tr("Help"));
@@ -584,7 +587,7 @@ void MainWindow::restoreLastPlaylist()
 
 PlayMode MainWindow::getCurrentPlayMode()
 {
-    constexpr auto defaultPlayMode = static_cast<int>(PlayMode::Normal);
+    constexpr auto defaultPlayMode = static_cast<int>(PlayMode::RepeatPlaylist);
     return static_cast<PlayMode>(settings_.value(config::playModeKey, defaultPlayMode).toInt());
 }
 

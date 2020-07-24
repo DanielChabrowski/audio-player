@@ -18,9 +18,9 @@ struct PlaylistTrack
 
 enum class PlayMode
 {
-    Normal,
-    Random,
+    RepeatPlaylist,
     RepeatTrack,
+    Random,
 };
 
 class Playlist
@@ -40,8 +40,8 @@ public:
     const std::vector<PlaylistTrack> &getTracks() const;
     const PlaylistTrack *getTrack(std::size_t index) const;
 
-    std::optional<std::size_t> getNextTrackIndex(PlayMode playMode = PlayMode::Normal) const;
-    std::optional<std::size_t> getPreviousTrackIndex(PlayMode playMode = PlayMode::Normal) const;
+    std::optional<std::size_t> getNextTrackIndex(PlayMode playMode = PlayMode::RepeatPlaylist) const;
+    std::optional<std::size_t> getPreviousTrackIndex(PlayMode playMode = PlayMode::RepeatPlaylist) const;
 
     int getCurrentTrackIndex() const;
     void setCurrentTrackIndex(std::size_t newIndex);
