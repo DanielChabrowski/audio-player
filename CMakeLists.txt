@@ -15,3 +15,9 @@ find_package(Qt5 COMPONENTS Core CONFIG REQUIRED)
 include(build)
 
 add_subdirectory(src)
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Daniel Chabrowski")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5, libqt5multimedia5, libtag1v5-vanilla")
+
+include(CPack)
