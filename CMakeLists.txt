@@ -18,6 +18,15 @@ add_subdirectory(src)
 
 set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Daniel Chabrowski")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5, libqt5multimedia5, libtag1v5-vanilla")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS
+    "
+    libqt5widgets5,
+    libqt5multimedia5,
+    libtag1v5-vanilla,
+    gstreamer1.0-plugins-base,
+    gstreamer1.0-plugins-good,
+    gstreamer1.0-plugins-ugly
+    "
+)
 
 include(CPack)
