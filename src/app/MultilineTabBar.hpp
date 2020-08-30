@@ -35,33 +35,22 @@ public:
 
     QSize tabSizeHint(int index) const;
 
-    int tabAt(QPoint p);
+    int tabAt(QPoint p) const;
 
-    QRect tabRect(int index)
-    {
-        return validIndex(index) ? tabs_.at(index).rect : QRect();
-    }
+    QRect tabRect(int index) const;
 
-    QString tabText(int index) const
-    {
-        return validIndex(index) ? tabs_.at(index).text : QString();
-    }
-
+    QString tabText(int index) const;
     void setTabText(int, QString);
 
     int addTab(Tab tab);
     void removeTab(int tabIndex);
 
-    int currentIndex()
+    int currentIndex() const
     {
         return currentIndex_;
     }
 
-    void setCurrentIndex(int tabIndex)
-    {
-        currentIndex_ = tabIndex;
-        emit currentChanged(tabIndex);
-    }
+    void setCurrentIndex(int tabIndex);
 
 private:
     inline bool validIndex(int index) const

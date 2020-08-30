@@ -78,21 +78,14 @@ void MultilineTabBar::paintEvent(QPaintEvent *)
 void MultilineTabBar::mousePressEvent(QMouseEvent *event)
 {
     event->accept();
-    for(int i = 0; i < tabs_.count(); ++i)
+
+    const auto tabIndex = tabAt(event->pos());
+    if(tabIndex != -1 && tabIndex != currentIndex_)
     {
-        const auto rect = tabRect(i);
-        if(rect.contains(event->pos()))
-        {
-            if(i != currentIndex_)
-            {
-                currentIndex_ = i;
-                update();
+        currentIndex_ = tabIndex;
+        update();
 
-                QTimer::singleShot(0, this, [this]() { emit currentChanged(currentIndex_); });
-            }
-
-            break;
-        }
+        QTimer::singleShot(0, this, [this]() { emit currentChanged(currentIndex_); });
     }
 }
 
@@ -118,7 +111,7 @@ QSize MultilineTabBar::tabSizeHint(int index) const
     return { textWidth + hSpace, spacing + fm.height() };
 }
 
-int MultilineTabBar::tabAt(QPoint p)
+int MultilineTabBar::tabAt(QPoint p) const
 {
     for(int i = 0; i < tabs_.count(); ++i)
     {
@@ -130,6 +123,17 @@ int MultilineTabBar::tabAt(QPoint p)
 
     return -1;
 }
+
+QRect MultilineTabBar::tabRect(int index) const
+{
+    return validIndex(index) ? tabs_.at(index).rect : QRect();
+}
+
+QString MultilineTabBar::tabText(int index) const
+{
+    return validIndex(index) ? tabs_.at(index).text : QString();
+}
+
 
 void MultilineTabBar::setTabText(int index, QString text)
 {
@@ -159,6 +163,12 @@ void MultilineTabBar::removeTab(int tabIndex)
         recalculateTabsLayout();
         updateGeometry();
     }
+}
+
+void MultilineTabBar::setCurrentIndex(int tabIndex)
+{
+    currentIndex_ = tabIndex;
+    emit currentChanged(tabIndex);
 }
 
 void MultilineTabBar::recalculateTabsLayout()
