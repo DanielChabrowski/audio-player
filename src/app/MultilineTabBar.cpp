@@ -96,6 +96,17 @@ void MultilineTabBar::mousePressEvent(QMouseEvent *event)
     }
 }
 
+void MultilineTabBar::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    event->accept();
+
+    const auto tabIndex = tabAt(event->pos());
+    if(tabIndex != -1)
+    {
+        emit tabDoubleClicked(tabIndex);
+    }
+}
+
 QSize MultilineTabBar::tabSizeHint(int index) const
 {
     constexpr int spacing = 12;

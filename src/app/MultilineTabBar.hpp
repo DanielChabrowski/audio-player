@@ -26,6 +26,7 @@ public:
     void resizeEvent(QResizeEvent *) override;
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
+    void mouseDoubleClickEvent(QMouseEvent *) override;
 
     int count() const
     {
