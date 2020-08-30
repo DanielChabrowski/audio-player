@@ -16,7 +16,7 @@ class MultilineTabBar : public QWidget
     Q_OBJECT
 
 public:
-    MultilineTabBar(QWidget *parent);
+    explicit MultilineTabBar(QWidget *parent);
 
     virtual ~MultilineTabBar() = default;
 
@@ -46,10 +46,7 @@ public:
         return validIndex(index) ? tabs_.at(index).text : QString();
     }
 
-    void setTabText(int, QString)
-    {
-        recalculateTabsLayout();
-    }
+    void setTabText(int, QString);
 
     int addTab(Tab tab);
     void removeTab(int tabIndex);
@@ -87,7 +84,7 @@ class MultilineTabWidget : public QWidget
     Q_OBJECT
 
 public:
-    MultilineTabWidget(QWidget *parent = nullptr);
+    explicit MultilineTabWidget(QWidget *parent = nullptr);
 
     virtual ~MultilineTabWidget() = default;
 

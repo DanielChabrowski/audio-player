@@ -120,6 +120,17 @@ int MultilineTabBar::tabAt(QPoint p)
     return -1;
 }
 
+void MultilineTabBar::setTabText(int index, QString text)
+{
+    if(validIndex(index))
+    {
+        tabs_[index].text = text;
+        recalculateTabsLayout();
+        update();
+        updateGeometry();
+    }
+}
+
 int MultilineTabBar::addTab(Tab tab)
 {
     tabs_.append(std::move(tab));
