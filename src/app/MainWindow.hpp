@@ -11,6 +11,7 @@
 class Playlist;
 class PlaylistManager;
 class MultilineTabWidget;
+class EscapableLineEdit;
 
 class QMediaPlayer;
 class QSettings;
@@ -26,6 +27,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *) override;
+    bool eventFilter(QObject *, QEvent *) override;
 
 private:
     void setupWindow();
@@ -72,6 +74,8 @@ private:
         QSlider *seekbar;
         QTreeView *albums;
         MultilineTabWidget *playlist;
+
+        EscapableLineEdit *playlistRenameWidget = nullptr;
     } ui;
 
     QSettings &settings_;

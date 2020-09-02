@@ -60,6 +60,8 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
 
     restoreLastPlaylist();
     enablePlaylistChangeTracking();
+
+    QCoreApplication::instance()->installEventFilter(this);
 }
 
 MainWindow::~MainWindow() = default;
@@ -68,6 +70,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     settings_.setValue(config::geometryKey, saveGeometry());
     QWidget::closeEvent(event);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if(event->type() == QEvent::MouseButtonPress)
+    {
+        if(obj && obj->isWidgetType() && ui.playlistRenameWidget && ui.playlistRenameWidget != obj)
+        {
+            ui.playlistRenameWidget->deleteLater();
+            ui.playlistRenameWidget = nullptr;
+        }
+    }
+
+    return false;
 }
 
 void MainWindow::setupWindow()
@@ -420,6 +436,8 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
     renameLineEdit->selectAll();
     renameLineEdit->setFocus();
 
+    ui.playlistRenameWidget = renameLineEdit;
+
     connect(renameLineEdit, &EscapableLineEdit::editingFinished,
             [this, tabbar, playlistId = playlistId.value(), renameLineEdit]() {
                 const auto tabIndex = getTabIndexByPlaylistId(playlistId);
@@ -427,6 +445,7 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
                 {
                     qWarning() << "Playlist not found";
                     renameLineEdit->deleteLater();
+                    ui.playlistRenameWidget = nullptr;
                     return;
                 }
 
@@ -450,10 +469,13 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
                 }
 
                 renameLineEdit->deleteLater();
+                ui.playlistRenameWidget = nullptr;
             });
 
-    connect(renameLineEdit, &EscapableLineEdit::cancelEdit,
-            [renameLineEdit]() { renameLineEdit->deleteLater(); });
+    connect(renameLineEdit, &EscapableLineEdit::cancelEdit, [&ui = this->ui]() {
+        ui.playlistRenameWidget->deleteLater();
+        ui.playlistRenameWidget = nullptr;
+    });
 }
 
 void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)
