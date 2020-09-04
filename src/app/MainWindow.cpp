@@ -169,7 +169,7 @@ void MainWindow::setupMenu()
         constexpr int exitCode{ 0 };
         QApplication::exit(exitCode);
     });
-    exitAction->setShortcut(QKeySequence(QKeySequence::Quit));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
     fileMenu->addSeparator();
 
@@ -380,7 +380,7 @@ void MainWindow::setupGlobalShortcuts()
     const auto togglePlayPause = new QShortcut(Qt::Key_Space, this);
     connect(togglePlayPause, &QShortcut::activated, this, &MainWindow::togglePlayPause);
 
-    const auto removePlaylist = new QShortcut(QKeySequence::Close, this);
+    const auto removePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
     connect(removePlaylist, &QShortcut::activated, this, &MainWindow::removeCurrentPlaylist);
 }
 
