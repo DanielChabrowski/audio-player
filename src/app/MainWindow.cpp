@@ -157,7 +157,7 @@ void MainWindow::setupWindow()
 
 void MainWindow::setupMenu()
 {
-    QMenuBar *bar = new QMenuBar(this);
+    auto *bar = new QMenuBar(this);
     auto *fileMenu = bar->addMenu(tr("File"));
 
     fileMenu->addAction("Open");

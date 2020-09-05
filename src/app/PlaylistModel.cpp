@@ -9,11 +9,12 @@
 #include <QSize>
 #include <QUrl>
 
+#include <array>
 #include <memory>
 
 namespace
 {
-const char *const labels[] = {
+const std::array<const char *, 5> labels = {
     "", "Artist/album", "Track", "Title", "Duration",
 };
 

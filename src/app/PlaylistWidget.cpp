@@ -9,7 +9,7 @@
 PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> itemSelectedCallback, QWidget *parent)
 : QTreeView{ parent }
 , playlist_{ playlist }
-, itemSelectedCallback_{ itemSelectedCallback }
+, itemSelectedCallback_{ std::move(itemSelectedCallback) }
 {
     setAllColumnsShowFocus(true);
     setAlternatingRowColors(true);
