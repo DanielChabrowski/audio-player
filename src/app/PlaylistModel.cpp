@@ -28,7 +28,7 @@ std::vector<std::size_t> decodePlaylistIndexesMimeData(const QMimeData &mimeData
     std::vector<std::size_t> indexes;
     while(!stream.atEnd())
     {
-        int row;
+        int row{ -1 };
         stream >> row;
         indexes.emplace_back(static_cast<std::size_t>(row));
     }

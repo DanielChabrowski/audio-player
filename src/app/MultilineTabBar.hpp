@@ -42,7 +42,7 @@ public:
     QString tabText(int index) const;
     void setTabText(int, QString);
 
-    int addTab(Tab tab);
+    int addTab(const Tab &tab);
     void removeTab(int tabIndex);
 
     int currentIndex() const

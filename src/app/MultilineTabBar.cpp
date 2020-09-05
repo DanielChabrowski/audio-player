@@ -139,16 +139,16 @@ void MultilineTabBar::setTabText(int index, QString text)
 {
     if(validIndex(index))
     {
-        tabs_[index].text = text;
+        tabs_[index].text = std::move(text);
         recalculateTabsLayout();
         update();
         updateGeometry();
     }
 }
 
-int MultilineTabBar::addTab(Tab tab)
+int MultilineTabBar::addTab(const Tab &tab)
 {
-    tabs_.append(std::move(tab));
+    tabs_.append(tab);
     recalculateTabsLayout();
     updateGeometry();
     return tabs_.size() - 1;

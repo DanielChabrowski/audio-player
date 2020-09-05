@@ -198,7 +198,7 @@ void MainWindow::setupMenu()
 
     const auto currentPlayMode = getCurrentPlayMode();
 
-    auto addPlaybackAction = [this, actionGroup, currentPlayMode](QString label, PlayMode mode) {
+    auto addPlaybackAction = [this, actionGroup, currentPlayMode](const QString &label, PlayMode mode) {
         auto *action = actionGroup->addAction(label);
         action->setCheckable(true);
         action->setChecked(currentPlayMode == mode);
@@ -266,7 +266,7 @@ void MainWindow::setupSeekbar()
 
 void MainWindow::setupPlaybackControlButtons()
 {
-    const auto createButtonFunc = [this](QString filename, std::function<void()> onReleaseEvent) {
+    const auto createButtonFunc = [this](const QString &filename, std::function<void()> onReleaseEvent) {
         auto *button = new QPushButton(this);
         button->setFlat(true);
         button->setMaximumSize(24, 24);

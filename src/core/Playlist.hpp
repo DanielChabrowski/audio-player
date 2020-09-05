@@ -27,7 +27,7 @@ class Playlist
 {
 public:
     Playlist(QString name, QString playlistPath, IPlaylistIO &);
-    Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IPlaylistIO &);
+    Playlist(QString name, QString playlistPath, const std::vector<QUrl> &tracks, IPlaylistIO &);
 
     const QString &getName() const;
     const QString &getPath() const;
@@ -46,8 +46,8 @@ public:
     int getCurrentTrackIndex() const;
     void setCurrentTrackIndex(std::size_t newIndex);
 
-    void insertTracks(std::size_t position, std::vector<QUrl>);
-    void insertTracks(std::vector<QUrl>);
+    void insertTracks(std::size_t position, const std::vector<QUrl> &);
+    void insertTracks(const std::vector<QUrl> &);
 
     void moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex);
 
@@ -63,7 +63,7 @@ private:
     IPlaylistIO &playlistIO_;
     std::vector<PlaylistTrack> tracks_;
     int currentTrackIndex_{ -1 };
-    std::uint32_t playlistId;
+    std::uint32_t playlistId{ 0 };
 
     friend class PlaylistManager;
 };

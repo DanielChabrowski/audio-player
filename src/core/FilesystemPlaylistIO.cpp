@@ -43,7 +43,7 @@ Playlist FilesystemPlaylistIO::load(const QString &filename)
     return {
         playlistFileInfo.completeBaseName(),
         playlistFileInfo.absoluteFilePath(),
-        std::move(audioFilePaths),
+        audioFilePaths,
         *this,
     };
 }
