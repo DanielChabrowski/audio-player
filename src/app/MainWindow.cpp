@@ -18,6 +18,7 @@
 
 #include "ConfigurationKeys.hpp"
 #include "EscapableLineEdit.hpp"
+#include "MultilineTabBar.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistManager.hpp"
 #include "PlaylistModel.hpp"
@@ -59,6 +60,8 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
 
     restoreLastPlaylist();
     enablePlaylistChangeTracking();
+
+    QCoreApplication::instance()->installEventFilter(this);
 }
 
 MainWindow::~MainWindow() = default;
@@ -67,6 +70,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     settings_.setValue(config::geometryKey, saveGeometry());
     QWidget::closeEvent(event);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if(event->type() == QEvent::MouseButtonPress)
+    {
+        if(obj && obj->isWidgetType() && ui.playlistRenameWidget && ui.playlistRenameWidget != obj)
+        {
+            ui.playlistRenameWidget->deleteLater();
+            ui.playlistRenameWidget = nullptr;
+        }
+    }
+
+    return false;
 }
 
 void MainWindow::setupWindow()
@@ -127,9 +144,9 @@ void MainWindow::setupWindow()
         bottomHLayout->addWidget(ui.albums);
     }
 
-    ui.playlist = new QTabWidget(this);
+    ui.playlist = new MultilineTabWidget(this);
     {
-        ui.playlist->setMovable(true);
+        // ui.playlist->setMovable(true);
         ui.playlist->setCurrentIndex(-1);
 
         bottomHLayout->addWidget(ui.playlist);
@@ -140,7 +157,7 @@ void MainWindow::setupWindow()
 
 void MainWindow::setupMenu()
 {
-    QMenuBar *bar = new QMenuBar(this);
+    auto *bar = new QMenuBar(this);
     auto *fileMenu = bar->addMenu(tr("File"));
 
     fileMenu->addAction("Open");
@@ -152,7 +169,7 @@ void MainWindow::setupMenu()
         constexpr int exitCode{ 0 };
         QApplication::exit(exitCode);
     });
-    exitAction->setShortcut(QKeySequence(QKeySequence::Quit));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
     fileMenu->addSeparator();
 
@@ -181,7 +198,7 @@ void MainWindow::setupMenu()
 
     const auto currentPlayMode = getCurrentPlayMode();
 
-    auto addPlaybackAction = [this, actionGroup, currentPlayMode](QString label, PlayMode mode) {
+    auto addPlaybackAction = [this, actionGroup, currentPlayMode](const QString &label, PlayMode mode) {
         auto *action = actionGroup->addAction(label);
         action->setCheckable(true);
         action->setChecked(currentPlayMode == mode);
@@ -249,7 +266,7 @@ void MainWindow::setupSeekbar()
 
 void MainWindow::setupPlaybackControlButtons()
 {
-    const auto createButtonFunc = [this](QString filename, std::function<void()> onReleaseEvent) {
+    const auto createButtonFunc = [this](const QString &filename, std::function<void()> onReleaseEvent) {
         auto *button = new QPushButton(this);
         button->setFlat(true);
         button->setMaximumSize(24, 24);
@@ -299,7 +316,7 @@ void MainWindow::setupPlaylistWidget()
     auto *tabbar = ui.playlist->tabBar();
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(tabbar, &QTabBar::tabBarDoubleClicked,
+    connect(tabbar, &MultilineTabBar::tabDoubleClicked,
             [this](int tabIndex) { togglePlaylistRenameControl(tabIndex); });
 
     connect(tabbar, &QTabBar::customContextMenuRequested, [this, tabbar](const QPoint &point) {
@@ -363,7 +380,7 @@ void MainWindow::setupGlobalShortcuts()
     const auto togglePlayPause = new QShortcut(Qt::Key_Space, this);
     connect(togglePlayPause, &QShortcut::activated, this, &MainWindow::togglePlayPause);
 
-    const auto removePlaylist = new QShortcut(QKeySequence::Close, this);
+    const auto removePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
     connect(removePlaylist, &QShortcut::activated, this, &MainWindow::removeCurrentPlaylist);
 }
 
@@ -419,6 +436,8 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
     renameLineEdit->selectAll();
     renameLineEdit->setFocus();
 
+    ui.playlistRenameWidget = renameLineEdit;
+
     connect(renameLineEdit, &EscapableLineEdit::editingFinished,
             [this, tabbar, playlistId = playlistId.value(), renameLineEdit]() {
                 const auto tabIndex = getTabIndexByPlaylistId(playlistId);
@@ -426,6 +445,7 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
                 {
                     qWarning() << "Playlist not found";
                     renameLineEdit->deleteLater();
+                    ui.playlistRenameWidget = nullptr;
                     return;
                 }
 
@@ -449,10 +469,13 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
                 }
 
                 renameLineEdit->deleteLater();
+                ui.playlistRenameWidget = nullptr;
             });
 
-    connect(renameLineEdit, &EscapableLineEdit::cancelEdit,
-            [renameLineEdit]() { renameLineEdit->deleteLater(); });
+    connect(renameLineEdit, &EscapableLineEdit::cancelEdit, [&ui = this->ui]() {
+        ui.playlistRenameWidget->deleteLater();
+        ui.playlistRenameWidget = nullptr;
+    });
 }
 
 void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)
@@ -552,7 +575,7 @@ void MainWindow::enablePlaylistChangeTracking()
     // Otherwise last playlist name is updated with loaded playlists
 
     auto *tabbar = ui.playlist->tabBar();
-    connect(tabbar, &QTabBar::currentChanged, [this](int newIndex) {
+    connect(tabbar, &MultilineTabBar::currentChanged, [this](int newIndex) {
         const auto playlistId = getPlaylistIdByTabIndex(newIndex);
         if(not playlistId)
         {

@@ -9,11 +9,12 @@
 #include <QSize>
 #include <QUrl>
 
+#include <array>
 #include <memory>
 
 namespace
 {
-const char *const labels[] = {
+const std::array<const char *, 5> labels = {
     "", "Artist/album", "Track", "Title", "Duration",
 };
 
@@ -27,7 +28,7 @@ std::vector<std::size_t> decodePlaylistIndexesMimeData(const QMimeData &mimeData
     std::vector<std::size_t> indexes;
     while(!stream.atEnd())
     {
-        int row;
+        int row{ -1 };
         stream >> row;
         indexes.emplace_back(static_cast<std::size_t>(row));
     }

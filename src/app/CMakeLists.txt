@@ -21,6 +21,9 @@ set(SOURCES
     EscapableLineEdit.cpp
     EscapableLineEdit.hpp
 
+    MultilineTabBar.cpp
+    MultilineTabBar.hpp
+
     resources/Resources.qrc
 )
 

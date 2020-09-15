@@ -10,7 +10,7 @@ Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 {
 }
 
-Playlist::Playlist(QString name, QString playlistPath, std::vector<QUrl> tracks, IPlaylistIO &playlistIO)
+Playlist::Playlist(QString name, QString playlistPath, const std::vector<QUrl> &tracks, IPlaylistIO &playlistIO)
 : Playlist(std::move(name), std::move(playlistPath), playlistIO)
 {
     insertTracks(tracks);
@@ -119,7 +119,7 @@ void Playlist::setCurrentTrackIndex(std::size_t newIndex)
     currentTrackIndex_ = newIndex;
 }
 
-void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
+void Playlist::insertTracks(std::size_t position, const std::vector<QUrl> &tracksToAdd)
 {
     auto loadedTracks = playlistIO_.loadTracks(tracksToAdd);
     const auto tracksAdded = loadedTracks.size();
@@ -134,9 +134,9 @@ void Playlist::insertTracks(std::size_t position, std::vector<QUrl> tracksToAdd)
     save();
 }
 
-void Playlist::insertTracks(std::vector<QUrl> tracksToAdd)
+void Playlist::insertTracks(const std::vector<QUrl> &tracksToAdd)
 {
-    insertTracks(tracks_.size(), std::move(tracksToAdd));
+    insertTracks(tracks_.size(), tracksToAdd);
 }
 
 void Playlist::moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex)
