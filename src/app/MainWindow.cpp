@@ -161,17 +161,6 @@ void MainWindow::setupMenu()
     auto *fileMenu = bar->addMenu(tr("File"));
 
     fileMenu->addAction("Open");
-    fileMenu->addSeparator();
-    fileMenu->addAction("Preferences");
-    fileMenu->addSeparator();
-
-    auto *exitAction = fileMenu->addAction("Exit", []() {
-        constexpr int exitCode{ 0 };
-        QApplication::exit(exitCode);
-    });
-    exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-
-    fileMenu->addSeparator();
 
     auto *newPlaylistAction = fileMenu->addAction("Add new playlist", [this]() {
         const auto index = playlistManager_.create("New playlist");
@@ -188,6 +177,14 @@ void MainWindow::setupMenu()
         }
     });
     newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
+
+    fileMenu->addAction("Preferences");
+
+    auto *exitAction = fileMenu->addAction("Exit", []() {
+        constexpr int exitCode{ 0 };
+        QApplication::exit(exitCode);
+    });
+    exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
     bar->addMenu(tr("Edit"));
     bar->addMenu(tr("View"));
