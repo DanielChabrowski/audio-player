@@ -14,8 +14,9 @@
 
 namespace
 {
-const std::array<const char *, 5> labels = {
-    "", "Artist/album", "Track", "Title", "Duration",
+// Keep in check with PlaylistColumn enum
+const std::array<const char *, 6> labels = {
+    "", "", "Artist/album", "Track", "Title", "Duration",
 };
 
 constexpr auto playlistIndexesMimeType{ "application/playlist.indexes" };
@@ -53,7 +54,7 @@ int PlaylistModel::rowCount(const QModelIndex &) const
 
 int PlaylistModel::columnCount(const QModelIndex &) const
 {
-    return 5;
+    return labels.size();
 }
 
 QVariant PlaylistModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -220,14 +221,14 @@ QVariant PlaylistModel::roleAlignment(int column) const
     switch(column)
     {
     case PlaylistColumn::NOW_PLAYING:
-        return Qt::AlignmentFlag::AlignCenter + Qt::AlignmentFlag::AlignVCenter;
+        return Qt::AlignCenter;
 
     case PlaylistColumn::TRACK:
     case PlaylistColumn::DURATION:
-        return Qt::AlignmentFlag::AlignRight + Qt::AlignVCenter;
+        return Qt::AlignRight + Qt::AlignVCenter;
     }
 
-    return Qt::AlignmentFlag::AlignLeft + Qt::AlignVCenter;
+    return Qt::AlignLeft + Qt::AlignVCenter;
 }
 
 QVariant PlaylistModel::dataTitle(const QString &filepath, const std::optional<AudioMetaData> &metaData) const

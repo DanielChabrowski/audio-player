@@ -346,13 +346,18 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
     playlistWidget->setModel(playlistModel.release());
     playlistWidget->setHeader(playlistHeader.release());
 
-    playlistWidget->setColumnWidth(0, 10);
-    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::NOW_PLAYING, QHeaderView::ResizeMode::Fixed);
-    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::ARTIST_ALBUM, QHeaderView::ResizeMode::Stretch);
-    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::TRACK, QHeaderView::ResizeMode::ResizeToContents);
-    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::TITLE, QHeaderView::ResizeMode::Stretch);
-    playlistWidget->header()->setSectionResizeMode(PlaylistColumn::DURATION,
-                                                   QHeaderView::ResizeMode::ResizeToContents);
+    // Hide first column containing tree-view decorations
+    playlistWidget->setColumnHidden(PlaylistColumn::DISABLED, true);
+
+    // Set fixed width for NOW_PLAYING marker column
+    playlistWidget->setColumnWidth(PlaylistColumn::NOW_PLAYING, 10);
+
+    auto *header = playlistWidget->header();
+    header->setSectionResizeMode(PlaylistColumn::NOW_PLAYING, QHeaderView::ResizeMode::Fixed);
+    header->setSectionResizeMode(PlaylistColumn::ARTIST_ALBUM, QHeaderView::ResizeMode::Stretch);
+    header->setSectionResizeMode(PlaylistColumn::TRACK, QHeaderView::ResizeMode::ResizeToContents);
+    header->setSectionResizeMode(PlaylistColumn::TITLE, QHeaderView::ResizeMode::Stretch);
+    header->setSectionResizeMode(PlaylistColumn::DURATION, QHeaderView::ResizeMode::ResizeToContents);
 
     return ui.playlist->addTab(playlistWidget.release(), playlist.getName());
 }
