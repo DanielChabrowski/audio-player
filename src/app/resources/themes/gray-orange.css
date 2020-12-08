@@ -22,3 +22,7 @@ QMenuBar::item:selected {
 QMenuBar::item:pressed {
 	border-bottom: 1px solid #f47e46;
 }
+
+QTreeView {
+	border: none;
+}
