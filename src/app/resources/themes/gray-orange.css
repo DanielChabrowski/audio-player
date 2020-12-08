@@ -10,3 +10,15 @@ QTreeView::branch:selected {
     background-color: #aba39a;
     border: none;
 }
+
+QMenuBar, QMenuBar::item {
+	background-color: transparent;
+}
+
+QMenuBar::item:selected {
+	border-bottom: 1px solid #aba39a;
+}
+
+QMenuBar::item:pressed {
+	border-bottom: 1px solid #f47e46;
+}
