@@ -41,5 +41,5 @@ build:clang:
     COMPILER_PACKAGE: "clang"
     COMPILER: "clang++"
 
-archbuild:
+build:arch:
   <<: *arch-build
