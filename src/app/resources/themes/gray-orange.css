@@ -12,17 +12,17 @@ QTreeView::branch:selected {
 }
 
 QMenuBar, QMenuBar::item {
-	background-color: transparent;
+    background-color: transparent;
 }
 
 QMenuBar::item:selected {
-	border-bottom: 1px solid #aba39a;
+    border-bottom: 1px solid #aba39a;
 }
 
 QMenuBar::item:pressed {
-	border-bottom: 1px solid #f47e46;
+    border-bottom: 1px solid #f47e46;
 }
 
 QTreeView {
-	border: none;
+    border: none;
 }
