@@ -504,8 +504,6 @@ void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t ind
     disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
     connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
             [this, playlistId](const QMediaPlayer::MediaStatus status) {
-                qDebug() << "QMediaPlayer status changed to " << status;
-
                 using Status = QMediaPlayer::MediaStatus;
                 if(Status::EndOfMedia == status or Status::InvalidMedia == status)
                 {
