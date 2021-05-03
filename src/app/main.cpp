@@ -1,5 +1,6 @@
 #include "ApplicationStyle.hpp"
 #include "AudioMetaDataProvider.hpp"
+#include "AudioMetaDataProviderCache.hpp"
 #include "FilesystemPlaylistIO.hpp"
 #include "MainWindow.hpp"
 #include "PlaylistManager.hpp"
@@ -22,13 +23,18 @@ int main(int argc, char *argv[])
 #endif
 
     QSettings appSettings{ applicationName, applicationName };
-    qInfo() << "Configuration file:" << appSettings.fileName();
-
-    AudioMetaDataProvider metaDataProvider;
-    FilesystemPlaylistIO playlistIO{ metaDataProvider };
+    qInfo() << "Config file:" << appSettings.fileName();
 
     const auto configLocation =
         QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0);
+    qInfo() << "Config directory:" << configLocation;
+
+    const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation).arg(applicationName).arg("cache.sqlite");
+
+    AudioMetaDataProvider metaDataProvider;
+    AudioMetaDataProviderCache metadataProviderCache(cacheFile, &metaDataProvider);
+    FilesystemPlaylistIO playlistIO{ metadataProviderCache };
+
     const auto playlistsDirectory =
         QString{ "%1/%2/%3" }.arg(configLocation).arg(applicationName).arg("playlists");
     qInfo() << "Playlists directory:" << playlistsDirectory;
