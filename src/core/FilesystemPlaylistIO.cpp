@@ -13,6 +13,19 @@
 #include <stdexcept>
 #include <vector>
 
+QStringList getSupportedAudioFileExtensions()
+{
+    return QStringList() << "flac"
+                         << "ogg"
+                         << "mp3"
+                         << "wav"
+                         << "m4a"
+                         << "m4b"
+                         << "webm"
+                         << "mkv"
+                         << "mp4";
+}
+
 FilesystemPlaylistIO::FilesystemPlaylistIO(IAudioMetaDataProvider &audioMetaDataProvider)
 : audioMetaDataProvider_{ audioMetaDataProvider }
 {
@@ -32,7 +45,6 @@ Playlist FilesystemPlaylistIO::load(const QString &filename)
     QTextStream ss{ &playlistFile };
     while(ss.readLineInto(&line))
     {
-        // TODO: Does isEmpty return false on " " ?
         if(not line.isEmpty())
         {
             audioFilePaths.emplace_back(QUrl::fromUserInput(line));
@@ -72,6 +84,18 @@ bool FilesystemPlaylistIO::rename(const Playlist &playlist, const QString &newNa
     return playlistDir.rename(playlist.getName(), newName);
 }
 
+void FilesystemPlaylistIO::loadTrack(std::vector<PlaylistTrack> &tracks, const QFileInfo &fileInfo)
+{
+    static auto supportedFileExtensions = getSupportedAudioFileExtensions();
+
+    if(supportedFileExtensions.contains(fileInfo.suffix()))
+    {
+        const auto trackPath = fileInfo.absoluteFilePath();
+        const auto metadata = audioMetaDataProvider_.getMetaData(trackPath);
+        tracks.emplace_back(PlaylistTrack{ std::move(trackPath), std::move(metadata) });
+    }
+}
+
 std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QUrl> &urls)
 {
     std::vector<PlaylistTrack> tracks;
@@ -85,7 +109,7 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
             QFileInfo trackFileInfo{ trackPath };
             if(trackFileInfo.isFile())
             {
-                tracks.emplace_back(PlaylistTrack{ trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                loadTrack(tracks, trackFileInfo);
             }
             else if(trackFileInfo.isDir())
             {
@@ -96,9 +120,7 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
                     {
                         if(entry.isFile())
                         {
-                            const auto trackPath = entry.absoluteFilePath();
-                            tracks.emplace_back(PlaylistTrack{
-                                trackPath, audioMetaDataProvider_.getMetaData(trackPath) });
+                            loadTrack(tracks, entry);
                         }
                         else if(entry.isDir())
                         {

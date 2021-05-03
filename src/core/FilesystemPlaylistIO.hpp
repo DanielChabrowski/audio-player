@@ -5,6 +5,7 @@
 class IAudioMetaDataProvider;
 
 class QString;
+class QFileInfo;
 
 class FilesystemPlaylistIO final : public IPlaylistIO
 {
@@ -16,6 +17,9 @@ public:
     bool rename(const Playlist &, const QString &newName) override;
 
     std::vector<PlaylistTrack> loadTracks(const std::vector<QUrl> &) override;
+
+private:
+    void loadTrack(std::vector<PlaylistTrack> &tracks, const QFileInfo &fileInfo);
 
 private:
     IAudioMetaDataProvider &audioMetaDataProvider_;
