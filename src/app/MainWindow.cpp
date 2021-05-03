@@ -280,6 +280,21 @@ void MainWindow::setupPlaybackControlButtons()
     createButtonFunc(":/icons/stop.png", [this]() { mediaPlayer_->stop(); });
 }
 
+QStringList getAudioFilesNameFilter()
+{
+    // Using only most popular extensions to keep the comparison somewhat faster
+    // than using all available audio formats.
+    return QStringList() << "*.flac"
+                         << "*.ogg"
+                         << "*.mp3"
+                         << "*.wav"
+                         << "*.m4a"
+                         << "*.m4b"
+                         << "*.webm"
+                         << "*.mkv"
+                         << "*.mp4";
+}
+
 void MainWindow::setupAlbumsBrowser()
 {
     const auto albumLocation =
@@ -289,12 +304,15 @@ void MainWindow::setupAlbumsBrowser()
 
     const auto dirModel = new QFileSystemModel(this);
     dirModel->setReadOnly(true);
-    dirModel->setRootPath(albumLocation);
+    dirModel->setNameFilterDisables(false); // hidden, not disabled
+    dirModel->setNameFilters(getAudioFilesNameFilter());
+    const auto rootIndex = dirModel->setRootPath(albumLocation);
 
     auto &albums = ui.albums;
     albums->setHeaderHidden(true);
     albums->setDragEnabled(true);
     albums->setModel(dirModel);
+    albums->setUniformRowHeights(true);
 
     // Hide all columns except the first one
     const auto columnCount = dirModel->columnCount();
@@ -303,7 +321,7 @@ void MainWindow::setupAlbumsBrowser()
         albums->setColumnHidden(i, true);
     }
 
-    albums->setRootIndex(dirModel->index(albumLocation));
+    albums->setRootIndex(rootIndex);
 }
 
 void MainWindow::setupPlaylistWidget()
