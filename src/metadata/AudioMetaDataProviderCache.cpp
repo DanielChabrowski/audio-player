@@ -37,7 +37,7 @@ AudioMetaDataProviderCache::AudioMetaDataProviderCache(QString databaseFile, IAu
     impl = std::make_unique<Impl>(provider, std::move(database));
 }
 
-AudioMetaDataProviderCache::~AudioMetaDataProviderCache() = default;
+AudioMetaDataProviderCache::~AudioMetaDataProviderCache() noexcept = default;
 
 std::optional<AudioMetaData> AudioMetaDataProviderCache::getMetaData(const QString &filepath)
 {
