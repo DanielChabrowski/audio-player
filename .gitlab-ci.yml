@@ -19,16 +19,6 @@ check:
     - ninja -v
     - ASAN_OPTIONS=verbose=1 ctest -V
 
-.arch-build: &arch-build
-  image: archlinux/base
-  stage: build
-  before_script:
-    - pacman -Suy --noconfirm git pkg-config cmake ninja gcc python3 taglib qt5-base qt5-multimedia
-  script:
-    - cmake . --warn-uninitialized -GNinja -DSANITIZE_ADDRESS=On
-    - ninja -v
-    - ASAN_OPTIONS=verbose=1 ctest -V
-
 build:gcc:
   <<: *build
   variables:
@@ -40,6 +30,3 @@ build:clang:
   variables:
     COMPILER_PACKAGE: "clang"
     COMPILER: "clang++"
-
-build:arch:
-  <<: *arch-build
