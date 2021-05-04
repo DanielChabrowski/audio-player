@@ -41,36 +41,10 @@ AudioMetaDataProviderCache::~AudioMetaDataProviderCache() noexcept = default;
 
 std::optional<AudioMetaData> AudioMetaDataProviderCache::getMetaData(const QString &filepath)
 {
-    QSqlQuery query;
-    query.prepare(
-        "SELECT title, artist, albumName, albumDiscNumber, albumDiscTotal, albumTrackNumber, "
-        "albumTrackTotal, duration FROM metadata WHERE path = :path LIMIT 1");
-    query.bindValue(":path", filepath);
-
-    if(query.exec())
+    auto cache = getCacheEntry(filepath);
+    if(cache)
     {
-        if(query.next())
-        {
-            QString title = query.value(0).toString();
-            QString artist = query.value(1).toString();
-            QString albumName = query.value(2).toString();
-            int albumDiscNumber = query.value(3).toInt();
-            int albumDiscTotal = query.value(4).toInt();
-            int albumTrackNumber = query.value(5).toInt();
-            int albumTrackTotal = query.value(6).toInt();
-            int duration = query.value(7).toInt();
-
-            return AudioMetaData{
-                title,
-                artist,
-                AudioAlbumMetaData{ albumName, albumDiscNumber, albumDiscTotal, albumTrackNumber, albumTrackTotal },
-                std::chrono::seconds(duration),
-            };
-        }
-    }
-    else
-    {
-        qWarning() << "Cache lookup failed for" << filepath << query.lastError();
+        return cache;
     }
 
     auto metadata = impl->provider->getMetaData(filepath);
@@ -104,6 +78,49 @@ CREATE TABLE IF NOT EXISTS "metadata" (
     {
         qWarning() << "Could not create a metadata table:" << query.lastError().databaseText();
     }
+}
+
+std::optional<AudioMetaData> AudioMetaDataProviderCache::getCacheEntry(const QString &filepath)
+{
+    QSqlQuery query;
+    query.prepare(
+        "SELECT title, artist, albumName, albumDiscNumber, albumDiscTotal, albumTrackNumber, "
+        "albumTrackTotal, duration FROM metadata WHERE path = :path LIMIT 1");
+    query.bindValue(":path", filepath);
+
+    if(query.exec())
+    {
+        if(query.next())
+        {
+            QString title = query.value(0).toString();
+            QString artist = query.value(1).toString();
+            QString albumName = query.value(2).toString();
+            int albumDiscNumber = query.value(3).toInt();
+            int albumDiscTotal = query.value(4).toInt();
+            int albumTrackNumber = query.value(5).toInt();
+            int albumTrackTotal = query.value(6).toInt();
+            int duration = query.value(7).toInt();
+
+            return AudioMetaData{
+                std::move(title),
+                std::move(artist),
+                AudioAlbumMetaData{
+                    std::move(albumName),
+                    albumDiscNumber,
+                    albumDiscTotal,
+                    albumTrackNumber,
+                    albumTrackTotal,
+                },
+                std::chrono::seconds(duration),
+            };
+        }
+    }
+    else
+    {
+        qWarning() << "Cache lookup failed for" << filepath << query.lastError();
+    }
+
+    return std::nullopt;
 }
 
 void AudioMetaDataProviderCache::cacheEntry(const QString &path, const AudioMetaData &metadata)

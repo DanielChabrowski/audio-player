@@ -14,6 +14,7 @@ public:
 
 private:
     void createTable();
+    std::optional<AudioMetaData> getCacheEntry(const QString &filepath);
     void cacheEntry(const QString &path, const AudioMetaData &);
 
 private:
