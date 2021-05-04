@@ -86,7 +86,7 @@ void AudioMetaDataProviderCache::createTable()
 {
     QSqlQuery query;
     query.prepare(R"(
-CREATE TABLE "metadata" (
+CREATE TABLE IF NOT EXISTS "metadata" (
     "path" TEXT NOT NULL UNIQUE,
     "title" TEXT,
     "artist" TEXT,
