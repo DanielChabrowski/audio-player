@@ -104,7 +104,7 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
     {
         if(trackUrl.isLocalFile())
         {
-            const auto trackPath = trackUrl.path();
+            const auto trackPath = trackUrl.toLocalFile();
 
             QFileInfo trackFileInfo{ trackPath };
             if(trackFileInfo.isFile())
