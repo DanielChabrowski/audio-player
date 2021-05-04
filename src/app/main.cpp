@@ -29,14 +29,13 @@ int main(int argc, char *argv[])
         QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0);
     qInfo() << "Config directory:" << configLocation;
 
-    const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation).arg(applicationName).arg("cache.sqlite");
+    const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.sqlite");
 
     AudioMetaDataProvider metaDataProvider;
     AudioMetaDataProviderCache metadataProviderCache(cacheFile, &metaDataProvider);
     FilesystemPlaylistIO playlistIO{ metadataProviderCache };
 
-    const auto playlistsDirectory =
-        QString{ "%1/%2/%3" }.arg(configLocation).arg(applicationName).arg("playlists");
+    const auto playlistsDirectory = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "playlists");
     qInfo() << "Playlists directory:" << playlistsDirectory;
 
     PlaylistManager playlistManager{ playlistIO, playlistsDirectory };
