@@ -23,11 +23,15 @@ class PlaylistModel final : public QAbstractListModel
 public:
     PlaylistModel(Playlist &, QObject * = nullptr);
 
+protected:
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;
 
     QVariant headerData(int section, Qt::Orientation, int = Qt::DisplayRole) const override;
     QVariant data(const QModelIndex &, int = Qt::DisplayRole) const override;
+
+    bool canFetchMore(const QModelIndex &parent) const override;
+    void fetchMore(const QModelIndex &parent) override;
 
     Qt::ItemFlags flags(const QModelIndex &) const override;
     Qt::DropActions supportedDropActions() const override;
@@ -48,4 +52,5 @@ public slots:
 
 private:
     Playlist &playlist_;
+    std::size_t fetched_{ 0 };
 };

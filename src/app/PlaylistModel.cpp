@@ -49,7 +49,7 @@ PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
 
 int PlaylistModel::rowCount(const QModelIndex &) const
 {
-    return static_cast<int>(playlist_.getTrackCount());
+    return static_cast<int>(fetched_);
 }
 
 int PlaylistModel::columnCount(const QModelIndex &) const
@@ -125,13 +125,33 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
 
         return QString("Unsupported column %1").arg(index.column());
     }
-
-    if(Qt::TextAlignmentRole == role)
+    else if(Qt::TextAlignmentRole == role)
     {
         return roleAlignment(col);
     }
 
     return {};
+}
+
+bool PlaylistModel::canFetchMore(const QModelIndex &parent) const
+{
+    if(parent.isValid()) return false;
+
+    return fetched_ < playlist_.getTrackCount();
+}
+
+void PlaylistModel::fetchMore(const QModelIndex &parent)
+{
+    if(parent.isValid()) return;
+
+    qint64 remainder = playlist_.getTrackCount() - fetched_;
+    qint64 fetchCount = std::min<qint64>(50, remainder);
+
+    if(fetchCount <= 0) return;
+
+    beginInsertRows(QModelIndex(), fetched_, fetched_ + fetchCount - 1);
+    fetched_ += fetchCount;
+    endInsertRows();
 }
 
 Qt::ItemFlags PlaylistModel::flags(const QModelIndex &index) const
