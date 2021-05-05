@@ -144,8 +144,8 @@ void PlaylistModel::fetchMore(const QModelIndex &parent)
 {
     if(parent.isValid()) return;
 
-    qint64 remainder = playlist_.getTrackCount() - fetched_;
-    qint64 fetchCount = std::min<qint64>(50, remainder);
+    const qint64 remainder = playlist_.getTrackCount() - fetched_;
+    const qint64 fetchCount = std::min<qint64>(50, remainder);
 
     if(fetchCount <= 0) return;
 
