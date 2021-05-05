@@ -3,6 +3,7 @@
 #include "FileUtilities.hpp"
 #include "IPlaylistIO.hpp"
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 
@@ -129,7 +130,10 @@ void PlaylistManager::loadFromDirectory()
         return;
     }
 
-    for(const auto &entry : playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot))
+    const auto playlists = playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+    qDebug() << "Playlists found: " << playlists.count();
+
+    for(const auto &entry : playlists)
     {
         add(entry.absoluteFilePath());
     }

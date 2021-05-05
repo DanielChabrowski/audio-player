@@ -1,5 +1,8 @@
 #include "Playlist.hpp"
 
+#include <QDebug>
+#include <QElapsedTimer>
+
 #include "IPlaylistIO.hpp"
 #include <random>
 
@@ -13,7 +16,13 @@ Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 Playlist::Playlist(QString name, QString playlistPath, const std::vector<QUrl> &tracks, IPlaylistIO &playlistIO)
 : Playlist(std::move(name), std::move(playlistPath), playlistIO)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     insertTracks(tracks);
+
+    const auto elapsed = timer.elapsed();
+    qDebug() << "Playlist" << name_ << "with" << tracks.size() << "tracks read in" << elapsed << "ms";
 }
 
 const QString &Playlist::getName() const

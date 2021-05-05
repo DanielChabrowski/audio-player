@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileSystemModel>
 #include <QLabel>
 #include <QMediaPlayer>
@@ -52,9 +53,10 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
     setupGlobalShortcuts();
 
     {
-        QTime startTime = QTime::currentTime();
+        QElapsedTimer timer;
+        timer.start();
         loadPlaylists();
-        auto elapsedTime = startTime.msecsTo(QTime::currentTime());
+        const auto elapsedTime = timer.elapsed();
         qDebug() << "Loaded playlists in: " << elapsedTime << "ms";
     }
 

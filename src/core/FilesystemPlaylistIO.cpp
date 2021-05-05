@@ -39,7 +39,7 @@ Playlist FilesystemPlaylistIO::load(const QString &filename)
         throw std::runtime_error("Playlist file not found");
     }
 
-    std::vector<QUrl> audioFilePaths;
+    std::vector<QUrl> trackUrls;
 
     QString line;
     QTextStream ss{ &playlistFile };
@@ -47,7 +47,7 @@ Playlist FilesystemPlaylistIO::load(const QString &filename)
     {
         if(not line.isEmpty())
         {
-            audioFilePaths.emplace_back(QUrl::fromUserInput(line));
+            trackUrls.emplace_back(QUrl::fromUserInput(line));
         }
     }
 
@@ -55,7 +55,7 @@ Playlist FilesystemPlaylistIO::load(const QString &filename)
     return {
         playlistFileInfo.completeBaseName(),
         playlistFileInfo.absoluteFilePath(),
-        audioFilePaths,
+        std::move(trackUrls),
         *this,
     };
 }
