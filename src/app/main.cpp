@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.sqlite");
 
     AudioMetaDataProvider metaDataProvider;
-    AudioMetaDataProviderCache metadataProviderCache(cacheFile, &metaDataProvider);
-    FilesystemPlaylistIO playlistIO{ metadataProviderCache };
+    AudioMetaDataProviderCache metaDataProviderCache(cacheFile, &metaDataProvider);
+    FilesystemPlaylistIO playlistIO{ metaDataProviderCache };
 
     const auto playlistsDirectory = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "playlists");
     qInfo() << "Playlists directory:" << playlistsDirectory;

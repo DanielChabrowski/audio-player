@@ -57,7 +57,7 @@ MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
         timer.start();
         loadPlaylists();
         const auto elapsedTime = timer.elapsed();
-        qDebug() << "Loaded playlists in: " << elapsedTime << "ms";
+        qDebug() << "Loaded playlists widgets in" << elapsedTime << "ms";
     }
 
     restoreLastPlaylist();
@@ -237,7 +237,7 @@ void MainWindow::setupVolumeControl()
     connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
         this->mediaPlayer_->setVolume(volume);
         this->settings_.setValue(config::volumeKey, volume);
-        qDebug() << "Volume set to " << volume;
+        qDebug() << "Volume set to" << volume;
     });
 }
 
@@ -509,7 +509,7 @@ void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t ind
     }
 
     const auto *track = playlist->getTrack(index);
-    qDebug() << "Playing media: " << track->path;
+    qDebug() << "Playing media:" << track->path;
 
     this->mediaPlayer_->setMedia(QUrl::fromUserInput(track->path));
     this->mediaPlayer_->play();

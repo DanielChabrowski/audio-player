@@ -5,6 +5,7 @@
 
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
 
 PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirectory)
@@ -131,10 +132,16 @@ void PlaylistManager::loadFromDirectory()
     }
 
     const auto playlists = playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    qDebug() << "Playlists found: " << playlists.count();
+    qDebug() << "Playlists found:" << playlists.count();
+
+    QElapsedTimer timer;
+    timer.start();
 
     for(const auto &entry : playlists)
     {
         add(entry.absoluteFilePath());
     }
+
+    const auto elapsed = timer.elapsed();
+    qDebug() << "Loaded playlists in" << elapsed << "ms";
 }
