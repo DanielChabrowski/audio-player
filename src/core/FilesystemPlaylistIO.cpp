@@ -1,8 +1,10 @@
 #include "FilesystemPlaylistIO.hpp"
 
 #include "IAudioMetaDataProvider.hpp"
+#include "MetaDataCache.hpp"
 #include "Playlist.hpp"
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -26,8 +28,9 @@ QStringList getSupportedAudioFileExtensions()
                          << "mp4";
 }
 
-FilesystemPlaylistIO::FilesystemPlaylistIO(IAudioMetaDataProvider &audioMetaDataProvider)
-: audioMetaDataProvider_{ audioMetaDataProvider }
+FilesystemPlaylistIO::FilesystemPlaylistIO(MetaDataCache &cache, IAudioMetaDataProvider &audioMetaDataProvider)
+: cache_{ cache }
+, audioMetaDataProvider_{ audioMetaDataProvider }
 {
 }
 
@@ -84,21 +87,25 @@ bool FilesystemPlaylistIO::rename(const Playlist &playlist, const QString &newNa
     return playlistDir.rename(playlist.getName(), newName);
 }
 
-void FilesystemPlaylistIO::loadTrack(std::vector<PlaylistTrack> &tracks, const QFileInfo &fileInfo)
+bool FilesystemPlaylistIO::isSupportedFileType(const QFileInfo &fileInfo)
 {
     static auto supportedFileExtensions = getSupportedAudioFileExtensions();
 
     if(supportedFileExtensions.contains(fileInfo.suffix()))
     {
-        const auto trackPath = fileInfo.absoluteFilePath();
-        const auto metadata = audioMetaDataProvider_.getMetaData(trackPath);
-        tracks.emplace_back(PlaylistTrack{ std::move(trackPath), std::move(metadata) });
+        return true;
     }
+
+    return false;
 }
 
 std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QUrl> &urls)
 {
-    std::vector<PlaylistTrack> tracks;
+    std::vector<QString> tracks;
+    tracks.reserve(urls.size());
+
+    std::vector<QString> localFiles;
+    localFiles.reserve(urls.size());
 
     for(const auto &trackUrl : urls)
     {
@@ -109,7 +116,12 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
             QFileInfo trackFileInfo{ trackPath };
             if(trackFileInfo.isFile())
             {
-                loadTrack(tracks, trackFileInfo);
+                if(isSupportedFileType(trackFileInfo))
+                {
+                    auto path = trackFileInfo.absoluteFilePath();
+                    tracks.emplace_back(path);
+                    localFiles.push_back(std::move(path));
+                }
             }
             else if(trackFileInfo.isDir())
             {
@@ -120,7 +132,12 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
                     {
                         if(entry.isFile())
                         {
-                            loadTrack(tracks, entry);
+                            if(isSupportedFileType(entry))
+                            {
+                                auto path = entry.absoluteFilePath();
+                                tracks.emplace_back(path);
+                                localFiles.push_back(std::move(path));
+                            }
                         }
                         else if(entry.isDir())
                         {
@@ -134,9 +151,63 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
         }
         else
         {
-            tracks.emplace_back(PlaylistTrack{ trackUrl.toString(), std::nullopt });
+            tracks.emplace_back(trackUrl.toString());
         }
     }
 
-    return tracks;
+    std::vector<PlaylistTrack> playlistTracks;
+    playlistTracks.reserve(tracks.size());
+
+    // Keep track of a list of values that are not in cache
+    // Use it for faster lookup of duplicates and batch insert into cache database
+    std::unordered_map<QString, AudioMetaData> uncached;
+
+    std::set<QString> uniqueLocalFiles{ std::make_move_iterator(localFiles.begin()),
+                                        std::make_move_iterator(localFiles.end()) };
+    auto cached = cache_.batchFindByPath(std::move(uniqueLocalFiles));
+
+    std::size_t tempCacheHits{ 0 }, cacheHits{ 0 }, cacheMisses{ 0 };
+
+    for(auto &path : tracks)
+    {
+        auto cachedValue = cached.find(path);
+        if(cachedValue != cached.end())
+        {
+            ++cacheHits;
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), std::move(cachedValue->second) });
+            continue;
+        }
+
+        auto uncachedValue = uncached.find(path);
+        if(uncachedValue != uncached.end())
+        {
+            ++tempCacheHits;
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), uncachedValue->second });
+            continue;
+        }
+
+        ++cacheMisses;
+
+        // NOTE: Called for remote URLs even though we have no chance of retrieving it here
+        auto metadata = audioMetaDataProvider_.getMetaData(path);
+        if(metadata)
+        {
+            uncached.insert({ path, *metadata });
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), std::move(metadata) });
+        }
+        else
+        {
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), std::nullopt });
+        }
+    }
+
+    qDebug() << tempCacheHits << "temporary cache hits," << cacheHits << "cache hits,"
+             << cacheMisses << "cache misses";
+
+    if(!cache_.cache(std::move(uncached)))
+    {
+        qWarning() << "Caching audio metadata failed";
+    }
+
+    return playlistTracks;
 }

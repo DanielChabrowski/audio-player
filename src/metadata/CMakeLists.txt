@@ -6,8 +6,8 @@ set(SOURCES
     IAudioMetaDataProvider.hpp
     AudioMetaDataProvider.cpp
     AudioMetaDataProvider.hpp
-    AudioMetaDataProviderCache.cpp
-    AudioMetaDataProviderCache.hpp
+    MetaDataCache.cpp
+    MetaDataCache.hpp
 )
 
 add_library(metadata ${SOURCES})

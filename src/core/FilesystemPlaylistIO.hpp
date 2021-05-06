@@ -2,6 +2,7 @@
 
 #include "IPlaylistIO.hpp"
 
+class MetaDataCache;
 class IAudioMetaDataProvider;
 
 class QString;
@@ -10,7 +11,7 @@ class QFileInfo;
 class FilesystemPlaylistIO final : public IPlaylistIO
 {
 public:
-    explicit FilesystemPlaylistIO(IAudioMetaDataProvider &);
+    explicit FilesystemPlaylistIO(MetaDataCache &cache, IAudioMetaDataProvider &);
 
     Playlist load(const QString &filepath) override;
     bool save(const Playlist &) override;
@@ -19,8 +20,9 @@ public:
     std::vector<PlaylistTrack> loadTracks(const std::vector<QUrl> &) override;
 
 private:
-    void loadTrack(std::vector<PlaylistTrack> &tracks, const QFileInfo &fileInfo);
+    bool isSupportedFileType(const QFileInfo &fileInfo);
 
 private:
+    MetaDataCache &cache_;
     IAudioMetaDataProvider &audioMetaDataProvider_;
 };
