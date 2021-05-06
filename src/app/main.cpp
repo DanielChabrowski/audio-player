@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0);
     qInfo() << "Config directory:" << configLocation;
 
-    const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.sqlite");
+    const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.db");
 
     MetaDataCache metaDataCache{ cacheFile };
     AudioMetaDataProvider metaDataProvider;
