@@ -46,8 +46,8 @@ public:
     int getCurrentTrackIndex() const;
     void setCurrentTrackIndex(std::size_t newIndex);
 
-    void insertTracks(std::size_t position, const std::vector<QUrl> &);
-    void insertTracks(const std::vector<QUrl> &);
+    void insertTracks(std::size_t position, const std::vector<QUrl> &, bool autoSave = true);
+    void insertTracks(const std::vector<QUrl> &, bool autoSave = true);
 
     void moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex);
 

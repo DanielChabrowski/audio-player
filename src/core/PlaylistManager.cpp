@@ -132,7 +132,7 @@ void PlaylistManager::loadFromDirectory()
     }
 
     const auto playlists = playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    qDebug() << "Playlists found:" << playlists.count();
+    qDebug() << "Playlist files found:" << playlists.count();
 
     QElapsedTimer timer;
     timer.start();

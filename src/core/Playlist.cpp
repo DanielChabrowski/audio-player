@@ -19,7 +19,8 @@ Playlist::Playlist(QString name, QString playlistPath, const std::vector<QUrl> &
     QElapsedTimer timer;
     timer.start();
 
-    insertTracks(tracks);
+    constexpr auto autoSave = false;
+    insertTracks(tracks, autoSave);
 
     const auto elapsed = timer.elapsed();
     qDebug() << "Playlist" << name_ << "with" << tracks.size() << "tracks read in" << elapsed << "ms";
@@ -128,7 +129,7 @@ void Playlist::setCurrentTrackIndex(std::size_t newIndex)
     currentTrackIndex_ = newIndex;
 }
 
-void Playlist::insertTracks(std::size_t position, const std::vector<QUrl> &tracksToAdd)
+void Playlist::insertTracks(std::size_t position, const std::vector<QUrl> &tracksToAdd, bool autoSave)
 {
     auto loadedTracks = playlistIO_.loadTracks(tracksToAdd);
     const auto tracksAdded = loadedTracks.size();
@@ -140,12 +141,15 @@ void Playlist::insertTracks(std::size_t position, const std::vector<QUrl> &track
         currentTrackIndex_ += tracksAdded;
     }
 
-    save();
+    if(autoSave)
+    {
+        save();
+    }
 }
 
-void Playlist::insertTracks(const std::vector<QUrl> &tracksToAdd)
+void Playlist::insertTracks(const std::vector<QUrl> &tracksToAdd, bool autoSave)
 {
-    insertTracks(tracks_.size(), tracksToAdd);
+    insertTracks(tracks_.size(), tracksToAdd, autoSave);
 }
 
 void Playlist::moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex)
