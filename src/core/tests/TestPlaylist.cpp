@@ -84,7 +84,7 @@ TEST_F(PlaylistTests, removeTracks)
     const auto newTracks = createTracks(newTracksCount);
 
     EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
-    EXPECT_CALL(playlistIOMock, save).Times(2).WillRepeatedly(Return(true));
+    EXPECT_CALL(playlistIOMock, save).Times(1).WillRepeatedly(Return(true));
 
     Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
     ASSERT_EQ(newTracksCount, playlist.getTrackCount());
@@ -102,7 +102,7 @@ TEST_F(PlaylistTests, moveTracks)
     const auto newTracks = createTracks(newTracksCount);
 
     EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
-    EXPECT_CALL(playlistIOMock, save).Times(2).WillRepeatedly(Return(true));
+    EXPECT_CALL(playlistIOMock, save).Times(1).WillRepeatedly(Return(true));
 
     Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
     ASSERT_EQ(newTracksCount, playlist.getTrackCount());
@@ -121,7 +121,7 @@ TEST_F(PlaylistTests, moveTracksOnNonexistentIndex)
     const auto newTracks = createTracks(newTracksCount);
 
     EXPECT_CALL(playlistIOMock, loadTracks).WillOnce(Return(newTracks));
-    EXPECT_CALL(playlistIOMock, save).Times(2).WillRepeatedly(Return(true));
+    EXPECT_CALL(playlistIOMock, save).Times(1).WillRepeatedly(Return(true));
 
     Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
     ASSERT_EQ(newTracksCount, playlist.getTrackCount());
