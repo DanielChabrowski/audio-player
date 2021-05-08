@@ -1,9 +1,10 @@
 #include "Playlist.hpp"
 
+#include "IPlaylistIO.hpp"
+
 #include <QDebug>
 #include <QElapsedTimer>
 
-#include "IPlaylistIO.hpp"
 #include <random>
 
 Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
@@ -171,23 +172,23 @@ void Playlist::moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIn
     save();
 }
 
-void Playlist::removeTracks(std::vector<std::size_t> indexes)
+void Playlist::removeTracks(std::size_t first, std::size_t count)
 {
-    // Sort positions to remove to compute the offset index after each removal
-    std::sort(indexes.begin(), indexes.end());
+    const auto tracksCount = tracks_.size();
+    const auto begin = std::clamp<std::size_t>(first, 0u, tracksCount);
+    const auto end = std::clamp<std::size_t>(first + count, begin, tracksCount);
 
-    const auto currentIndexShift = std::count_if(indexes.cbegin(), indexes.cend(),
-                                                 [currentIndex = this->currentTrackIndex_](const int x) {
-                                                     return x < currentIndex;
-                                                 });
-    currentTrackIndex_ -= currentIndexShift;
-
-    std::size_t indexShift{ 0 };
-    for(const auto &position : indexes)
+    if(first >= tracksCount || (first + count) > tracksCount)
     {
-        tracks_.erase(tracks_.begin() + (position - indexShift++));
+        qWarning() << "removeTracks out of bounds" << first << first + count;
     }
 
+    if(currentTrackIndex_ > 0 && static_cast<std::size_t>(currentTrackIndex_) > begin)
+    {
+        currentTrackIndex_ -= std::min(currentTrackIndex_ - begin, count);
+    }
+
+    tracks_.erase(tracks_.begin() + begin, tracks_.begin() + end);
     save();
 }
 

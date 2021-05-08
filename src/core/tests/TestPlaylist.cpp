@@ -89,10 +89,9 @@ TEST_F(PlaylistTests, removeTracks)
     Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
     ASSERT_EQ(newTracksCount, playlist.getTrackCount());
 
-    const std::vector<std::size_t> indexesToRemove{ 0, 2, 4 };
-    playlist.removeTracks(indexesToRemove);
+    playlist.removeTracks(2, 2);
 
-    validateTracks(playlist, { "NewTrack1", "NewTrack3" });
+    validateTracks(playlist, { "NewTrack0", "NewTrack1", "NewTrack4" });
 }
 
 TEST_F(PlaylistTests, moveTracks)
@@ -226,7 +225,7 @@ TEST_P(PlaylistInsertCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert
     EXPECT_EQ(indexAfterInsert, playlist.getCurrentTrackIndex());
 }
 
-using IndexChangeRemoveParams = std::tuple<std::size_t, std::vector<std::size_t>, std::size_t>;
+using IndexChangeRemoveParams = std::tuple<std::size_t, std::pair<std::size_t, std::size_t>, std::size_t>;
 
 struct PlaylistRemoveCurrentIndexChangeTest : public TestWithParam<IndexChangeRemoveParams>
 {
@@ -235,20 +234,22 @@ struct PlaylistRemoveCurrentIndexChangeTest : public TestWithParam<IndexChangeRe
 
 INSTANTIATE_TEST_SUITE_P(CurrentTrackChangeRemove,
                          PlaylistRemoveCurrentIndexChangeTest,
-                         Values(IndexChangeRemoveParams{ 1, { 1 }, 1 }, // Needs to be fixed
-                                IndexChangeRemoveParams{ 1, { 2, 3 }, 1 },
-                                IndexChangeRemoveParams{ 2, { 0, 1 }, 0 },
-                                IndexChangeRemoveParams{ 2, { 1, 3 }, 1 }));
+                         Values(IndexChangeRemoveParams{ 1, { 1, 1 }, 1 }, // Needs to be fixed
+                                IndexChangeRemoveParams{ 1, { 2, 2 }, 1 },
+                                IndexChangeRemoveParams{ 2, { 0, 3 }, 0 },
+                                IndexChangeRemoveParams{ 2, { 1, 3 }, 1 },
+                                IndexChangeRemoveParams{ 8, { 1, 3 }, 5 },
+                                IndexChangeRemoveParams{ -1, { 0, 4 }, -1 }));
 
-TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert)
+TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterRemove)
 {
     const auto param = GetParam();
     const auto initialIndex{ std::get<0>(param) };
-    const auto indexesToRemove{ std::get<1>(param) };
+    const auto removeTracksParams{ std::get<1>(param) };
     const auto indexAfterRemove{ std::get<2>(param) };
 
     const std::vector<QUrl> tracksToLoad{};
-    const auto newTracksCount{ 4 };
+    const auto newTracksCount{ 10 };
     const auto newTracks = createTracks(newTracksCount);
 
     EXPECT_CALL(playlistIOMock, loadTracks).WillRepeatedly(Return(newTracks));
@@ -256,6 +257,6 @@ TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert
     Playlist playlist{ "TestName", "TestPath", tracksToLoad, playlistIOMock };
 
     playlist.setCurrentTrackIndex(initialIndex);
-    playlist.removeTracks(indexesToRemove);
+    playlist.removeTracks(removeTracksParams.first, removeTracksParams.second);
     EXPECT_EQ(indexAfterRemove, playlist.getCurrentTrackIndex());
 }

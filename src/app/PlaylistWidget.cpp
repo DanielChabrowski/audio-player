@@ -84,25 +84,49 @@ void PlaylistWidget::enablePlayTrackShortcut()
     });
 }
 
+using ModelIndexListView = std::pair<QModelIndexList::const_iterator, QModelIndexList::const_iterator>;
+
+std::vector<ModelIndexListView> consecutive_values(const QModelIndexList::const_iterator begin,
+                                                   const QModelIndexList::const_iterator end)
+{
+    if(begin == end) return {};
+
+    std::vector<ModelIndexListView> views;
+    auto start = begin;
+    for(auto it = begin + 1; it != end; ++it)
+    {
+        if((it - 1)->row() + 1 != it->row())
+        {
+            views.emplace_back(ModelIndexListView{ start, it });
+            start = it;
+        }
+    }
+    views.emplace_back(ModelIndexListView{ start, end });
+
+    return views;
+}
+
 void PlaylistWidget::enableDeleteTrackShortcut()
 {
     const auto shortcut = new QShortcut(Qt::Key_Delete, this);
     shortcut->setContext(Qt::ShortcutContext::WidgetShortcut);
 
     connect(shortcut, &QShortcut::activated, [this]() {
-        const auto indexes = selectionModel()->selectedRows();
-        if(indexes.isEmpty())
-        {
-            return;
-        }
+        auto *model = this->model();
+        auto selectedRows = selectionModel()->selectedRows();
 
-        std::vector<std::size_t> indexesToRemove;
-        std::for_each(indexes.begin(), indexes.end(), [&indexesToRemove](const auto &modelIndex) {
-            indexesToRemove.push_back(modelIndex.row());
+        if(selectedRows.empty()) return;
+
+        // User could select rows in random order
+        std::sort(selectedRows.begin(), selectedRows.end());
+
+        // Batch removal is faster therefore compute views of consecutive values
+        const auto views = consecutive_values(selectedRows.begin(), selectedRows.end());
+
+        // Remove from end to the beginning to not invalidate indexes
+        std::for_each(views.crbegin(), views.crend(), [model](const auto view) {
+            const auto count = std::distance(view.first, view.second);
+            model->removeRows(view.first->row(), count);
         });
-
-        playlist_.removeTracks(indexesToRemove);
-        clearSelection();
-        update();
     });
 }

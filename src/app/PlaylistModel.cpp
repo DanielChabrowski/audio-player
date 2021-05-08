@@ -49,7 +49,7 @@ PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
 
 int PlaylistModel::rowCount(const QModelIndex &) const
 {
-    return static_cast<int>(fetched_);
+    return static_cast<int>(std::min(playlist_.getTrackCount(), fetched_));
 }
 
 int PlaylistModel::columnCount(const QModelIndex &) const
@@ -154,6 +154,18 @@ void PlaylistModel::fetchMore(const QModelIndex &parent)
     endInsertRows();
 }
 
+bool PlaylistModel::removeRows(int first, int count, const QModelIndex &parent)
+{
+    beginRemoveRows(parent, first, first + count - 1);
+
+    playlist_.removeTracks(first, count);
+    fetched_ -= count;
+
+    endRemoveRows();
+
+    return true;
+}
+
 Qt::ItemFlags PlaylistModel::flags(const QModelIndex &index) const
 {
     if(index.isValid())
@@ -218,13 +230,25 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
 
     if(mimeData->hasUrls())
     {
+        // Cannot beginInsert because the amount of elements added is unknown
+        // due to URLs sometimes being directories
+        beginResetModel();
+
         const auto &filepaths = mimeData->urls();
         playlist_.insertTracks(beginRow, std::vector<QUrl>{ filepaths.cbegin(), filepaths.cend() });
+
+        endResetModel();
     }
     else if(mimeData->hasFormat(playlistIndexesMimeType))
     {
+        // beginMoveRows could be used here but it would require split into
+        // consecutive index views
+        beginResetModel();
+
         auto itemsToMove = decodePlaylistIndexesMimeData(*mimeData);
         playlist_.moveTracks(std::move(itemsToMove), beginRow);
+
+        endResetModel();
     }
     else
     {
@@ -232,7 +256,6 @@ bool PlaylistModel::dropMimeData(const QMimeData *mimeData, Qt::DropAction actio
         return false;
     }
 
-    update();
     return true;
 }
 
@@ -307,10 +330,4 @@ QVariant PlaylistModel::dataTrack(const std::optional<AudioMetaData> &metaData) 
     }
 
     return {};
-}
-
-void PlaylistModel::update()
-{
-    beginResetModel();
-    endResetModel();
 }

@@ -33,6 +33,8 @@ protected:
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent) override;
 
+    bool removeRows(int, int, const QModelIndex &) override;
+
     Qt::ItemFlags flags(const QModelIndex &) const override;
     Qt::DropActions supportedDropActions() const override;
 
@@ -46,9 +48,6 @@ private:
     QVariant dataArtistAlbum(const std::optional<AudioMetaData> &) const;
     QVariant dataDuration(const std::optional<AudioMetaData> &) const;
     QVariant dataTrack(const std::optional<AudioMetaData> &) const;
-
-public slots:
-    void update();
 
 private:
     Playlist &playlist_;
