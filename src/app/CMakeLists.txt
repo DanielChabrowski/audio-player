@@ -36,6 +36,16 @@ target_link_libraries(foobar
     player::core
 )
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IPO_SUPPORTED LANGUAGES CXX)
+
+if(IPO_SUPPORTED)
+    set_target_properties(foobar PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+    message(STATUS "IPO is supported and enabled")
+else()
+    message(WARNING "IPO is not supported on this platform")
+endif()
+
 install(
     TARGETS foobar
     RUNTIME DESTINATION bin
