@@ -51,7 +51,7 @@ public:
 
     void moveTracks(std::vector<std::size_t> indexes, std::size_t moveToIndex);
 
-    void removeTracks(std::vector<std::size_t> indexes);
+    void removeTracks(std::size_t first, std::size_t count);
 
 private:
     void save();
