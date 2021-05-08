@@ -238,8 +238,7 @@ INSTANTIATE_TEST_SUITE_P(CurrentTrackChangeRemove,
                                 IndexChangeRemoveParams{ 1, { 2, 2 }, 1 },
                                 IndexChangeRemoveParams{ 2, { 0, 3 }, 0 },
                                 IndexChangeRemoveParams{ 2, { 1, 3 }, 1 },
-                                IndexChangeRemoveParams{ 8, { 1, 3 }, 5 },
-                                IndexChangeRemoveParams{ -1, { 0, 4 }, -1 }));
+                                IndexChangeRemoveParams{ 8, { 1, 3 }, 5 }));
 
 TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterRemove)
 {
