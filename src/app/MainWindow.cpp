@@ -636,6 +636,7 @@ void MainWindow::restoreLastPlaylist()
         {
             qDebug() << "Restoring playlist:" << lastPlaylistName;
             ui.playlist->setCurrentIndex(*playlistTabIndex);
+            ui.playlist->widget(*playlistTabIndex)->setFocus(Qt::FocusReason::NoFocusReason);
         }
     }
 }
