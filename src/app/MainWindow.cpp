@@ -328,8 +328,6 @@ void MainWindow::setupAlbumsBrowser()
 
 void MainWindow::setupPlaylistWidget()
 {
-    ui.playlist->setFocusPolicy(Qt::NoFocus);
-
     auto *tabbar = ui.playlist->tabBar();
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -404,6 +402,20 @@ void MainWindow::setupGlobalShortcuts()
 
     const auto removePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
     connect(removePlaylist, &QShortcut::activated, this, &MainWindow::removeCurrentPlaylist);
+
+    const auto changePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab), this);
+    connect(changePlaylist, &QShortcut::activated, this, [this]() {
+        const auto playlistCount = ui.playlist->count();
+        const auto currentPlaylistIndex = ui.playlist->currentIndex();
+
+        auto newPlaylistIndex = currentPlaylistIndex + 1;
+        if(newPlaylistIndex >= playlistCount)
+        {
+            newPlaylistIndex = 0;
+        }
+
+        ui.playlist->setCurrentIndex(newPlaylistIndex);
+    });
 }
 
 void MainWindow::setTheme(const QString &filename)

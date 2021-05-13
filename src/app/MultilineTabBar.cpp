@@ -167,8 +167,12 @@ void MultilineTabBar::removeTab(int tabIndex)
 
 void MultilineTabBar::setCurrentIndex(int tabIndex)
 {
-    currentIndex_ = tabIndex;
-    emit currentChanged(tabIndex);
+    if(currentIndex_ != tabIndex)
+    {
+        currentIndex_ = tabIndex;
+        update();
+        emit currentChanged(tabIndex);
+    }
 }
 
 void MultilineTabBar::recalculateTabsLayout()
@@ -244,7 +248,7 @@ MultilineTabWidget::MultilineTabWidget(QWidget *parent)
 
     setLayout(mainLayout2);
 
-    connect(tabBar_, &MultilineTabBar::currentChanged, this, &MultilineTabWidget::swichWidget);
+    connect(tabBar_, &MultilineTabBar::currentChanged, this, &MultilineTabWidget::switchWidget);
     connect(stack_, &QStackedWidget::widgetRemoved, this, &MultilineTabWidget::privRemoveTab);
 
     QStyleOptionTabWidgetFrame option;

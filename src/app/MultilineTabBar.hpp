@@ -110,7 +110,7 @@ public:
     }
 
 private:
-    void swichWidget(int index)
+    void switchWidget(int index)
     {
         stack_->setCurrentIndex(index);
     }
