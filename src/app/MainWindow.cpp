@@ -416,6 +416,20 @@ void MainWindow::setupGlobalShortcuts()
 
         ui.playlist->setCurrentIndex(newPlaylistIndex);
     });
+
+    const auto backChangePlaylist = new QShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Tab), this);
+    connect(backChangePlaylist, &QShortcut::activated, this, [this]() {
+        const auto playlistCount = ui.playlist->count();
+        const auto currentPlaylistIndex = ui.playlist->currentIndex();
+
+        auto newPlaylistIndex = currentPlaylistIndex - 1;
+        if(newPlaylistIndex < 0)
+        {
+            newPlaylistIndex = playlistCount - 1;
+        }
+
+        ui.playlist->setCurrentIndex(newPlaylistIndex);
+    });
 }
 
 void MainWindow::setTheme(const QString &filename)
