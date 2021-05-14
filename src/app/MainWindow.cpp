@@ -143,6 +143,9 @@ void MainWindow::setupWindow()
         ui.albums->setSizePolicy(sizePolicy);
         ui.albums->setMinimumSize(QSize(225, 0));
 
+        const auto visibility = settings_.value(config::albumsVisibility, true);
+        ui.albums->setVisible(visibility.toBool());
+
         bottomHLayout->addWidget(ui.albums);
     }
 
@@ -160,7 +163,7 @@ void MainWindow::setupWindow()
 void MainWindow::setupMenu()
 {
     auto *bar = new QMenuBar(this);
-    auto *fileMenu = bar->addMenu(tr("File"));
+    auto *fileMenu = bar->addMenu("File");
 
     fileMenu->addAction("Open");
 
@@ -188,8 +191,16 @@ void MainWindow::setupMenu()
     });
     exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
-    bar->addMenu(tr("Edit"));
-    bar->addMenu(tr("View"));
+    bar->addMenu("Edit");
+
+    {
+        auto *viewMenu = bar->addMenu("View");
+        viewMenu->addAction("Toggle album view", [this]() {
+            const auto toggle = !ui.albums->isVisible();
+            ui.albums->setVisible(toggle);
+            settings_.setValue(config::albumsVisibility, toggle);
+        });
+    }
 
     auto *playbackMenu = bar->addMenu("Playback");
 
@@ -216,8 +227,8 @@ void MainWindow::setupMenu()
 
     playbackMenu->addActions(actionGroup->actions());
 
-    bar->addMenu(tr("Library"));
-    bar->addMenu(tr("Help"));
+    bar->addMenu("Library");
+    bar->addMenu("Help");
 
     ui.menuLayout->addWidget(bar);
 }
