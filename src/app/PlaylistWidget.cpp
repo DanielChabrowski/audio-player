@@ -121,7 +121,7 @@ void PlaylistWidget::enableDeleteTrackShortcut()
         std::sort(selectedRows.begin(), selectedRows.end());
 
         // Batch removal is faster therefore compute views of consecutive values
-        const auto views = consecutive_values(selectedRows.begin(), selectedRows.end());
+        const auto views = consecutive_values(selectedRows.cbegin(), selectedRows.cend());
 
         // Remove from end to the beginning to not invalidate indexes
         std::for_each(views.crbegin(), views.crend(), [model](const auto view) {

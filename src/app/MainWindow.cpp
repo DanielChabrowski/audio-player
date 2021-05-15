@@ -167,7 +167,7 @@ void MainWindow::setupMenu()
 
     fileMenu->addAction("Open");
 
-    auto *newPlaylistAction = fileMenu->addAction("Add new playlist", [this]() {
+    auto *newPlaylistAction = fileMenu->addAction("Add new playlist", this, [this]() {
         const auto index = playlistManager_.create("New playlist");
         if(not index)
         {
@@ -185,7 +185,7 @@ void MainWindow::setupMenu()
 
     fileMenu->addAction("Preferences");
 
-    auto *exitAction = fileMenu->addAction("Exit", []() {
+    auto *exitAction = fileMenu->addAction("Exit", this, []() {
         constexpr int exitCode{ 0 };
         QApplication::exit(exitCode);
     });
@@ -195,7 +195,7 @@ void MainWindow::setupMenu()
 
     {
         auto *viewMenu = bar->addMenu("View");
-        viewMenu->addAction("Toggle album view", [this]() {
+        viewMenu->addAction("Toggle album view", this, [this]() {
             const auto toggle = !ui.albums->isVisible();
             ui.albums->setVisible(toggle);
             settings_.setValue(config::albumsVisibility, toggle);
@@ -350,8 +350,9 @@ void MainWindow::setupPlaylistWidget()
         const auto playlistId = getPlaylistIdByTabIndex(tabIndex);
 
         QMenu menu;
-        menu.addAction("Rename playlist", [this, tabIndex] { togglePlaylistRenameControl(tabIndex); });
-        menu.addAction("Remove playlist", [this, playlistId = *playlistId, tabIndex]() {
+        menu.addAction("Rename playlist", this,
+                       [this, tabIndex] { togglePlaylistRenameControl(tabIndex); });
+        menu.addAction("Remove playlist", this, [this, playlistId = *playlistId, tabIndex]() {
             ui.playlist->removeTab(tabIndex);
             playlistManager_.removeById(playlistId);
         });
@@ -531,7 +532,7 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
                 ui.playlistRenameWidget = nullptr;
             });
 
-    connect(renameLineEdit, &EscapableLineEdit::cancelEdit, [&ui = this->ui]() {
+    connect(renameLineEdit, &EscapableLineEdit::cancelEdit, this, [this]() {
         ui.playlistRenameWidget->deleteLater();
         ui.playlistRenameWidget = nullptr;
     });

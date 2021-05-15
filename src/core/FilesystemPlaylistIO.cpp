@@ -126,9 +126,11 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
             else if(trackFileInfo.isDir())
             {
                 const std::function<void(const QString &)> addDirFunc = [&](const QString &dirPath) {
-                    for(const auto &entry :
+                    const auto &directoryEntries =
                         QDir{ dirPath }.entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot,
-                                                      QDir::DirsFirst))
+                                                      QDir::DirsFirst);
+
+                    for(const auto &entry : directoryEntries)
                     {
                         if(entry.isFile())
                         {
