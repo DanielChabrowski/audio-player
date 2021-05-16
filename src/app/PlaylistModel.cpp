@@ -331,3 +331,10 @@ QVariant PlaylistModel::dataTrack(const std::optional<AudioMetaData> &metaData) 
 
     return {};
 }
+
+void PlaylistModel::onDuplicateRemoveRequest()
+{
+    beginResetModel();
+    playlist_.removeDuplicates();
+    endResetModel();
+}

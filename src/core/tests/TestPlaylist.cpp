@@ -259,3 +259,31 @@ TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterRemove
     playlist.removeTracks(removeTracksParams.first, removeTracksParams.second);
     EXPECT_EQ(indexAfterRemove, playlist.getCurrentTrackIndex());
 }
+
+TEST_F(PlaylistTests, removeDuplicates)
+{
+    InSequence s{};
+
+    Playlist playlist{ "TestName", "TestPath", playlistIOMock };
+    const std::vector<QUrl> tracksToAdd{ QUrl{}, QUrl{}, QUrl{}, QUrl{}, QUrl{}, QUrl{} };
+
+    EXPECT_EQ(0, playlist.getTrackCount());
+
+    std::vector<PlaylistTrack> loadedTracks;
+    loadedTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(1), std::nullopt });
+    loadedTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(2), std::nullopt });
+    loadedTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(1), std::nullopt });
+    loadedTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(2), std::nullopt });
+    loadedTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(3), std::nullopt });
+    loadedTracks.emplace_back(PlaylistTrack{ QString{ "NewTrack%1" }.arg(1), std::nullopt });
+
+    EXPECT_CALL(playlistIOMock, loadTracks(SizeIs(loadedTracks.size()))).WillOnce(Return(loadedTracks));
+    EXPECT_CALL(playlistIOMock, save);
+
+    playlist.insertTracks(tracksToAdd);
+    EXPECT_EQ(loadedTracks.size(), playlist.getTrackCount());
+
+    EXPECT_CALL(playlistIOMock, save);
+    playlist.removeDuplicates();
+    EXPECT_EQ(3, playlist.getTrackCount());
+}

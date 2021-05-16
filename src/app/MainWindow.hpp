@@ -65,6 +65,9 @@ private:
     std::optional<int> getTabIndexByPlaylistName(const QString &name);
     std::optional<int> getTabIndexByPlaylistId(std::uint32_t playlistId);
 
+signals:
+    void removeDuplicates(std::uint32_t);
+
 private:
     struct
     {

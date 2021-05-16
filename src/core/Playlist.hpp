@@ -53,6 +53,8 @@ public:
 
     void removeTracks(std::size_t first, std::size_t count);
 
+    void removeDuplicates();
+
 private:
     void save();
     std::size_t getRandomIndex() const;

@@ -191,7 +191,20 @@ void MainWindow::setupMenu()
     });
     exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
-    bar->addMenu("Edit");
+    {
+        auto *editMenu = bar->addMenu("Edit");
+        editMenu->addAction("Remove duplicates", this, [this]() {
+            const auto currentTabIndex = ui.playlist->currentIndex();
+            const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
+            if(not playlistId)
+            {
+                qWarning() << "Playlist not found, tab index:" << currentTabIndex;
+                return;
+            }
+
+            emit removeDuplicates(*playlistId);
+        });
+    }
 
     {
         auto *viewMenu = bar->addMenu("View");
@@ -369,6 +382,14 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
     });
     auto playlistModel = std::make_unique<PlaylistModel>(playlist, playlistWidget.get());
     auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
+
+    connect(this, &MainWindow::removeDuplicates, playlistModel.get(),
+            [playlistId, model = playlistModel.get()](std::uint32_t eventPlaylistId) {
+                if(playlistId == eventPlaylistId)
+                {
+                    model->onDuplicateRemoveRequest();
+                }
+            });
 
     playlistWidget->setModel(playlistModel.release());
     playlistWidget->setHeader(playlistHeader.release());

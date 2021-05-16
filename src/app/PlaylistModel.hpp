@@ -49,6 +49,9 @@ private:
     QVariant dataDuration(const std::optional<AudioMetaData> &) const;
     QVariant dataTrack(const std::optional<AudioMetaData> &) const;
 
+public slots:
+    void onDuplicateRemoveRequest();
+
 private:
     Playlist &playlist_;
     std::size_t fetched_{ 0 };

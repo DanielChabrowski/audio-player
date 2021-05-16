@@ -192,6 +192,24 @@ void Playlist::removeTracks(std::size_t first, std::size_t count)
     save();
 }
 
+void Playlist::removeDuplicates()
+{
+    std::vector<PlaylistTrack> unique;
+    unique.reserve(tracks_.size());
+
+    for(auto &&track : tracks_)
+    {
+        if(std::find_if(unique.cbegin(), unique.cend(),
+                        [&](const auto &i) { return i.path == track.path; }) == unique.cend())
+        {
+            unique.push_back(std::move(track));
+        }
+    }
+
+    tracks_ = unique;
+    save();
+}
+
 void Playlist::save()
 {
     playlistIO_.save(*this);
