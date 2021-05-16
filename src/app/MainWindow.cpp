@@ -384,7 +384,7 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
     auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
     connect(this, &MainWindow::removeDuplicates, playlistModel.get(),
-            [playlistId, model = playlistModel.get()](std::uint32_t eventPlaylistId) {
+            [playlistId, model = playlistModel.get()](PlaylistId eventPlaylistId) {
                 if(playlistId == eventPlaylistId)
                 {
                     model->onDuplicateRemoveRequest();
@@ -559,7 +559,7 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
     });
 }
 
-void MainWindow::playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index)
+void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
 {
     auto *playlist = playlistManager_.get(playlistId);
     if(not playlist)
@@ -623,7 +623,7 @@ void MainWindow::removeCurrentPlaylist()
     playlistManager_.removeById(*playlistId);
 }
 
-void MainWindow::onMediaFinish(std::uint32_t playlistId)
+void MainWindow::onMediaFinish(PlaylistId playlistId)
 {
     const auto *playlist = playlistManager_.get(playlistId);
     if(not playlist)
@@ -665,7 +665,7 @@ void MainWindow::enablePlaylistChangeTracking()
         const auto *playlist = playlistManager_.get(*playlistId);
         if(not playlist)
         {
-            qCritical() << "No playlist with given playlistId:" << *playlistId;
+            qCritical() << "No playlist with given playlistId:" << playlistId->value;
             return;
         }
         settings_.setValue(config::lastPlaylistKey, playlist->getName());
@@ -705,7 +705,7 @@ const Playlist *MainWindow::getPlaylistByTabIndex(int tabIndex)
     return &playlistWidget->getPlaylist();
 }
 
-std::optional<std::uint32_t> MainWindow::getPlaylistIdByTabIndex(int tabIndex)
+std::optional<PlaylistId> MainWindow::getPlaylistIdByTabIndex(int tabIndex)
 {
     const auto *playlist = getPlaylistByTabIndex(tabIndex);
     if(not playlist)
@@ -729,7 +729,7 @@ std::optional<int> MainWindow::getTabIndexByPlaylistName(const QString &name)
     return std::nullopt;
 }
 
-std::optional<int> MainWindow::getTabIndexByPlaylistId(std::uint32_t playlistId)
+std::optional<int> MainWindow::getTabIndexByPlaylistId(PlaylistId playlistId)
 {
     for(int tabIndex = 0; tabIndex < ui.playlist->count(); ++tabIndex)
     {

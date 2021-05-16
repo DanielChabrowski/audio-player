@@ -12,19 +12,19 @@ class IPlaylistIO;
 class PlaylistManager
 {
 public:
-    using PlaylistContainer = std::unordered_map<std::uint32_t, Playlist>;
+    using PlaylistContainer = std::unordered_map<PlaylistId, Playlist, PlaylistIdHasher>;
 
     PlaylistManager(IPlaylistIO &, QString playlistDirectory);
 
-    std::optional<std::uint32_t> add(const QString &filepath);
-    std::optional<std::uint32_t> create(const QString &name);
+    std::optional<PlaylistId> add(const QString &filepath);
+    std::optional<PlaylistId> create(const QString &name);
 
-    void removeById(std::uint32_t id);
+    void removeById(PlaylistId id);
     void removeByName(const QString &name);
 
-    bool rename(std::uint32_t id, const QString &newName);
+    bool rename(PlaylistId id, const QString &newName);
 
-    Playlist *get(std::uint32_t id);
+    Playlist *get(PlaylistId id);
     PlaylistContainer &getAll();
 
 private:
@@ -35,6 +35,6 @@ private:
 private:
     IPlaylistIO &playlistIO_;
     QString playlistDirectory_;
-    std::uint32_t lastPlaylistIndex_{ 0 };
+    decltype(PlaylistId::value) lastPlaylistIndex_{ 0 };
     PlaylistContainer playlists_;
 };

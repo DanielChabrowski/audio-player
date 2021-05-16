@@ -49,11 +49,11 @@ private:
     void enableSeekbar(std::chrono::seconds trackDuration);
     void togglePlaylistRenameControl(int tabIndex);
 
-    void playMediaFromPlaylist(std::uint32_t playlistId, std::size_t index);
+    void playMediaFromPlaylist(PlaylistId playlistId, std::size_t index);
     void togglePlayPause();
     void removeCurrentPlaylist();
 
-    void onMediaFinish(std::uint32_t playlistId);
+    void onMediaFinish(PlaylistId playlistId);
     void loadPlaylists();
     void enablePlaylistChangeTracking();
 
@@ -61,12 +61,12 @@ private:
 
     PlayMode getCurrentPlayMode();
     const Playlist *getPlaylistByTabIndex(int tabIndex);
-    std::optional<std::uint32_t> getPlaylistIdByTabIndex(int tabIndex);
+    std::optional<PlaylistId> getPlaylistIdByTabIndex(int tabIndex);
     std::optional<int> getTabIndexByPlaylistName(const QString &name);
-    std::optional<int> getTabIndexByPlaylistId(std::uint32_t playlistId);
+    std::optional<int> getTabIndexByPlaylistId(PlaylistId playlistId);
 
 signals:
-    void removeDuplicates(std::uint32_t);
+    void removeDuplicates(PlaylistId);
 
 private:
     struct

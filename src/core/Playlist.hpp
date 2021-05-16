@@ -23,6 +23,21 @@ enum class PlayMode
     Random,
 };
 
+struct PlaylistId
+{
+    std::uint32_t value;
+};
+
+inline bool operator==(const PlaylistId &l, const PlaylistId &r) noexcept
+{
+    return l.value == r.value;
+}
+
+struct PlaylistIdHasher
+{
+    std::size_t operator()(const PlaylistId &id) const noexcept;
+};
+
 class Playlist
 {
 public:
@@ -33,8 +48,8 @@ public:
     const QString &getPath() const;
 
     // TODO: Should be assigned only once
-    void setPlaylistId(std::uint32_t id);
-    std::uint32_t getPlaylistId() const;
+    void setPlaylistId(PlaylistId id);
+    PlaylistId getPlaylistId() const;
 
     std::size_t getTrackCount() const;
     const std::vector<PlaylistTrack> &getTracks() const;
@@ -65,7 +80,7 @@ private:
     IPlaylistIO &playlistIO_;
     std::vector<PlaylistTrack> tracks_;
     int currentTrackIndex_{ -1 };
-    std::uint32_t playlistId{ 0 };
+    PlaylistId playlistId{ 0 };
 
     friend class PlaylistManager;
 };

@@ -20,13 +20,13 @@ PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirect
     }
 }
 
-std::optional<std::uint32_t> PlaylistManager::add(const QString &filepath)
+std::optional<PlaylistId> PlaylistManager::add(const QString &filepath)
 try
 {
     auto playlist = playlistIO_.load(filepath);
 
-    const auto newPlaylistIndex = lastPlaylistIndex_++;
-    playlist.setPlaylistId(newPlaylistIndex);
+    const auto newPlaylistIndex = PlaylistId{ lastPlaylistIndex_++ };
+    playlist.setPlaylistId(PlaylistId{ newPlaylistIndex });
     playlists_.emplace(newPlaylistIndex, std::move(playlist));
     return newPlaylistIndex;
 }
@@ -35,7 +35,7 @@ catch(const std::runtime_error &)
     return std::nullopt;
 }
 
-std::optional<std::uint32_t> PlaylistManager::create(const QString &name)
+std::optional<PlaylistId> PlaylistManager::create(const QString &name)
 {
     const auto filepath = createPlaylistFile(name);
     if(filepath.isEmpty())
@@ -45,7 +45,7 @@ std::optional<std::uint32_t> PlaylistManager::create(const QString &name)
     return add(filepath);
 }
 
-void PlaylistManager::removeById(std::uint32_t id)
+void PlaylistManager::removeById(PlaylistId id)
 {
     auto it = playlists_.find(id);
     if(it == playlists_.end())
@@ -71,7 +71,7 @@ void PlaylistManager::removeByName(const QString &name)
     }
 }
 
-bool PlaylistManager::rename(std::uint32_t id, const QString &newName)
+bool PlaylistManager::rename(PlaylistId id, const QString &newName)
 {
     auto *playlist = get(id);
     if(not playlist)
@@ -88,13 +88,13 @@ bool PlaylistManager::rename(std::uint32_t id, const QString &newName)
     return hasRenamed;
 }
 
-Playlist *PlaylistManager::get(std::uint32_t id)
+Playlist *PlaylistManager::get(PlaylistId id)
 {
     auto it = playlists_.find(id);
     return it != playlists_.end() ? &it->second : nullptr;
 }
 
-std::unordered_map<std::uint32_t, Playlist> &PlaylistManager::getAll()
+PlaylistManager::PlaylistContainer &PlaylistManager::getAll()
 {
     return playlists_;
 }

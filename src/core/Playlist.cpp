@@ -5,7 +5,13 @@
 #include <QDebug>
 #include <QElapsedTimer>
 
+#include <functional>
 #include <random>
+
+std::size_t PlaylistIdHasher::operator()(const PlaylistId &id) const noexcept
+{
+    return std::hash<decltype(PlaylistId::value)>{}(id.value);
+}
 
 Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 : name_{ std::move(name) }
@@ -37,12 +43,12 @@ const QString &Playlist::getPath() const
     return path_;
 }
 
-void Playlist::setPlaylistId(std::uint32_t id)
+void Playlist::setPlaylistId(PlaylistId id)
 {
     playlistId = id;
 }
 
-std::uint32_t Playlist::getPlaylistId() const
+PlaylistId Playlist::getPlaylistId() const
 {
     return playlistId;
 }
