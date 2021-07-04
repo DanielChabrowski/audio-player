@@ -200,10 +200,10 @@ struct PlaylistInsertCurrentIndexChangeTest : public TestWithParam<IndexChangeIn
 };
 
 INSTANTIATE_TEST_SUITE_P(CurrentTrackChangeInsert,
-                         PlaylistInsertCurrentIndexChangeTest,
-                         Values(IndexChangeInsertParams{ 0, 0, 2 },
-                                IndexChangeInsertParams{ 0, 1, 0 },
-                                IndexChangeInsertParams{ 1, 0, 3 }));
+    PlaylistInsertCurrentIndexChangeTest,
+    Values(IndexChangeInsertParams{ 0, 0, 2 },
+        IndexChangeInsertParams{ 0, 1, 0 },
+        IndexChangeInsertParams{ 1, 0, 3 }));
 
 TEST_P(PlaylistInsertCurrentIndexChangeTest, currentTrackIndexChangesAfterInsert)
 {
@@ -233,12 +233,12 @@ struct PlaylistRemoveCurrentIndexChangeTest : public TestWithParam<IndexChangeRe
 };
 
 INSTANTIATE_TEST_SUITE_P(CurrentTrackChangeRemove,
-                         PlaylistRemoveCurrentIndexChangeTest,
-                         Values(IndexChangeRemoveParams{ 1, { 1, 1 }, 1 }, // Needs to be fixed
-                                IndexChangeRemoveParams{ 1, { 2, 2 }, 1 },
-                                IndexChangeRemoveParams{ 2, { 0, 3 }, 0 },
-                                IndexChangeRemoveParams{ 2, { 1, 3 }, 1 },
-                                IndexChangeRemoveParams{ 8, { 1, 3 }, 5 }));
+    PlaylistRemoveCurrentIndexChangeTest,
+    Values(IndexChangeRemoveParams{ 1, { 1, 1 }, 1 }, // Needs to be fixed
+        IndexChangeRemoveParams{ 1, { 2, 2 }, 1 },
+        IndexChangeRemoveParams{ 2, { 0, 3 }, 0 },
+        IndexChangeRemoveParams{ 2, { 1, 3 }, 1 },
+        IndexChangeRemoveParams{ 8, { 1, 3 }, 5 }));
 
 TEST_P(PlaylistRemoveCurrentIndexChangeTest, currentTrackIndexChangesAfterRemove)
 {

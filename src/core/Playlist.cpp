@@ -141,7 +141,7 @@ void Playlist::insertTracks(std::size_t position, const std::vector<QUrl> &track
     auto loadedTracks = playlistIO_.loadTracks(tracksToAdd);
     const auto tracksAdded = loadedTracks.size();
     tracks_.insert(tracks_.begin() + position, std::make_move_iterator(loadedTracks.begin()),
-                   std::make_move_iterator(loadedTracks.end()));
+        std::make_move_iterator(loadedTracks.end()));
 
     if(static_cast<int>(position) <= currentTrackIndex_)
     {
@@ -206,7 +206,7 @@ void Playlist::removeDuplicates()
     for(auto &&track : tracks_)
     {
         if(std::find_if(unique.cbegin(), unique.cend(),
-                        [&](const auto &i) { return i.path == track.path; }) == unique.cend())
+               [&](const auto &i) { return i.path == track.path; }) == unique.cend())
         {
             unique.push_back(std::move(track));
         }

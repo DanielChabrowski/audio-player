@@ -74,20 +74,22 @@ void PlaylistWidget::enablePlayTrackShortcut()
     const auto playShortcut = new QShortcut(Qt::Key_Return, this);
     playShortcut->setContext(Qt::ShortcutContext::WidgetShortcut);
 
-    connect(playShortcut, &QShortcut::activated, [this]() {
-        const auto currentIndex = this->currentIndex();
-        if(currentIndex.isValid())
+    connect(playShortcut, &QShortcut::activated,
+        [this]()
         {
-            itemSelectedCallback_(currentIndex.row());
-            update();
-        }
-    });
+            const auto currentIndex = this->currentIndex();
+            if(currentIndex.isValid())
+            {
+                itemSelectedCallback_(currentIndex.row());
+                update();
+            }
+        });
 }
 
 using ModelIndexListView = std::pair<QModelIndexList::const_iterator, QModelIndexList::const_iterator>;
 
 std::vector<ModelIndexListView> consecutive_values(const QModelIndexList::const_iterator begin,
-                                                   const QModelIndexList::const_iterator end)
+    const QModelIndexList::const_iterator end)
 {
     if(begin == end) return {};
 
@@ -111,22 +113,26 @@ void PlaylistWidget::enableDeleteTrackShortcut()
     const auto shortcut = new QShortcut(Qt::Key_Delete, this);
     shortcut->setContext(Qt::ShortcutContext::WidgetShortcut);
 
-    connect(shortcut, &QShortcut::activated, [this]() {
-        auto *model = this->model();
-        auto selectedRows = selectionModel()->selectedRows();
+    connect(shortcut, &QShortcut::activated,
+        [this]()
+        {
+            auto *model = this->model();
+            auto selectedRows = selectionModel()->selectedRows();
 
-        if(selectedRows.empty()) return;
+            if(selectedRows.empty()) return;
 
-        // User could select rows in random order
-        std::sort(selectedRows.begin(), selectedRows.end());
+            // User could select rows in random order
+            std::sort(selectedRows.begin(), selectedRows.end());
 
-        // Batch removal is faster therefore compute views of consecutive values
-        const auto views = consecutive_values(selectedRows.cbegin(), selectedRows.cend());
+            // Batch removal is faster therefore compute views of consecutive values
+            const auto views = consecutive_values(selectedRows.cbegin(), selectedRows.cend());
 
-        // Remove from end to the beginning to not invalidate indexes
-        std::for_each(views.crbegin(), views.crend(), [model](const auto view) {
-            const auto count = std::distance(view.first, view.second);
-            model->removeRows(view.first->row(), count);
+            // Remove from end to the beginning to not invalidate indexes
+            std::for_each(views.crbegin(), views.crend(),
+                [model](const auto view)
+                {
+                    const auto count = std::distance(view.first, view.second);
+                    model->removeRows(view.first->row(), count);
+                });
         });
-    });
 }

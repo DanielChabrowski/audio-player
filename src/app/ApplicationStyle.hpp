@@ -8,7 +8,7 @@ public:
     using QProxyStyle::QProxyStyle;
 
     int styleHint(QStyle::StyleHint,
-                  const QStyleOption * = nullptr,
-                  const QWidget * = nullptr,
-                  QStyleHintReturn * = nullptr) const override;
+        const QStyleOption * = nullptr,
+        const QWidget * = nullptr,
+        QStyleHintReturn * = nullptr) const override;
 };

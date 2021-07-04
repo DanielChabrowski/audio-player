@@ -1,9 +1,9 @@
 #include "ApplicationStyle.hpp"
 
 int ApplicationStyle::styleHint(QStyle::StyleHint hint,
-                                const QStyleOption *option,
-                                const QWidget *widget,
-                                QStyleHintReturn *returnData) const
+    const QStyleOption *option,
+    const QWidget *widget,
+    QStyleHintReturn *returnData) const
 {
     if(QStyle::SH_Slider_AbsoluteSetButtons == hint)
     {

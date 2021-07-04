@@ -16,7 +16,12 @@ namespace
 {
 // Keep in check with PlaylistColumn enum
 const std::array<const char *, 6> labels = {
-    "", "", "Artist/album", "Track", "Title", "Duration",
+    "",
+    "",
+    "Artist/album",
+    "Track",
+    "Title",
+    "Duration",
 };
 
 constexpr auto playlistIndexesMimeType{ "application/playlist.indexes" };

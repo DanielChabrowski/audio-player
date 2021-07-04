@@ -125,10 +125,10 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
             }
             else if(trackFileInfo.isDir())
             {
-                const std::function<void(const QString &)> addDirFunc = [&](const QString &dirPath) {
-                    const auto &directoryEntries =
-                        QDir{ dirPath }.entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot,
-                                                      QDir::DirsFirst);
+                const std::function<void(const QString &)> addDirFunc = [&](const QString &dirPath)
+                {
+                    const auto &directoryEntries = QDir{ dirPath }.entryInfoList(
+                        QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot, QDir::DirsFirst);
 
                     for(const auto &entry : directoryEntries)
                     {
@@ -165,7 +165,7 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
     std::unordered_map<QString, AudioMetaData> uncached;
 
     std::set<QString> uniqueLocalFiles{ std::make_move_iterator(localFiles.begin()),
-                                        std::make_move_iterator(localFiles.end()) };
+        std::make_move_iterator(localFiles.end()) };
     auto cached = cache_.batchFindByPath(std::move(uniqueLocalFiles));
 
     std::size_t tempCacheHits{ 0 }, cacheHits{ 0 }, cacheMisses{ 0 };

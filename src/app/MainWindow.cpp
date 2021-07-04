@@ -25,6 +25,8 @@
 #include "PlaylistModel.hpp"
 #include "PlaylistWidget.hpp"
 
+#include <algorithm>
+
 MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
 : QWidget{ nullptr }
 , settings_{ settings }
@@ -111,6 +113,7 @@ void MainWindow::setupWindow()
     topHLayout->addLayout(ui.buttonsLayout);
 
     ui.volumeSlider = new QSlider(this);
+    ui.volumeSlider->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     {
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
@@ -123,6 +126,7 @@ void MainWindow::setupWindow()
     }
 
     ui.seekbar = new QSlider(this);
+    ui.seekbar->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     {
         ui.seekbar->setOrientation(Qt::Horizontal);
 
@@ -167,52 +171,60 @@ void MainWindow::setupMenu()
 
     fileMenu->addAction("Open");
 
-    auto *newPlaylistAction = fileMenu->addAction("Add new playlist", this, [this]() {
-        const auto index = playlistManager_.create("New playlist");
-        if(not index)
+    auto *newPlaylistAction = fileMenu->addAction("Add new playlist", this,
+        [this]()
         {
-            qCritical() << "Playlist could not be created";
-            return;
-        }
+            const auto index = playlistManager_.create("New playlist");
+            if(not index)
+            {
+                qCritical() << "Playlist could not be created";
+                return;
+            }
 
-        const auto newTabIndex = setupPlaylistTab(*playlistManager_.get(*index));
-        if(newTabIndex != -1)
-        {
-            ui.playlist->setCurrentIndex(newTabIndex);
-        }
-    });
+            const auto newTabIndex = setupPlaylistTab(*playlistManager_.get(*index));
+            if(newTabIndex != -1)
+            {
+                ui.playlist->setCurrentIndex(newTabIndex);
+            }
+        });
     newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
 
     fileMenu->addAction("Preferences");
 
-    auto *exitAction = fileMenu->addAction("Exit", this, []() {
-        constexpr int exitCode{ 0 };
-        QApplication::exit(exitCode);
-    });
+    auto *exitAction = fileMenu->addAction("Exit", this,
+        []()
+        {
+            constexpr int exitCode{ 0 };
+            QApplication::exit(exitCode);
+        });
     exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
     {
         auto *editMenu = bar->addMenu("Edit");
-        editMenu->addAction("Remove duplicates", this, [this]() {
-            const auto currentTabIndex = ui.playlist->currentIndex();
-            const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
-            if(not playlistId)
+        editMenu->addAction("Remove duplicates", this,
+            [this]()
             {
-                qWarning() << "Playlist not found, tab index:" << currentTabIndex;
-                return;
-            }
+                const auto currentTabIndex = ui.playlist->currentIndex();
+                const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
+                if(not playlistId)
+                {
+                    qWarning() << "Playlist not found, tab index:" << currentTabIndex;
+                    return;
+                }
 
-            emit removeDuplicates(*playlistId);
-        });
+                emit removeDuplicates(*playlistId);
+            });
     }
 
     {
         auto *viewMenu = bar->addMenu("View");
-        viewMenu->addAction("Toggle album view", this, [this]() {
-            const auto toggle = !ui.albums->isVisible();
-            ui.albums->setVisible(toggle);
-            settings_.setValue(config::albumsVisibility, toggle);
-        });
+        viewMenu->addAction("Toggle album view", this,
+            [this]()
+            {
+                const auto toggle = !ui.albums->isVisible();
+                ui.albums->setVisible(toggle);
+                settings_.setValue(config::albumsVisibility, toggle);
+            });
     }
 
     auto *playbackMenu = bar->addMenu("Playback");
@@ -221,17 +233,20 @@ void MainWindow::setupMenu()
 
     const auto currentPlayMode = getCurrentPlayMode();
 
-    auto addPlaybackAction = [this, actionGroup, currentPlayMode](const QString &label, PlayMode mode) {
+    auto addPlaybackAction = [this, actionGroup, currentPlayMode](const QString &label, PlayMode mode)
+    {
         auto *action = actionGroup->addAction(label);
         action->setCheckable(true);
         action->setChecked(currentPlayMode == mode);
 
-        connect(action, &QAction::toggled, [this, mode](bool checked) {
-            if(checked)
+        connect(action, &QAction::toggled,
+            [this, mode](bool checked)
             {
-                this->settings_.setValue(config::playModeKey, static_cast<int>(mode));
-            }
-        });
+                if(checked)
+                {
+                    this->settings_.setValue(config::playModeKey, static_cast<int>(mode));
+                }
+            });
     };
 
     addPlaybackAction("Repeat playlist", PlayMode::RepeatPlaylist);
@@ -258,42 +273,49 @@ void MainWindow::setupVolumeControl()
 
     mediaPlayer_->setVolume(volume);
 
-    connect(ui.volumeSlider, &QSlider::valueChanged, [this](int volume) {
-        this->mediaPlayer_->setVolume(volume);
-        this->settings_.setValue(config::volumeKey, volume);
-        qDebug() << "Volume set to" << volume;
-    });
+    connect(ui.volumeSlider, &QSlider::valueChanged,
+        [this](int volume)
+        {
+            this->mediaPlayer_->setVolume(volume);
+            this->settings_.setValue(config::volumeKey, volume);
+            qDebug() << "Volume set to" << volume;
+        });
 }
 
 void MainWindow::setupSeekbar()
 {
     disableSeekbar();
 
-    connect(ui.seekbar, &QSlider::sliderPressed, [this]() {
-        disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr);
-    });
+    connect(ui.seekbar, &QSlider::sliderPressed,
+        [this]()
+        { disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr); });
 
-    connect(ui.seekbar, &QSlider::sliderReleased, [this]() {
-        this->mediaPlayer_->setPosition(this->ui.seekbar->value());
-        connectMediaPlayerToSeekbar();
-    });
+    connect(ui.seekbar, &QSlider::sliderReleased,
+        [this]()
+        {
+            this->mediaPlayer_->setPosition(this->ui.seekbar->value());
+            connectMediaPlayerToSeekbar();
+        });
 
-    connect(ui.seekbar, &QSlider::sliderMoved, [this](int value) {
-        const auto currentTime = QTime(0, 0, 0, 0).addMSecs(value);
-        const auto verticalPos = QWidget::mapToGlobal(ui.seekbar->geometry().bottomLeft());
+    connect(ui.seekbar, &QSlider::sliderMoved,
+        [this](int value)
+        {
+            const auto currentTime = QTime(0, 0, 0, 0).addMSecs(value);
+            const auto verticalPos = QWidget::mapToGlobal(ui.seekbar->geometry().bottomLeft());
 
-        QToolTip::showText(QPoint{ QCursor::pos().x(), verticalPos.y() },
-                           currentTime.toString("H:mm:ss"));
-    });
+            QToolTip::showText(QPoint{ QCursor::pos().x(), verticalPos.y() }, currentTime.toString("H:mm:ss"));
+        });
 }
 
 void MainWindow::setupPlaybackControlButtons()
 {
-    const auto createButtonFunc = [this](const QString &filename, std::function<void()> onReleaseEvent) {
+    const auto createButtonFunc = [this](const QString &filename, std::function<void()> onReleaseEvent)
+    {
         auto *button = new QPushButton(this);
         button->setFlat(true);
         button->setMaximumSize(24, 24);
         button->setIcon(QPixmap(filename));
+        button->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         connect(button, &QPushButton::released, std::move(onReleaseEvent));
 
         ui.buttonsLayout->addWidget(button);
@@ -356,40 +378,44 @@ void MainWindow::setupPlaylistWidget()
     tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(tabbar, &MultilineTabBar::tabDoubleClicked,
-            [this](int tabIndex) { togglePlaylistRenameControl(tabIndex); });
+        [this](int tabIndex) { togglePlaylistRenameControl(tabIndex); });
 
-    connect(tabbar, &QTabBar::customContextMenuRequested, [this, tabbar](const QPoint &point) {
-        const auto tabIndex = tabbar->tabAt(point);
-        const auto playlistId = getPlaylistIdByTabIndex(tabIndex);
+    connect(tabbar, &QTabBar::customContextMenuRequested,
+        [this, tabbar](const QPoint &point)
+        {
+            const auto tabIndex = tabbar->tabAt(point);
+            const auto playlistId = getPlaylistIdByTabIndex(tabIndex);
 
-        QMenu menu;
-        menu.addAction("Rename playlist", this,
-                       [this, tabIndex] { togglePlaylistRenameControl(tabIndex); });
-        menu.addAction("Remove playlist", this, [this, playlistId = *playlistId, tabIndex]() {
-            ui.playlist->removeTab(tabIndex);
-            playlistManager_.removeById(playlistId);
+            QMenu menu;
+            menu.addAction("Rename playlist", this,
+                [this, tabIndex] { togglePlaylistRenameControl(tabIndex); });
+            menu.addAction("Remove playlist", this,
+                [this, playlistId = *playlistId, tabIndex]()
+                {
+                    ui.playlist->removeTab(tabIndex);
+                    playlistManager_.removeById(playlistId);
+                });
+
+            menu.exec(tabbar->mapToGlobal(point));
         });
-
-        menu.exec(tabbar->mapToGlobal(point));
-    });
 }
 
 int MainWindow::setupPlaylistTab(Playlist &playlist)
 {
     const auto playlistId = playlist.getPlaylistId();
-    auto playlistWidget = std::make_unique<PlaylistWidget>(playlist, [this, playlistId](int index) {
-        playMediaFromPlaylist(playlistId, index);
-    });
+    auto playlistWidget = std::make_unique<PlaylistWidget>(
+        playlist, [this, playlistId](int index) { playMediaFromPlaylist(playlistId, index); });
     auto playlistModel = std::make_unique<PlaylistModel>(playlist, playlistWidget.get());
     auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
     connect(this, &MainWindow::removeDuplicates, playlistModel.get(),
-            [playlistId, model = playlistModel.get()](PlaylistId eventPlaylistId) {
-                if(playlistId == eventPlaylistId)
-                {
-                    model->onDuplicateRemoveRequest();
-                }
-            });
+        [playlistId, model = playlistModel.get()](PlaylistId eventPlaylistId)
+        {
+            if(playlistId == eventPlaylistId)
+            {
+                model->onDuplicateRemoveRequest();
+            }
+        });
 
     playlistWidget->setModel(playlistModel.release());
     playlistWidget->setHeader(playlistHeader.release());
@@ -421,10 +447,9 @@ void MainWindow::setupMediaPlayer()
     if(debugAudioMetadata)
     {
         connect(mediaPlayer_.get(),
-                QOverload<const QString &, const QVariant &>::of(&QMediaObject::metaDataChanged),
-                [](const QString &key, const QVariant &value) {
-                    qDebug() << "Metadata changed" << key << value;
-                });
+            QOverload<const QString &, const QVariant &>::of(&QMediaObject::metaDataChanged),
+            [](const QString &key, const QVariant &value)
+            { qDebug() << "Metadata changed" << key << value; });
     }
 }
 
@@ -437,32 +462,58 @@ void MainWindow::setupGlobalShortcuts()
     connect(removePlaylist, &QShortcut::activated, this, &MainWindow::removeCurrentPlaylist);
 
     const auto changePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab), this);
-    connect(changePlaylist, &QShortcut::activated, this, [this]() {
-        const auto playlistCount = ui.playlist->count();
-        const auto currentPlaylistIndex = ui.playlist->currentIndex();
-
-        auto newPlaylistIndex = currentPlaylistIndex + 1;
-        if(newPlaylistIndex >= playlistCount)
+    connect(changePlaylist, &QShortcut::activated, this,
+        [this]()
         {
-            newPlaylistIndex = 0;
-        }
+            const auto playlistCount = ui.playlist->count();
+            const auto currentPlaylistIndex = ui.playlist->currentIndex();
 
-        ui.playlist->setCurrentIndex(newPlaylistIndex);
-    });
+            auto newPlaylistIndex = currentPlaylistIndex + 1;
+            if(newPlaylistIndex >= playlistCount)
+            {
+                newPlaylistIndex = 0;
+            }
+
+            ui.playlist->setCurrentIndex(newPlaylistIndex);
+        });
 
     const auto backChangePlaylist = new QShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Tab), this);
-    connect(backChangePlaylist, &QShortcut::activated, this, [this]() {
-        const auto playlistCount = ui.playlist->count();
-        const auto currentPlaylistIndex = ui.playlist->currentIndex();
-
-        auto newPlaylistIndex = currentPlaylistIndex - 1;
-        if(newPlaylistIndex < 0)
+    connect(backChangePlaylist, &QShortcut::activated, this,
+        [this]()
         {
-            newPlaylistIndex = playlistCount - 1;
-        }
+            const auto playlistCount = ui.playlist->count();
+            const auto currentPlaylistIndex = ui.playlist->currentIndex();
 
-        ui.playlist->setCurrentIndex(newPlaylistIndex);
-    });
+            auto newPlaylistIndex = currentPlaylistIndex - 1;
+            if(newPlaylistIndex < 0)
+            {
+                newPlaylistIndex = playlistCount - 1;
+            }
+
+            ui.playlist->setCurrentIndex(newPlaylistIndex);
+        });
+
+    constexpr auto seekMilliseconds = 5 * 1000;
+
+    const auto seekForwards = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right), this);
+    connect(seekForwards, &QShortcut::activated, this,
+        [this]()
+        {
+            const auto maximum = ui.seekbar->maximum();
+            const auto newPosition =
+                std::clamp<qint64>(mediaPlayer_->position() + seekMilliseconds, 0, maximum);
+            mediaPlayer_->setPosition(newPosition);
+        });
+
+    const auto seekBackwards = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left), this);
+    connect(seekBackwards, &QShortcut::activated, this,
+        [this]()
+        {
+            const auto maximum = ui.seekbar->maximum();
+            const auto newPosition =
+                std::clamp<qint64>(mediaPlayer_->position() - seekMilliseconds, 0, maximum);
+            mediaPlayer_->setPosition(newPosition);
+        });
 }
 
 void MainWindow::setTheme(const QString &filename)
@@ -520,43 +571,46 @@ void MainWindow::togglePlaylistRenameControl(int tabIndex)
     ui.playlistRenameWidget = renameLineEdit;
 
     connect(renameLineEdit, &EscapableLineEdit::editingFinished,
-            [this, tabbar, playlistId = playlistId.value(), renameLineEdit]() {
-                const auto tabIndex = getTabIndexByPlaylistId(playlistId);
-                if(not tabIndex)
-                {
-                    qWarning() << "Playlist not found";
-                    renameLineEdit->deleteLater();
-                    ui.playlistRenameWidget = nullptr;
-                    return;
-                }
-
-                const QString oldValue = tabbar->tabText(*tabIndex);
-                const QString newValue = renameLineEdit->text();
-                if(oldValue != newValue)
-                {
-                    const auto renameResult = playlistManager_.rename(playlistId, newValue);
-                    if(renameResult)
-                    {
-                        tabbar->setTabText(*tabIndex, newValue);
-                        qDebug() << "Playlist" << oldValue << "renamed to" << newValue;
-
-                        const auto lastPlaylistName = settings_.value(config::lastPlaylistKey).toString();
-                        if(lastPlaylistName == oldValue)
-                        {
-                            settings_.setValue(config::lastPlaylistKey, newValue);
-                            qDebug() << "Updated last playlist:" << newValue;
-                        }
-                    }
-                }
-
+        [this, tabbar, playlistId = playlistId.value(), renameLineEdit]()
+        {
+            const auto tabIndex = getTabIndexByPlaylistId(playlistId);
+            if(not tabIndex)
+            {
+                qWarning() << "Playlist not found";
                 renameLineEdit->deleteLater();
                 ui.playlistRenameWidget = nullptr;
-            });
+                return;
+            }
 
-    connect(renameLineEdit, &EscapableLineEdit::cancelEdit, this, [this]() {
-        ui.playlistRenameWidget->deleteLater();
-        ui.playlistRenameWidget = nullptr;
-    });
+            const QString oldValue = tabbar->tabText(*tabIndex);
+            const QString newValue = renameLineEdit->text();
+            if(oldValue != newValue)
+            {
+                const auto renameResult = playlistManager_.rename(playlistId, newValue);
+                if(renameResult)
+                {
+                    tabbar->setTabText(*tabIndex, newValue);
+                    qDebug() << "Playlist" << oldValue << "renamed to" << newValue;
+
+                    const auto lastPlaylistName = settings_.value(config::lastPlaylistKey).toString();
+                    if(lastPlaylistName == oldValue)
+                    {
+                        settings_.setValue(config::lastPlaylistKey, newValue);
+                        qDebug() << "Updated last playlist:" << newValue;
+                    }
+                }
+            }
+
+            renameLineEdit->deleteLater();
+            ui.playlistRenameWidget = nullptr;
+        });
+
+    connect(renameLineEdit, &EscapableLineEdit::cancelEdit, this,
+        [this]()
+        {
+            ui.playlistRenameWidget->deleteLater();
+            ui.playlistRenameWidget = nullptr;
+        });
 }
 
 void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
@@ -582,14 +636,15 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
 
     disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
     connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
-            [this, playlistId](const QMediaPlayer::MediaStatus status) {
-                using Status = QMediaPlayer::MediaStatus;
-                if(Status::EndOfMedia == status or Status::InvalidMedia == status)
-                {
-                    disableSeekbar();
-                    onMediaFinish(playlistId);
-                }
-            });
+        [this, playlistId](const QMediaPlayer::MediaStatus status)
+        {
+            using Status = QMediaPlayer::MediaStatus;
+            if(Status::EndOfMedia == status or Status::InvalidMedia == status)
+            {
+                disableSeekbar();
+                onMediaFinish(playlistId);
+            }
+        });
 }
 
 void MainWindow::togglePlayPause()
@@ -654,23 +709,25 @@ void MainWindow::enablePlaylistChangeTracking()
     // Otherwise last playlist name is updated with loaded playlists
 
     auto *tabbar = ui.playlist->tabBar();
-    connect(tabbar, &MultilineTabBar::currentChanged, [this](int newIndex) {
-        const auto playlistId = getPlaylistIdByTabIndex(newIndex);
-        if(not playlistId)
+    connect(tabbar, &MultilineTabBar::currentChanged,
+        [this](int newIndex)
         {
-            qDebug() << "No playlist at tab index:" << newIndex;
-            return;
-        }
+            const auto playlistId = getPlaylistIdByTabIndex(newIndex);
+            if(not playlistId)
+            {
+                qDebug() << "No playlist at tab index:" << newIndex;
+                return;
+            }
 
-        const auto *playlist = playlistManager_.get(*playlistId);
-        if(not playlist)
-        {
-            qCritical() << "No playlist with given playlistId:" << playlistId->value;
-            return;
-        }
-        settings_.setValue(config::lastPlaylistKey, playlist->getName());
-        qDebug() << "Updated last playlist:" << playlist->getName();
-    });
+            const auto *playlist = playlistManager_.get(*playlistId);
+            if(not playlist)
+            {
+                qCritical() << "No playlist with given playlistId:" << playlistId->value;
+                return;
+            }
+            settings_.setValue(config::lastPlaylistKey, playlist->getName());
+            qDebug() << "Updated last playlist:" << playlist->getName();
+        });
 }
 
 void MainWindow::restoreLastPlaylist()
