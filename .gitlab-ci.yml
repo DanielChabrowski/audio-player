@@ -7,7 +7,7 @@ check:
     - source venv/bin/activate
     - pip install pre-commit
   script:
-    - pre-commit run --all-files
+    - SKIP=clang-format pre-commit run --all-files --show-diff-on-failure
 
 .build: &build
   image: debian:testing-slim
