@@ -2,10 +2,10 @@ check:
   image: alpine:latest
   stage: .pre
   before_script:
-    - apk update && apk add --no-cache git python3 py3-pip clang
+    - apk update && apk add --no-cache git python3 py3-pip # clang
     - python3 -m venv venv
     - source venv/bin/activate
-    - pip install pre-commit
+    - pip install --disable-pip-version-check --no-cache-dir pre-commit
   script:
     - SKIP=clang-format pre-commit run --all-files --show-diff-on-failure
 
