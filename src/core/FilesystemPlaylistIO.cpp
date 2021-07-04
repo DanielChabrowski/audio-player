@@ -176,7 +176,7 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
         if(cachedValue != cached.end())
         {
             ++cacheHits;
-            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), std::move(cachedValue->second) });
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), cachedValue->second });
             continue;
         }
 
