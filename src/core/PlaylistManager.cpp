@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
+#include <stdexcept>
 
 PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirectory)
 : playlistIO_{ playlistIO }
