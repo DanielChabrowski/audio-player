@@ -497,7 +497,7 @@ void MainWindow::setupGlobalShortcuts()
 
     const auto seekForwards = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right), this);
     connect(seekForwards, &QShortcut::activated, this,
-        [this]()
+        [&seekMilliseconds, this]()
         {
             const auto maximum = ui.seekbar->maximum();
             const auto newPosition =
@@ -507,7 +507,7 @@ void MainWindow::setupGlobalShortcuts()
 
     const auto seekBackwards = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left), this);
     connect(seekBackwards, &QShortcut::activated, this,
-        [this]()
+        [&seekMilliseconds, this]()
         {
             const auto maximum = ui.seekbar->maximum();
             const auto newPosition =
