@@ -18,6 +18,9 @@ set(SOURCES
     PlaylistModel.cpp
     PlaylistModel.hpp
 
+    PlaylistFilterModel.cpp
+    PlaylistFilterModel.hpp
+
     EscapableLineEdit.cpp
     EscapableLineEdit.hpp
 

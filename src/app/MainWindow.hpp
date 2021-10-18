@@ -6,9 +6,11 @@
 #include <QWidget>
 
 #include <Playlist.hpp>
+
 #include <memory>
 
 class Playlist;
+class PlaylistWidget;
 class PlaylistManager;
 class MultilineTabWidget;
 class EscapableLineEdit;
@@ -39,6 +41,8 @@ private:
     void setupPlaylistWidget();
     int setupPlaylistTab(Playlist &);
 
+    EscapableLineEdit *createPlaylistSearchWidget();
+
     void setupMediaPlayer();
     void setupGlobalShortcuts();
 
@@ -60,6 +64,7 @@ private:
     void restoreLastPlaylist();
 
     PlayMode getCurrentPlayMode();
+    PlaylistWidget *getPlaylistWidgetByTabIndex(int tabIndex);
     const Playlist *getPlaylistByTabIndex(int tabIndex);
     std::optional<PlaylistId> getPlaylistIdByTabIndex(int tabIndex);
     std::optional<int> getTabIndexByPlaylistName(const QString &name);
@@ -67,6 +72,11 @@ private:
 
 signals:
     void removeDuplicates(PlaylistId);
+    void updateSearchResult(QString);
+
+private slots:
+    void onPlaylistSearchCanceled();
+    void onPlaylistSearchTextChanged(const QString &);
 
 private:
     struct
@@ -77,6 +87,7 @@ private:
         QSlider *seekbar;
         QTreeView *albums;
         MultilineTabWidget *playlist;
+        EscapableLineEdit *playlistSearch;
 
         EscapableLineEdit *playlistRenameWidget = nullptr;
     } ui;

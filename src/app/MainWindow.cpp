@@ -20,6 +20,7 @@
 #include "ConfigurationKeys.hpp"
 #include "EscapableLineEdit.hpp"
 #include "MultilineTabBar.hpp"
+#include "PlaylistFilterModel.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistManager.hpp"
 #include "PlaylistModel.hpp"
@@ -153,13 +154,22 @@ void MainWindow::setupWindow()
         bottomHLayout->addWidget(ui.albums);
     }
 
+
+    auto *vLayout = new QVBoxLayout();
     ui.playlist = new MultilineTabWidget(this);
     {
         // ui.playlist->setMovable(true);
         ui.playlist->setCurrentIndex(-1);
 
-        bottomHLayout->addWidget(ui.playlist);
+        vLayout->addWidget(ui.playlist);
     }
+
+    {
+        ui.playlistSearch = createPlaylistSearchWidget();
+        vLayout->addWidget(ui.playlistSearch);
+    }
+
+    bottomHLayout->addLayout(vLayout);
 
     layout->addLayout(bottomHLayout, 1, 5, 1, 1);
 }
@@ -400,14 +410,23 @@ void MainWindow::setupPlaylistWidget()
         });
 }
 
+EscapableLineEdit *MainWindow::createPlaylistSearchWidget()
+{
+    auto *widget = new EscapableLineEdit(this);
+    widget->setPlaceholderText("Type your search query");
+    widget->hide();
+
+    connect(widget, &EscapableLineEdit::cancelEdit, this, &MainWindow::onPlaylistSearchCanceled);
+    connect(widget, &EscapableLineEdit::textChanged, this, &MainWindow::onPlaylistSearchTextChanged);
+
+    return widget;
+}
+
 int MainWindow::setupPlaylistTab(Playlist &playlist)
 {
     const auto playlistId = playlist.getPlaylistId();
-    auto playlistWidget = std::make_unique<PlaylistWidget>(
-        playlist, [this, playlistId](int index) { playMediaFromPlaylist(playlistId, index); });
-    auto playlistModel = std::make_unique<PlaylistModel>(playlist, playlistWidget.get());
-    auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
+    auto playlistModel = std::make_unique<PlaylistModel>(playlist, this);
     connect(this, &MainWindow::removeDuplicates, playlistModel.get(),
         [playlistId, model = playlistModel.get()](PlaylistId eventPlaylistId)
         {
@@ -417,7 +436,19 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
             }
         });
 
-    playlistWidget->setModel(playlistModel.release());
+    auto filterModel = std::make_unique<PlaylistFilterModel>(this);
+    filterModel->setSourceModel(playlistModel.release());
+
+    auto playlistWidget = std::make_unique<PlaylistWidget>(playlist,
+        [this, playlistId, proxyModel = filterModel.get()](int index) {
+            playMediaFromPlaylist(playlistId, proxyModel->mapToSource(proxyModel->index(index, 0)).row());
+        });
+    auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
+
+    connect(this, &MainWindow::updateSearchResult, filterModel.get(),
+        [model = filterModel.get()](QString query) { model->setFilterQuery(query); });
+
+    playlistWidget->setModel(filterModel.release());
     playlistWidget->setHeader(playlistHeader.release());
 
     // Hide first column containing tree-view decorations
@@ -513,6 +544,28 @@ void MainWindow::setupGlobalShortcuts()
             const auto newPosition =
                 std::clamp<qint64>(mediaPlayer_->position() - seekMilliseconds, 0, maximum);
             mediaPlayer_->setPosition(newPosition);
+        });
+
+    const auto playlistSearchShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this);
+    connect(playlistSearchShortcut, &QShortcut::activated, this,
+        [&, this]()
+        {
+            const bool hasFocus = ui.playlistSearch->hasFocus();
+            const bool isVisible = ui.playlistSearch->isVisible();
+
+            bool toggleVisibility = true;
+
+            if(isVisible && hasFocus)
+            {
+                toggleVisibility = false;
+            }
+
+            ui.playlistSearch->setVisible(toggleVisibility);
+
+            if(toggleVisibility)
+            {
+                ui.playlistSearch->setFocus();
+            }
         });
 }
 
@@ -751,14 +804,23 @@ PlayMode MainWindow::getCurrentPlayMode()
     return static_cast<PlayMode>(settings_.value(config::playModeKey, defaultPlayMode).toInt());
 }
 
-const Playlist *MainWindow::getPlaylistByTabIndex(int tabIndex)
+PlaylistWidget *MainWindow::getPlaylistWidgetByTabIndex(int tabIndex)
 {
-    const auto *widget = ui.playlist->widget(tabIndex);
+    auto *widget = ui.playlist->widget(tabIndex);
     if(not widget)
     {
         return nullptr;
     }
-    const auto *playlistWidget = qobject_cast<const PlaylistWidget *>(widget);
+    return qobject_cast<PlaylistWidget *>(widget);
+}
+
+const Playlist *MainWindow::getPlaylistByTabIndex(int tabIndex)
+{
+    auto playlistWidget = getPlaylistWidgetByTabIndex(tabIndex);
+    if(not playlistWidget)
+    {
+        return nullptr;
+    }
     return &playlistWidget->getPlaylist();
 }
 
@@ -798,4 +860,16 @@ std::optional<int> MainWindow::getTabIndexByPlaylistId(PlaylistId playlistId)
     }
 
     return std::nullopt;
+}
+
+void MainWindow::onPlaylistSearchCanceled()
+{
+    emit updateSearchResult("");
+    ui.playlistSearch->hide();
+    ui.playlistSearch->clear();
+}
+
+void MainWindow::onPlaylistSearchTextChanged(const QString &query)
+{
+    emit updateSearchResult(query);
 }

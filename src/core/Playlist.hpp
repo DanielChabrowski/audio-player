@@ -70,6 +70,8 @@ public:
 
     void removeDuplicates();
 
+    bool matchesFilterQuery(std::size_t trackIndex, QString query) const;
+
 private:
     void save();
     std::size_t getRandomIndex() const;

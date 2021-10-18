@@ -23,6 +23,11 @@ class PlaylistModel final : public QAbstractListModel
 public:
     PlaylistModel(Playlist &, QObject * = nullptr);
 
+    Playlist &getPlaylist()
+    {
+        return playlist_;
+    }
+
 protected:
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;

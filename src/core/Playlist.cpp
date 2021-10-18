@@ -216,6 +216,38 @@ void Playlist::removeDuplicates()
     save();
 }
 
+bool metadataContainsKeyword(const AudioMetaData &metadata, const QStringRef &keyword)
+{
+    return metadata.title.contains(keyword) or metadata.artist.contains(keyword) or
+           metadata.albumData.name.contains(keyword);
+}
+
+bool Playlist::matchesFilterQuery(std::size_t trackIndex, QString query) const
+{
+    const auto &track = getTrack(trackIndex);
+    if(not track)
+    {
+        qWarning() << "matchesFilterQuery called for unknown track index";
+        return false;
+    }
+
+    const auto trimmed = query.trimmed();
+    const auto keywords = trimmed.splitRef(' ', Qt::SplitBehaviorFlags::SkipEmptyParts);
+
+    int matchedKeywords = 0;
+
+    for(const auto &keyword : keywords)
+    {
+        if(track->path.contains(keyword) or
+            (track->audioMetaData and metadataContainsKeyword(track->audioMetaData.value(), keyword)))
+        {
+            ++matchedKeywords;
+        }
+    }
+
+    return matchedKeywords == keywords.size();
+}
+
 void Playlist::save()
 {
     playlistIO_.save(*this);
