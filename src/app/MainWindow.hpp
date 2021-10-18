@@ -2,6 +2,7 @@
 
 #include <QHBoxLayout>
 #include <QSlider>
+#include <QStringList>
 #include <QTreeView>
 #include <QWidget>
 
@@ -64,6 +65,8 @@ private:
     void restoreLastPlaylist();
 
     PlayMode getCurrentPlayMode();
+
+    int getCurrentPlaylistTabIndex() const;
     PlaylistWidget *getPlaylistWidgetByTabIndex(int tabIndex);
     const Playlist *getPlaylistByTabIndex(int tabIndex);
     std::optional<PlaylistId> getPlaylistIdByTabIndex(int tabIndex);
@@ -73,6 +76,7 @@ private:
 signals:
     void removeDuplicates(PlaylistId);
     void updateSearchResult(QString);
+    void playlistInsertRequest(PlaylistId, QStringList);
 
 private slots:
     void onPlaylistSearchCanceled();

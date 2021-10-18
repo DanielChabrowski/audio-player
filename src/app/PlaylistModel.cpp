@@ -343,3 +343,20 @@ void PlaylistModel::onDuplicateRemoveRequest()
     playlist_.removeDuplicates();
     endResetModel();
 }
+
+void PlaylistModel::onInsertRequest(QStringList filenames)
+{
+    // Cannot beginInsert because the amount of elements added is unknown
+    // due to URLs sometimes being directories
+    beginResetModel();
+
+    std::vector<QUrl> filepaths;
+    filepaths.reserve(filenames.size());
+
+    std::transform(filenames.begin(), filenames.end(), std::back_inserter(filepaths),
+        [](QString filename) { return QUrl::fromUserInput(filename); });
+
+    playlist_.insertTracks(playlist_.getTrackCount(), filepaths);
+
+    endResetModel();
+}

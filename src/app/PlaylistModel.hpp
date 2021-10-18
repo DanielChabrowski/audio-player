@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QStringList>
 #include <optional>
 
 enum PlaylistColumn
@@ -56,6 +57,7 @@ private:
 
 public slots:
     void onDuplicateRemoveRequest();
+    void onInsertRequest(QStringList);
 
 private:
     Playlist &playlist_;

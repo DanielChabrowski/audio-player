@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QFileDialog>
 #include <QFileSystemModel>
 #include <QLabel>
 #include <QMediaPlayer>
@@ -113,9 +114,10 @@ void MainWindow::setupWindow()
     ui.buttonsLayout = new QHBoxLayout();
     topHLayout->addLayout(ui.buttonsLayout);
 
-    ui.volumeSlider = new QSlider(this);
-    ui.volumeSlider->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     {
+        ui.volumeSlider = new QSlider(this);
+        ui.volumeSlider->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -126,9 +128,9 @@ void MainWindow::setupWindow()
         topHLayout->addWidget(ui.volumeSlider);
     }
 
-    ui.seekbar = new QSlider(this);
-    ui.seekbar->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     {
+        ui.seekbar = new QSlider(this);
+        ui.seekbar->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         ui.seekbar->setOrientation(Qt::Horizontal);
 
         topHLayout->addWidget(ui.seekbar);
@@ -139,8 +141,9 @@ void MainWindow::setupWindow()
     auto *bottomHLayout = new QHBoxLayout();
     bottomHLayout->setSpacing(2);
 
-    ui.albums = new QTreeView(this);
     {
+        ui.albums = new QTreeView(this);
+
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -154,10 +157,10 @@ void MainWindow::setupWindow()
         bottomHLayout->addWidget(ui.albums);
     }
 
-
     auto *vLayout = new QVBoxLayout();
-    ui.playlist = new MultilineTabWidget(this);
+
     {
+        ui.playlist = new MultilineTabWidget(this);
         // ui.playlist->setMovable(true);
         ui.playlist->setCurrentIndex(-1);
 
@@ -179,7 +182,26 @@ void MainWindow::setupMenu()
     auto *bar = new QMenuBar(this);
     auto *fileMenu = bar->addMenu("File");
 
-    fileMenu->addAction("Open");
+    fileMenu->addAction(
+        "Open", this,
+        [this]()
+        {
+            auto filenames = QFileDialog::getOpenFileNames(this, "Open audio",
+                QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0),
+                "Audio Files (*.mp3 *.wav *.ogg)");
+
+            const auto currentTabIndex = getCurrentPlaylistTabIndex();
+            const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
+
+            if(not playlistId)
+            {
+                qWarning() << "Attempted insert into playlist that doesn't exist";
+                return;
+            }
+
+            emit playlistInsertRequest(playlistId.value(), filenames);
+        },
+        QKeySequence::Open);
 
     auto *newPlaylistAction = fileMenu->addAction("Add new playlist", this,
         [this]()
@@ -214,7 +236,7 @@ void MainWindow::setupMenu()
         editMenu->addAction("Remove duplicates", this,
             [this]()
             {
-                const auto currentTabIndex = ui.playlist->currentIndex();
+                const auto currentTabIndex = getCurrentPlaylistTabIndex();
                 const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
                 if(not playlistId)
                 {
@@ -436,6 +458,15 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
             }
         });
 
+    connect(this, &MainWindow::playlistInsertRequest, playlistModel.get(),
+        [playlistId, model = playlistModel.get()](PlaylistId eventPlaylistId, QStringList filenames)
+        {
+            if(playlistId == eventPlaylistId)
+            {
+                model->onInsertRequest(filenames);
+            }
+        });
+
     auto filterModel = std::make_unique<PlaylistFilterModel>(this);
     filterModel->setSourceModel(playlistModel.release());
 
@@ -497,7 +528,7 @@ void MainWindow::setupGlobalShortcuts()
         [this]()
         {
             const auto playlistCount = ui.playlist->count();
-            const auto currentPlaylistIndex = ui.playlist->currentIndex();
+            const auto currentPlaylistIndex = getCurrentPlaylistTabIndex();
 
             auto newPlaylistIndex = currentPlaylistIndex + 1;
             if(newPlaylistIndex >= playlistCount)
@@ -513,7 +544,7 @@ void MainWindow::setupGlobalShortcuts()
         [this]()
         {
             const auto playlistCount = ui.playlist->count();
-            const auto currentPlaylistIndex = ui.playlist->currentIndex();
+            const auto currentPlaylistIndex = getCurrentPlaylistTabIndex();
 
             auto newPlaylistIndex = currentPlaylistIndex - 1;
             if(newPlaylistIndex < 0)
@@ -714,7 +745,7 @@ void MainWindow::togglePlayPause()
 
 void MainWindow::removeCurrentPlaylist()
 {
-    const auto currentTabIndex = ui.playlist->currentIndex();
+    const auto currentTabIndex = getCurrentPlaylistTabIndex();
     if(currentTabIndex == -1)
     {
         return;
@@ -802,6 +833,11 @@ PlayMode MainWindow::getCurrentPlayMode()
 {
     constexpr auto defaultPlayMode = static_cast<int>(PlayMode::RepeatPlaylist);
     return static_cast<PlayMode>(settings_.value(config::playModeKey, defaultPlayMode).toInt());
+}
+
+int MainWindow::getCurrentPlaylistTabIndex() const
+{
+    return ui.playlist->currentIndex();
 }
 
 PlaylistWidget *MainWindow::getPlaylistWidgetByTabIndex(int tabIndex)
