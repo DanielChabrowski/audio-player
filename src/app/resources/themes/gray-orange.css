@@ -27,28 +27,33 @@ QTreeView {
     border: none;
 }
 
+MultilineTabWidget::pane {
+    border-top: 1px solid #C4C4C4;
+}
+
 MultilineTabBar::tab {
-    border-top: 1px;
+    padding: 0.3em 0.7em;
     border-right: 1px;
     border-bottom: 1px;
-    border-color: #C4C4C4;
     border-style: solid;
+    border-color: #C4C4C4;
+}
+
+MultilineTabBar::tab:selected {
+    background-color: white;
 }
 
 MultilineTabBar::tab:first {
-    border-left: 1px;
-    border-color: #C4C4C4;
-    border-style: solid;
+    border-left: 1px solid #C4C4C4;
 }
 
 MultilineTabBar::tab:last {
-    border-right: 1px;
-    border-color: #C4C4C4;
-    border-style: solid;
+    border-right: 1px solid #C4C4C4;
 }
 
 MultilineTabBar::tab:only-one {
     border: 1px;
-    border-color: #C4C4C4;
+    border-top: none;
     border-style: solid;
+    border-color: #C4C4C4;
 }
