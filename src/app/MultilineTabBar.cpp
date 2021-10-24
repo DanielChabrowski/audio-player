@@ -27,10 +27,12 @@ QSize MultilineTabBar::sizeHint() const
 
 QSize MultilineTabBar::minimumSizeHint() const
 {
+    const auto sh = sizeHint();
+
     if(tabs_.count() > 0)
     {
-        const QSize sh = tabSizeHint(0);
-        return { sh.width(), sh.height() };
+        const QSize tabSh = tabSizeHint(0);
+        return { tabSh.width(), sh.height() };
     }
 
     return { 0, 0 };
@@ -59,19 +61,41 @@ void MultilineTabBar::paintEvent(QPaintEvent *)
 
     for(int i = 0; i < tabs_.count(); ++i)
     {
+        QStyleOptionTab styleOption{};
+        styleOption.text = tabText(i);
+
+        const auto &tab = tabs_[i];
+        const bool isBegginingTab = i == 0 or tab.isFirstOnRow;
+        const bool isEndTab = i == tabs_.count() - 1 or tab.isLastOnRow;
+
+        if(tabs_.count() == 1 or (isBegginingTab && isEndTab))
+        {
+            styleOption.position = QStyleOptionTab::TabPosition::OnlyOneTab;
+        }
+        else if(isBegginingTab)
+        {
+            styleOption.position = QStyleOptionTab::TabPosition::Beginning;
+        }
+        else if(isEndTab)
+        {
+            styleOption.position = QStyleOptionTab::TabPosition::End;
+        }
+        else
+        {
+            styleOption.position = QStyleOptionTab::TabPosition::Middle;
+        }
+
         const auto tabRect = this->tabRect(i);
-        QStyleOptionTab tab;
-        tab.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
-        tab.state |= QStyle::State_Enabled | QStyle::State_Active;
+        styleOption.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
+        styleOption.state |= QStyle::State_Enabled | QStyle::State_Active;
 
         if(i == currentIndex_)
         {
-            tab.state |= QStyle::State_HasFocus | QStyle::State_Selected;
+            styleOption.state |= QStyle::State_HasFocus | QStyle::State_Selected;
         }
 
-        tab.text = tabText(i);
-        tab.rect = tabRect;
-        p.drawControl(QStyle::CE_TabBarTab, tab);
+        styleOption.rect = tabRect;
+        p.drawControl(QStyle::CE_TabBarTab, styleOption);
     }
 }
 
@@ -177,6 +201,7 @@ void MultilineTabBar::setCurrentIndex(int tabIndex)
 
 void MultilineTabBar::recalculateTabsLayout()
 {
+    int row = 0;
     int hOffset = 0;
     int vOffset = 0;
 
@@ -188,11 +213,15 @@ void MultilineTabBar::recalculateTabsLayout()
         auto &tab = tabs_[i];
         auto sizeHint = tabSizeHint(i);
 
+        tab.isFirstOnRow = false;
+        tab.isLastOnRow = false;
+
         const int tabsInRow = i - rowFirstTab;
         if(tabsInRow != 0 and hOffset + sizeHint.width() > width())
         {
+            row += 1;
             hOffset = 0;
-            vOffset += sizeHint.height() - 4;
+            vOffset += sizeHint.height(); // - 4;
             // -4 to keep the rows right below each other
 
             const int leftoverSpace = width() - rowUsedSpace - 1;
@@ -214,6 +243,9 @@ void MultilineTabBar::recalculateTabsLayout()
                 auto &lastRowTab = tabs_[i - 1];
                 lastRowTab.rect.setWidth(lastRowTab.rect.width() + spaceRemainder);
             }
+
+            tabs_[i].isFirstOnRow = true;
+            tabs_[i - 1].isLastOnRow = true;
 
             rowFirstTab = i;
             rowUsedSpace = sizeHint.width();

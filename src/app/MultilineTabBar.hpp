@@ -9,6 +9,8 @@ struct Tab
 {
     QString text;
     QRect rect;
+    bool isFirstOnRow{ false };
+    bool isLastOnRow{ false };
 };
 
 class MultilineTabBar : public QWidget

@@ -26,3 +26,29 @@ QMenuBar::item:pressed {
 QTreeView {
     border: none;
 }
+
+MultilineTabBar::tab {
+    border-top: 1px;
+    border-right: 1px;
+    border-bottom: 1px;
+    border-color: #C4C4C4;
+    border-style: solid;
+}
+
+MultilineTabBar::tab:first {
+    border-left: 1px;
+    border-color: #C4C4C4;
+    border-style: solid;
+}
+
+MultilineTabBar::tab:last {
+    border-right: 1px;
+    border-color: #C4C4C4;
+    border-style: solid;
+}
+
+MultilineTabBar::tab:only-one {
+    border: 1px;
+    border-color: #C4C4C4;
+    border-style: solid;
+}
