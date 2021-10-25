@@ -9,6 +9,9 @@ struct Tab
 {
     QString text;
     QRect rect;
+    bool isOnAFirstRow{ false };
+    bool isFirstOnRow{ false };
+    bool isLastOnRow{ false };
 };
 
 class MultilineTabBar : public QWidget
@@ -16,7 +19,7 @@ class MultilineTabBar : public QWidget
     Q_OBJECT
 
 public:
-    explicit MultilineTabBar(QWidget *parent);
+    explicit MultilineTabBar(QWidget *parent = nullptr);
 
     virtual ~MultilineTabBar() = default;
 
@@ -78,7 +81,6 @@ public:
 
     virtual ~MultilineTabWidget() = default;
 
-    void resizeEvent(QResizeEvent *) override;
     void paintEvent(QPaintEvent *) override;
 
     QWidget *widget(int index)
@@ -125,6 +127,4 @@ private:
 private:
     MultilineTabBar *tabBar_;
     QStackedWidget *stack_;
-
-    QRect panelRect;
 };
