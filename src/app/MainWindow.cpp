@@ -2,16 +2,12 @@
 
 #include <QActionGroup>
 #include <QApplication>
-#include <QAudioOutput>
 #include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QLabel>
-#include <QListView>
-#include <QMediaMetaData>
-#include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
 #include <QSettings>
@@ -26,6 +22,7 @@
 #include "ConfigurationKeys.hpp"
 #include "EscapableLineEdit.hpp"
 #include "FilesystemPlaylistIO.hpp"
+#include "MediaPlayerQtBackend.hpp"
 #include "MultilineTabBar.hpp"
 #include "PlaylistFilterModel.hpp"
 #include "PlaylistHeader.hpp"
@@ -332,13 +329,13 @@ void MainWindow::setupVolumeControl()
     ui.volumeSlider->setValue(sliderValue);
 
     const float volume = static_cast<float>(sliderValue) / maxVolume;
-    mediaPlayer_->audioOutput()->setVolume(volume);
+    mediaPlayer_->setVolume(volume);
 
     connect(ui.volumeSlider, &QSlider::valueChanged,
         [this](int sliderValue)
         {
             const float volume = static_cast<float>(sliderValue) / maxVolume;
-            mediaPlayer_->audioOutput()->setVolume(volume);
+            mediaPlayer_->setVolume(volume);
 
             this->settings_.setValue(config::volumeKey, sliderValue);
             qDebug() << "Volume set to" << volume;
@@ -351,7 +348,7 @@ void MainWindow::setupSeekbar()
 
     connect(ui.seekbar, &QSlider::sliderPressed,
         [this]()
-        { disconnect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, nullptr); });
+        { disconnect(mediaPlayer_.get(), &MediaPlayer::positionChanged, ui.seekbar, nullptr); });
 
     connect(ui.seekbar, &QSlider::sliderReleased,
         [this]()
@@ -531,26 +528,8 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
 
 void MainWindow::setupMediaPlayer()
 {
-    mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
-    mediaPlayer_->setAudioOutput(new QAudioOutput);
-
-    constexpr bool defaultDebugAudioMetadata{ false };
-    const bool debugAudioMetadata =
-        settings_.value(config::debugAudioMetadataKey, defaultDebugAudioMetadata).toBool();
-
-    if(debugAudioMetadata)
-    {
-        connect(mediaPlayer_.get(), &QMediaPlayer::metaDataChanged, mediaPlayer_.get(),
-            [this]()
-            {
-                const auto &metadata = mediaPlayer_->metaData();
-                const auto keys = metadata.keys();
-                for(const auto &key : keys)
-                {
-                    qDebug() << "Metadata changed" << key << metadata.value(key);
-                }
-            });
-    }
+    // TODO: Move outside of UI code
+    mediaPlayer_ = std::make_unique<MediaPlayerQtBackend>(this);
 }
 
 void MainWindow::setupGlobalShortcuts()
@@ -655,7 +634,7 @@ void MainWindow::setTheme(const QString &filename)
 
 void MainWindow::connectMediaPlayerToSeekbar()
 {
-    connect(mediaPlayer_.get(), &QMediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
+    connect(mediaPlayer_.get(), &MediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 }
 
 void MainWindow::disableSeekbar()
@@ -756,12 +735,11 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
     playlist->setCurrentTrackIndex(index);
     this->ui.playlist->update();
 
-    disconnect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
-    connect(mediaPlayer_.get(), &QMediaPlayer::mediaStatusChanged,
-        [this, playlistId](const QMediaPlayer::MediaStatus status)
+    disconnect(mediaPlayer_.get(), &MediaPlayer::mediaStatusChanged, nullptr, nullptr);
+    connect(mediaPlayer_.get(), &MediaPlayer::mediaStatusChanged,
+        [this, playlistId](const MediaStatus status)
         {
-            using Status = QMediaPlayer::MediaStatus;
-            if(Status::EndOfMedia == status or Status::InvalidMedia == status)
+            if(MediaStatus::EndOfMedia == status or MediaStatus::InvalidMedia == status)
             {
                 disableSeekbar();
                 onMediaFinish(playlistId);
@@ -771,7 +749,7 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
 
 void MainWindow::togglePlayPause()
 {
-    if(QMediaPlayer::PlaybackState::PlayingState == mediaPlayer_->playbackState())
+    if(PlaybackState::PlayingState == mediaPlayer_->playbackState())
     {
         mediaPlayer_->pause();
     }

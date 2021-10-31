@@ -7,6 +7,7 @@
 #include <QTreeView>
 #include <QWidget>
 
+#include "MediaPlayer.hpp"
 #include "Playlist.hpp"
 
 #include <memory>
@@ -102,5 +103,6 @@ private:
     QSettings &settings_;
     LibraryManager &libraryManager_;
     PlaylistManager &playlistManager_;
-    std::unique_ptr<QMediaPlayer> mediaPlayer_;
+
+    std::unique_ptr<MediaPlayer> mediaPlayer_;
 };
