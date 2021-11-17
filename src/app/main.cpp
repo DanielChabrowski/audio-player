@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QDir>
 #include <QSettings>
 #include <QStandardPaths>
 
@@ -26,8 +27,18 @@ int main(int argc, char *argv[])
     qInfo() << "Config file:" << appSettings.fileName();
 
     const auto configLocation =
-        QStandardPaths::standardLocations(QStandardPaths::StandardLocation::ConfigLocation).at(0);
+        QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation);
+
+    if(configLocation.isEmpty())
+    {
+        qCritical() << "Could not find directory suitable for writing configuration";
+        return 1;
+    }
+
     qInfo() << "Config directory:" << configLocation;
+
+    QDir configDir{ configLocation };
+    configDir.mkdir(applicationName);
 
     const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.db");
 
