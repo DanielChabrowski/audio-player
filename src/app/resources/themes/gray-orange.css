@@ -37,10 +37,12 @@ MultilineTabBar::tab {
     border-bottom: 1px;
     border-style: solid;
     border-color: #C4C4C4;
+    background-color: #DCDCDC;
 }
 
 MultilineTabBar::tab:selected {
-    background-color: white;
+    padding-top: 0.2em;
+    background-color: #ECECEC;
 }
 
 MultilineTabBar::tab:first {
