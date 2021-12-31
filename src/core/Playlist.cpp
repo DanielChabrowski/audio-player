@@ -231,6 +231,10 @@ bool Playlist::matchesFilterQuery(std::size_t trackIndex, QString query) const
         return false;
     }
 
+    // Smart case sensitivity
+    const auto caseSensitive =
+        query.isLower() ? Qt::CaseSensitivity::CaseInsensitive : Qt::CaseSensitivity::CaseSensitive;
+
     const auto trimmed = query.trimmed();
     const auto keywords = trimmed.splitRef(' ', Qt::SplitBehaviorFlags::SkipEmptyParts);
 
@@ -238,7 +242,7 @@ bool Playlist::matchesFilterQuery(std::size_t trackIndex, QString query) const
 
     for(const auto &keyword : keywords)
     {
-        if(track->path.contains(keyword) or
+        if(track->path.contains(keyword, caseSensitive) or
             (track->audioMetaData and metadataContainsKeyword(track->audioMetaData.value(), keyword)))
         {
             ++matchedKeywords;
