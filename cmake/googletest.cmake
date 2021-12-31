@@ -2,11 +2,7 @@ set(GT_DIR ${CMAKE_BINARY_DIR}/googletest-download)
 set(GT_SOURCE_DIR ${CMAKE_BINARY_DIR}/googletest-src)
 set(GT_BUILD_DIR ${CMAKE_BINARY_DIR}/googletest-build)
 
-configure_file(
-    cmake/googletest-download.cmake
-    ${GT_DIR}/CMakeLists.txt
-    @ONLY
-)
+configure_file(cmake/googletest-download.cmake ${GT_DIR}/CMakeLists.txt @ONLY)
 
 execute_process(
     COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -24,11 +20,7 @@ execute_process(
 # settings on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-add_subdirectory(
-    ${GT_SOURCE_DIR}
-    ${GT_BUILD_DIR}
-    EXCLUDE_FROM_ALL
-)
+add_subdirectory(${GT_SOURCE_DIR} ${GT_BUILD_DIR} EXCLUDE_FROM_ALL)
 
 add_library(GTest::GTest ALIAS gtest)
 add_library(GTest::Main ALIAS gtest_main)
