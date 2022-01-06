@@ -8,9 +8,7 @@ struct AudioAlbumMetaData
 {
     QString name;
     int discNumber;
-    int discTotal;
     int trackNumber;
-    int trackTotal;
 };
 
 struct AudioMetaData

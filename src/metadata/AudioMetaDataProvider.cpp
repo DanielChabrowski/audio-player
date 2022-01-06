@@ -22,7 +22,7 @@ std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &f
     }
 
     const auto *tags = ref.tag();
-    AudioAlbumMetaData albumData{ TStringToQString(tags->album()), -1, -1, -1, -1 };
+    AudioAlbumMetaData albumData{ TStringToQString(tags->album()), -1, -1 };
 
     const auto properties = ref.file()->properties();
     for(const auto &property : properties)
@@ -34,17 +34,9 @@ std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &f
             {
                 albumData.discNumber = propValue.toInt();
             }
-            else if(u8"DISCTOTAL" == propertyName)
-            {
-                albumData.discTotal = propValue.toInt();
-            }
             else if(u8"TRACKNUMBER" == propertyName)
             {
                 albumData.trackNumber = propValue.toInt();
-            }
-            else if(u8"TRACKTOTAL" == propertyName)
-            {
-                albumData.trackTotal = propValue.toInt();
             }
         }
     }

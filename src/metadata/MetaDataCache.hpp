@@ -20,7 +20,6 @@ public:
     MetaDataCache &operator=(const MetaDataCache &) = delete;
     MetaDataCache &operator=(MetaDataCache &&) = delete;
 
-    std::optional<AudioMetaData> findByPath(const QString &path);
     std::unordered_map<QString, std::optional<AudioMetaData>> batchFindByPath(std::set<QString> paths);
 
     bool cache(const std::unordered_map<QString, AudioMetaData> &entries);
