@@ -74,11 +74,9 @@ std::unordered_map<QString, std::optional<AudioMetaData>> MetaDataCache::batchFi
                     AudioMetaData{
                         std::move(title),
                         std::move(artist),
-                        AudioAlbumMetaData{
-                            std::move(albumName),
-                            albumDiscNumber,
-                            albumTrackNumber,
-                        },
+                        std::move(albumName),
+                        albumDiscNumber,
+                        albumTrackNumber,
                         std::chrono::seconds(duration),
                     },
                 });
@@ -123,9 +121,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?)
         query.addBindValue(it.first);
         query.addBindValue(it.second.title);
         query.addBindValue(it.second.artist);
-        query.addBindValue(it.second.albumData.name);
-        query.addBindValue(it.second.albumData.discNumber);
-        query.addBindValue(it.second.albumData.trackNumber);
+        query.addBindValue(it.second.albumName);
+        query.addBindValue(it.second.discNumber);
+        query.addBindValue(it.second.trackNumber);
         query.addBindValue(static_cast<qlonglong>(it.second.duration.count()));
 
         if(!query.exec())

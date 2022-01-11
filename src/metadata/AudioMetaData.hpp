@@ -4,17 +4,12 @@
 
 #include <chrono>
 
-struct AudioAlbumMetaData
-{
-    QString name;
-    int discNumber;
-    int trackNumber;
-};
-
 struct AudioMetaData
 {
     QString title;
     QString artist;
-    AudioAlbumMetaData albumData;
+    QString albumName;
+    int discNumber;
+    int trackNumber;
     std::chrono::seconds duration;
 };

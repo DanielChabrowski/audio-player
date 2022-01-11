@@ -297,7 +297,7 @@ QVariant PlaylistModel::dataArtistAlbum(const std::optional<AudioMetaData> &meta
     }
 
     const QString artist{ metaData->artist.isEmpty() ? "?" : metaData->artist };
-    const QString album{ metaData->albumData.name.isEmpty() ? "?" : metaData->albumData.name };
+    const QString album{ metaData->albumName.isEmpty() ? "?" : metaData->albumName };
     return artist + " - " + album;
 }
 
@@ -322,13 +322,13 @@ QVariant PlaylistModel::dataTrack(const std::optional<AudioMetaData> &metaData) 
     }
 
     constexpr int missingData{ -1 };
-    if(missingData != metaData->albumData.trackNumber)
+    if(missingData != metaData->trackNumber)
     {
-        const auto track = QString{ "%1" }.arg(metaData->albumData.trackNumber, 2, 10, QChar('0'));
+        const auto track = QString{ "%1" }.arg(metaData->trackNumber, 2, 10, QChar('0'));
 
-        if(missingData != metaData->albumData.discNumber)
+        if(missingData != metaData->discNumber)
         {
-            return QString{ "%1.%2" }.arg(metaData->albumData.discNumber).arg(track);
+            return QString{ "%1.%2" }.arg(metaData->discNumber).arg(track);
         }
 
         return track;

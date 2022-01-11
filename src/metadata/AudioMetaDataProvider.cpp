@@ -9,22 +9,26 @@ AudioMetaDataProvider::~AudioMetaDataProvider() = default;
 std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &filepath)
 {
     TagLib::FileRef ref{ filepath.toStdString().c_str() };
-    if(ref.isNull() or not ref.tag())
+    if(ref.isNull())
     {
         return {};
     }
 
-    std::chrono::seconds duration{ 0 };
     const auto *audioProperties = ref.audioProperties();
-    if(audioProperties)
-    {
-        duration = std::chrono::seconds{ audioProperties->length() };
-    }
+    const auto duration = audioProperties ? audioProperties->length() : 0;
 
     const auto *tags = ref.tag();
-    AudioAlbumMetaData albumData{ TStringToQString(tags->album()), -1, -1 };
+    if(not tags)
+    {
+        return AudioMetaData{ QString{}, QString{}, QString{}, -1, -1, std::chrono::seconds{ duration } };
+    }
 
-    const auto properties = ref.file()->properties();
+    const auto trackNumber = tags->track() > 0 ? static_cast<int>(tags->track()) : -1;
+
+    auto artist = TStringToQString(tags->artist());
+    auto discNumber = -1;
+
+    const auto properties = tags->properties();
     for(const auto &property : properties)
     {
         for(const auto &propValue : property.second)
@@ -32,19 +36,21 @@ std::optional<AudioMetaData> AudioMetaDataProvider::getMetaData(const QString &f
             const auto &propertyName = property.first.to8Bit(true);
             if(u8"DISCNUMBER" == propertyName)
             {
-                albumData.discNumber = propValue.toInt();
+                discNumber = propValue.toInt();
             }
-            else if(u8"TRACKNUMBER" == propertyName)
+            else if(artist.isEmpty() && u8"ALBUMARTIST" == propertyName)
             {
-                albumData.trackNumber = propValue.toInt();
+                artist = TStringToQString(propValue);
             }
         }
     }
 
     return AudioMetaData{
         TStringToQString(tags->title()),
-        TStringToQString(tags->artist()),
-        std::move(albumData),
-        duration,
+        std::move(artist),
+        TStringToQString(tags->album()),
+        discNumber,
+        trackNumber,
+        std::chrono::seconds{ duration },
     };
 }

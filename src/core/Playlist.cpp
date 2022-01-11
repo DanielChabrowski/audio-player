@@ -219,7 +219,7 @@ void Playlist::removeDuplicates()
 bool metadataContainsKeyword(const AudioMetaData &metadata, const QStringRef &keyword)
 {
     return metadata.title.contains(keyword) or metadata.artist.contains(keyword) or
-           metadata.albumData.name.contains(keyword);
+           metadata.albumName.contains(keyword);
 }
 
 bool Playlist::matchesFilterQuery(std::size_t trackIndex, QString query) const
