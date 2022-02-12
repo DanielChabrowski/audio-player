@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AudioMetaData.hpp"
+#include "ProvidedMetadata.hpp"
 
 #include <QString>
 
@@ -10,5 +10,5 @@ class IAudioMetaDataProvider
 {
 public:
     virtual ~IAudioMetaDataProvider() = default;
-    virtual std::optional<AudioMetaData> getMetaData(const QString &filepath) = 0;
+    virtual std::optional<ProvidedMetadata> getMetaData(const QString &filepath) = 0;
 };

@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QLabel>
+#include <QListView>
 #include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
@@ -18,8 +19,11 @@
 #include <QToolTip>
 #include <QtGlobal>
 
+#include "AlbumGallery.hpp"
+#include "AlbumModel.hpp"
 #include "ConfigurationKeys.hpp"
 #include "EscapableLineEdit.hpp"
+#include "FilesystemPlaylistIO.hpp"
 #include "MultilineTabBar.hpp"
 #include "PlaylistFilterModel.hpp"
 #include "PlaylistHeader.hpp"
@@ -29,9 +33,10 @@
 
 #include <algorithm>
 
-MainWindow::MainWindow(QSettings &settings, PlaylistManager &playlistManager)
+MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, PlaylistManager &playlistManager)
 : QWidget{ nullptr }
 , settings_{ settings }
+, libraryManager_{ libraryManager }
 , playlistManager_{ playlistManager }
 {
     setupWindow();
@@ -139,6 +144,7 @@ void MainWindow::setupWindow()
     layout->addLayout(topHLayout, 0, 5, 1, 1);
 
     auto *bottomHLayout = new QHBoxLayout();
+    bottomHLayout->setContentsMargins(0, 0, 0, 0);
     bottomHLayout->setSpacing(2);
 
     {
@@ -161,7 +167,6 @@ void MainWindow::setupWindow()
 
     {
         ui.playlist = new MultilineTabWidget(this);
-        // ui.playlist->setMovable(true);
         ui.playlist->setCurrentIndex(-1);
 
         vLayout->addWidget(ui.playlist);
@@ -174,7 +179,22 @@ void MainWindow::setupWindow()
 
     bottomHLayout->addLayout(vLayout);
 
-    layout->addLayout(bottomHLayout, 1, 5, 1, 1);
+    {
+        auto *widget = new QWidget(this);
+        widget->setLayout(bottomHLayout);
+
+        ui.mainStack = new QStackedWidget(this);
+        ui.mainStack->addWidget(widget);
+
+        auto *albumWidget = new AlbumGallery(this);
+        albumWidget->setModel(new AlbumModel(libraryManager_, this));
+
+        ui.mainStack->addWidget(albumWidget);
+
+        ui.mainStack->setCurrentWidget(albumWidget);
+
+        layout->addWidget(ui.mainStack, 1, 5, 1, 1);
+    }
 }
 
 void MainWindow::setupMenu()
@@ -287,7 +307,14 @@ void MainWindow::setupMenu()
 
     playbackMenu->addActions(actionGroup->actions());
 
-    bar->addMenu("Library");
+    auto *libraryMenu = bar->addMenu("Library");
+    libraryMenu->addAction("Albums", this,
+        [this]()
+        {
+            auto index = ui.mainStack->currentIndex();
+            ui.mainStack->setCurrentIndex(!index);
+        });
+
     bar->addMenu("Help");
 
     ui.menuLayout->addWidget(bar);

@@ -14,6 +14,7 @@ set(SOURCES
 add_library(core ${SOURCES})
 add_library(player::core ALIAS core)
 
+find_package(Qt5 COMPONENTS Core CONFIG REQUIRED)
 target_link_libraries(core PUBLIC Qt5::Core player::metadata)
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_LIST_DIR})

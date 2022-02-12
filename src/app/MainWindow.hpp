@@ -2,17 +2,19 @@
 
 #include <QHBoxLayout>
 #include <QSlider>
+#include <QStackedWidget>
 #include <QStringList>
 #include <QTreeView>
 #include <QWidget>
 
-#include <Playlist.hpp>
+#include "Playlist.hpp"
 
 #include <memory>
 
 class Playlist;
 class PlaylistWidget;
 class PlaylistManager;
+class LibraryManager;
 class MultilineTabWidget;
 class EscapableLineEdit;
 
@@ -25,7 +27,7 @@ class MainWindow final : public QWidget
     Q_OBJECT
 
 public:
-    explicit MainWindow(QSettings &, PlaylistManager &);
+    explicit MainWindow(QSettings &, LibraryManager &, PlaylistManager &);
     ~MainWindow();
 
 protected:
@@ -90,6 +92,7 @@ private:
         QSlider *volumeSlider;
         QSlider *seekbar;
         QTreeView *albums;
+        QStackedWidget *mainStack;
         MultilineTabWidget *playlist;
         EscapableLineEdit *playlistSearch;
 
@@ -97,6 +100,7 @@ private:
     } ui;
 
     QSettings &settings_;
+    LibraryManager &libraryManager_;
     PlaylistManager &playlistManager_;
     std::unique_ptr<QMediaPlayer> mediaPlayer_;
 };

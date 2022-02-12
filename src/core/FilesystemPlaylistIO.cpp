@@ -3,7 +3,9 @@
 #include "IAudioMetaDataProvider.hpp"
 #include "MetaDataCache.hpp"
 #include "Playlist.hpp"
+#include "ProvidedMetadata.hpp"
 
+#include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -12,6 +14,7 @@
 #include <QTextStream>
 #include <QUrl>
 
+#include <algorithm>
 #include <stdexcept>
 #include <vector>
 
@@ -162,40 +165,76 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
 
     // Keep track of a list of values that are not in cache
     // Use it for faster lookup of duplicates and batch insert into cache database
-    std::unordered_map<QString, AudioMetaData> uncached;
+    std::unordered_map<QString, UncachedMetadata> uncached;
 
     std::set<QString> uniqueLocalFiles{ std::make_move_iterator(localFiles.begin()),
         std::make_move_iterator(localFiles.end()) };
     auto cached = cache_.batchFindByPath(std::move(uniqueLocalFiles));
 
+    auto cachedCovers = cache_.getCoverArtHashCache();
+
     std::size_t tempCacheHits{ 0 }, cacheHits{ 0 }, cacheMisses{ 0 };
+
+    QCryptographicHash crypto{ QCryptographicHash::Algorithm::Md5 };
 
     for(auto &path : tracks)
     {
-        auto cachedValue = cached.find(path);
-        if(cachedValue != cached.end())
+        if(auto cachedValue = cached.find(path); cachedValue != cached.end())
         {
             ++cacheHits;
-            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), cachedValue->second });
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), cachedValue->second->audioMetadata });
             continue;
         }
 
-        auto uncachedValue = uncached.find(path);
-        if(uncachedValue != uncached.end())
+        if(auto uncachedValue = uncached.find(path); uncachedValue != uncached.end())
         {
             ++tempCacheHits;
-            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), uncachedValue->second });
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), uncachedValue->second.audioMetadata });
             continue;
         }
 
         ++cacheMisses;
 
         // NOTE: Called for remote URLs even though we have no chance of retrieving it here
-        auto metadata = audioMetaDataProvider_.getMetaData(path);
-        if(metadata)
+        if(auto metadata = audioMetaDataProvider_.getMetaData(path); metadata)
         {
-            uncached.insert({ path, *metadata });
-            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), std::move(metadata) });
+            std::optional<std::uint64_t> coverId{};
+
+            if(const auto &coverArt = metadata->coverArt; coverArt)
+            {
+                const auto coverByteView = QByteArray::fromRawData(coverArt->data(), coverArt->size());
+
+                crypto.addData(coverByteView);
+                const auto coverHash = crypto.result();
+                crypto.reset();
+
+                const auto cachedCoverIt = std::find_if(cachedCovers.cbegin(), cachedCovers.cend(),
+                    [&coverHash](const auto &cachedCover) { return cachedCover.hash == coverHash; });
+
+                if(cachedCoverIt == cachedCovers.cend())
+                {
+                    if(const auto coverCacheResult = cache_.cache(coverByteView, coverHash); coverCacheResult)
+                    {
+                        cachedCovers.emplace_back(CachedCoverHash{ *coverCacheResult, std::move(coverHash) });
+                        coverId = coverCacheResult;
+                    }
+                }
+                else
+                {
+                    coverId = cachedCoverIt->id;
+                }
+            }
+
+            uncached.insert({
+                path,
+                UncachedMetadata{
+                    metadata->audioMetadata,
+                    coverId,
+                    metadata->lastModified,
+                },
+            });
+
+            playlistTracks.emplace_back(PlaylistTrack{ std::move(path), std::move(metadata->audioMetadata) });
         }
         else
         {

@@ -18,6 +18,12 @@ set(SOURCES
     EscapableLineEdit.hpp
     MultilineTabBar.cpp
     MultilineTabBar.hpp
+    AlbumGallery.cpp
+    AlbumGallery.hpp
+    AlbumModel.cpp
+    AlbumModel.hpp
+    LibraryManager.cpp
+    LibraryManager.hpp
     resources/Resources.qrc
 )
 

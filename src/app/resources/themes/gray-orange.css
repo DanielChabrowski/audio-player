@@ -59,3 +59,8 @@ MultilineTabBar::tab:only-one {
     border-style: solid;
     border-color: #C4C4C4;
 }
+
+AlbumGallery {
+    color: #f47e46;
+    background-color: #21231f;
+}

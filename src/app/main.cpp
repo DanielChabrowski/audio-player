@@ -1,6 +1,7 @@
 #include "ApplicationStyle.hpp"
 #include "AudioMetaDataProvider.hpp"
 #include "FilesystemPlaylistIO.hpp"
+#include "LibraryManager.hpp"
 #include "MainWindow.hpp"
 #include "MetaDataCache.hpp"
 #include "PlaylistManager.hpp"
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     configDir.mkdir(applicationName);
 
     const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.db");
+    qInfo() << "Cache file:" << cacheFile;
 
     MetaDataCache metaDataCache{ cacheFile };
     AudioMetaDataProvider metaDataProvider;
@@ -50,8 +52,9 @@ int main(int argc, char *argv[])
     qInfo() << "Playlists directory:" << playlistsDirectory;
 
     PlaylistManager playlistManager{ playlistIO, playlistsDirectory };
+    LibraryManager libraryManager{ metaDataCache };
 
-    MainWindow window{ appSettings, playlistManager };
+    MainWindow window{ appSettings, libraryManager, playlistManager };
     window.show();
 
     return app.exec();
