@@ -53,7 +53,7 @@ QVariant AlbumModel::data(const QModelIndex &index, int role) const
             return {};
         }
 
-        const auto firstCoverId = coverIds.splitRef(',').first().toULongLong();
+        const auto firstCoverId = coverIds.split(',').first().toULongLong();
 
         if(auto coverData = libraryManager_.getCoverDataById(firstCoverId); coverData)
         {

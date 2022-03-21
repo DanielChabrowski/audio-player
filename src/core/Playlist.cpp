@@ -6,6 +6,7 @@
 #include <QElapsedTimer>
 
 #include <functional>
+#include <qstringview.h>
 #include <random>
 
 std::size_t PlaylistIdHasher::operator()(const PlaylistId &id) const noexcept
@@ -216,7 +217,7 @@ void Playlist::removeDuplicates()
     save();
 }
 
-bool metadataContainsKeyword(const AudioMetaData &metadata, const QStringRef &keyword)
+bool metadataContainsKeyword(const AudioMetaData &metadata, const QStringView &keyword)
 {
     return metadata.title.contains(keyword) or metadata.artist.contains(keyword) or
            metadata.albumName.contains(keyword);
@@ -236,7 +237,7 @@ bool Playlist::matchesFilterQuery(std::size_t trackIndex, QString query) const
         query.isLower() ? Qt::CaseSensitivity::CaseInsensitive : Qt::CaseSensitivity::CaseSensitive;
 
     const auto trimmed = query.trimmed();
-    const auto keywords = trimmed.splitRef(' ', Qt::SplitBehaviorFlags::SkipEmptyParts);
+    const auto keywords = trimmed.split(' ', Qt::SplitBehaviorFlags::SkipEmptyParts);
 
     int matchedKeywords = 0;
 

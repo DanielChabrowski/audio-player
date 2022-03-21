@@ -1,5 +1,5 @@
 find_package(Taglib REQUIRED)
-find_package(Qt5 COMPONENTS Sql CONFIG REQUIRED)
+find_package(Qt6 COMPONENTS Sql CONFIG REQUIRED)
 
 set(SOURCES
     AudioMetaData.hpp

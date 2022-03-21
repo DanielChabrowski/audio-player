@@ -2,6 +2,7 @@
 
 #include <QActionGroup>
 #include <QApplication>
+#include <QAudioOutput>
 #include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
@@ -9,6 +10,7 @@
 #include <QFileSystemModel>
 #include <QLabel>
 #include <QListView>
+#include <QMediaMetaData>
 #include <QMediaPlayer>
 #include <QMenuBar>
 #include <QPushButton>
@@ -32,6 +34,7 @@
 #include "PlaylistWidget.hpp"
 
 #include <algorithm>
+#include <qaudiooutput.h>
 
 MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, PlaylistManager &playlistManager)
 : QWidget{ nullptr }
@@ -108,7 +111,7 @@ void MainWindow::setupWindow()
     setSizePolicy(sizePolicy);
 
     auto *layout = new QGridLayout(this);
-    layout->setMargin(9);
+    layout->setContentsMargins(9, 9, 9, 9);
     layout->setSpacing(6);
 
     auto *topHLayout = new QHBoxLayout();
@@ -249,7 +252,7 @@ void MainWindow::setupMenu()
             constexpr int exitCode{ 0 };
             QApplication::exit(exitCode);
         });
-    exitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
 
     {
         auto *editMenu = bar->addMenu("Edit");
@@ -330,12 +333,12 @@ void MainWindow::setupVolumeControl()
     ui.volumeSlider->setMaximum(maxVolume);
     ui.volumeSlider->setValue(volume);
 
-    mediaPlayer_->setVolume(volume);
+    mediaPlayer_->audioOutput()->setVolume(volume);
 
     connect(ui.volumeSlider, &QSlider::valueChanged,
         [this](int volume)
         {
-            this->mediaPlayer_->setVolume(volume);
+            mediaPlayer_->audioOutput()->setVolume(volume);
             this->settings_.setValue(config::volumeKey, volume);
             qDebug() << "Volume set to" << volume;
         });
@@ -528,6 +531,7 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
 void MainWindow::setupMediaPlayer()
 {
     mediaPlayer_ = std::make_unique<QMediaPlayer>(this);
+    mediaPlayer_->setAudioOutput(new QAudioOutput);
 
     constexpr bool defaultDebugAudioMetadata{ false };
     const bool debugAudioMetadata =
@@ -535,10 +539,16 @@ void MainWindow::setupMediaPlayer()
 
     if(debugAudioMetadata)
     {
-        connect(mediaPlayer_.get(),
-            QOverload<const QString &, const QVariant &>::of(&QMediaObject::metaDataChanged),
-            [](const QString &key, const QVariant &value)
-            { qDebug() << "Metadata changed" << key << value; });
+        connect(mediaPlayer_.get(), &QMediaPlayer::metaDataChanged, mediaPlayer_.get(),
+            [this]()
+            {
+                const auto &metadata = mediaPlayer_->metaData();
+                const auto keys = metadata.keys();
+                for(const auto &key : keys)
+                {
+                    qDebug() << "Metadata changed" << key << metadata.value(key);
+                }
+            });
     }
 }
 
@@ -547,10 +557,10 @@ void MainWindow::setupGlobalShortcuts()
     const auto togglePlayPause = new QShortcut(Qt::Key_Space, this);
     connect(togglePlayPause, &QShortcut::activated, this, &MainWindow::togglePlayPause);
 
-    const auto removePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
+    const auto removePlaylist = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), this);
     connect(removePlaylist, &QShortcut::activated, this, &MainWindow::removeCurrentPlaylist);
 
-    const auto changePlaylist = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab), this);
+    const auto changePlaylist = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Tab), this);
     connect(changePlaylist, &QShortcut::activated, this,
         [this]()
         {
@@ -566,7 +576,7 @@ void MainWindow::setupGlobalShortcuts()
             ui.playlist->setCurrentIndex(newPlaylistIndex);
         });
 
-    const auto backChangePlaylist = new QShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Tab), this);
+    const auto backChangePlaylist = new QShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Tab), this);
     connect(backChangePlaylist, &QShortcut::activated, this,
         [this]()
         {
@@ -584,7 +594,7 @@ void MainWindow::setupGlobalShortcuts()
 
     constexpr auto seekMilliseconds = 5 * 1000;
 
-    const auto seekForwards = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right), this);
+    const auto seekForwards = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Right), this);
     connect(seekForwards, &QShortcut::activated, this,
         [&, this]()
         {
@@ -594,7 +604,7 @@ void MainWindow::setupGlobalShortcuts()
             mediaPlayer_->setPosition(newPosition);
         });
 
-    const auto seekBackwards = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left), this);
+    const auto seekBackwards = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Left), this);
     connect(seekBackwards, &QShortcut::activated, this,
         [&, this]()
         {
@@ -604,7 +614,7 @@ void MainWindow::setupGlobalShortcuts()
             mediaPlayer_->setPosition(newPosition);
         });
 
-    const auto playlistSearchShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this);
+    const auto playlistSearchShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_F), this);
     connect(playlistSearchShortcut, &QShortcut::activated, this,
         [&, this]()
         {
@@ -735,7 +745,7 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
     const auto *track = playlist->getTrack(index);
     qDebug() << "Playing media:" << track->path;
 
-    this->mediaPlayer_->setMedia(QUrl::fromUserInput(track->path));
+    this->mediaPlayer_->setSource(QUrl::fromUserInput(track->path));
     this->mediaPlayer_->play();
 
     const auto trackDuration =
@@ -760,7 +770,7 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
 
 void MainWindow::togglePlayPause()
 {
-    if(QMediaPlayer::State::PlayingState == mediaPlayer_->state())
+    if(QMediaPlayer::PlaybackState::PlayingState == mediaPlayer_->playbackState())
     {
         mediaPlayer_->pause();
     }

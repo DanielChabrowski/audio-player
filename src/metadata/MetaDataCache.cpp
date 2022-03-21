@@ -175,7 +175,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         query.addBindValue(it.second.audioMetadata.discNumber);
         query.addBindValue(it.second.audioMetadata.trackNumber);
         query.addBindValue(static_cast<quint64>(it.second.audioMetadata.duration.count()));
-        query.addBindValue(it.second.coverId ? *it.second.coverId : QVariant{ QVariant::ULongLong });
+        query.addBindValue(it.second.coverId ? *it.second.coverId : QVariant{});
         query.addBindValue(static_cast<quint64>(it.second.lastModified.count()));
 
         if(!query.exec())

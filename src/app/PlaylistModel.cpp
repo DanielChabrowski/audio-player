@@ -11,6 +11,7 @@
 
 #include <array>
 #include <memory>
+#include <qnamespace.h>
 
 namespace
 {
@@ -273,10 +274,10 @@ QVariant PlaylistModel::roleAlignment(int column) const
 
     case PlaylistColumn::TRACK:
     case PlaylistColumn::DURATION:
-        return Qt::AlignRight + Qt::AlignVCenter;
+        return Qt::Alignment{ Qt::AlignRight | Qt::AlignVCenter }.toInt();
     }
 
-    return Qt::AlignLeft + Qt::AlignVCenter;
+    return Qt::Alignment{ Qt::AlignLeft | Qt::AlignVCenter }.toInt();
 }
 
 QVariant PlaylistModel::dataTitle(const QString &filepath, const std::optional<AudioMetaData> &metaData) const

@@ -20,8 +20,7 @@ QSize MultilineTabBar::sizeHint() const
         r = r.united(tab.rect);
     }
 
-    QSize sz = QApplication::globalStrut();
-    return r.size().expandedTo(sz);
+    return r.size().expandedTo(QSize{ 0, 0 });
 }
 
 QSize MultilineTabBar::minimumSizeHint() const
@@ -128,7 +127,7 @@ QSize MultilineTabBar::tabSizeHint(int index) const
     const auto fm = fontMetrics();
     const auto textSize = fm.size(Qt::TextShowMnemonic, text);
 
-    QStyleOptionTab opt;
+    QStyleOptionTab opt{};
     opt.text = text;
     opt.rect = tabRect(index);
 
@@ -189,7 +188,7 @@ void MultilineTabBar::removeTab(int tabIndex)
     if(validIndex(tabIndex))
     {
         tabs_.removeAt(tabIndex);
-        setCurrentIndex(std::clamp(currentIndex_ - 1, 0, tabs_.size()));
+        setCurrentIndex(std::clamp<int>(currentIndex_ - 1, 0, tabs_.size()));
         recalculateTabsLayout();
         updateGeometry();
     }

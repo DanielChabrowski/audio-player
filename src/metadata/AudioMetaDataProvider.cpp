@@ -8,8 +8,8 @@
 #include <taglib/mp4file.h>
 #include <taglib/mpegfile.h>
 #include <taglib/tag.h>
+#include <taglib/tbytevector.h>
 #include <taglib/tpropertymap.h>
-#include <tbytevector.h>
 
 #include <QByteArray>
 #include <QDateTime>

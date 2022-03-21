@@ -10,7 +10,7 @@ if(BUILD_TESTING)
     enable_testing()
 endif()
 
-find_package(Qt5 COMPONENTS Core CONFIG REQUIRED)
+find_package(Qt6 COMPONENTS Core CONFIG REQUIRED)
 
 include(build)
 

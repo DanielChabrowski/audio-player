@@ -1,4 +1,4 @@
-find_package(Qt5 COMPONENTS Widgets Multimedia CONFIG REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Multimedia CONFIG REQUIRED)
 
 set(SOURCES
     main.cpp
@@ -29,7 +29,7 @@ set(SOURCES
 
 add_executable(foobar ${SOURCES})
 
-target_link_libraries(foobar PRIVATE Qt5::Widgets Qt5::Multimedia player::core)
+target_link_libraries(foobar PRIVATE Qt6::Widgets Qt6::Multimedia player::core)
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT IPO_SUPPORTED LANGUAGES CXX)
