@@ -1,11 +1,11 @@
 check:
-  image: alpine:latest
+  image: python:3.10-slim-bullseye
   stage: .pre
   before_script:
-    - apk update && apk add --no-cache git python3 py3-pip
+    - apt update && apt install -y --no-install-recommends git
     - python3 -m venv venv
     - source venv/bin/activate
-    - pip install --disable-pip-version-check --no-cache-dir pre-commit
+    - python -m pip install --disable-pip-version-check --no-cache-dir pre-commit
   script:
     - pre-commit run --all-files --show-diff-on-failure
 
