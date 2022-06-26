@@ -123,16 +123,23 @@ void MultilineTabBar::mouseDoubleClickEvent(QMouseEvent *event)
 
 QSize MultilineTabBar::tabSizeHint(int index) const
 {
-    const auto text = tabText(index);
-    const auto fm = fontMetrics();
-    const auto textSize = fm.size(Qt::TextShowMnemonic, text);
-
     QStyleOptionTab opt{};
-    opt.text = text;
-    opt.rect = tabRect(index);
+    opt.text = tabText(index);
 
-    QSize contentSize{ textSize.width(), fm.height() };
-    return style()->sizeFromContents(QStyle::CT_TabBarTab, &opt, contentSize, this);
+    const auto fm = fontMetrics();
+    const auto textSize = fm.size(Qt::TextShowMnemonic, opt.text);
+
+    const auto horizontalPadding{ 8 };
+    const auto verticalPadding{ 5 };
+
+    return style()
+        ->sizeFromContents(QStyle::CT_TabBarTab, &opt, textSize, this)
+        .grownBy(QMargins{
+            horizontalPadding,
+            verticalPadding,
+            horizontalPadding,
+            verticalPadding,
+        });
 }
 
 int MultilineTabBar::tabAt(QPoint p) const
@@ -268,7 +275,7 @@ void MultilineTabBar::recalculateTabsLayout()
 
 MultilineTabWidget::MultilineTabWidget(QWidget *parent)
 : QWidget{ parent }
-, tabBar_{ new MultilineTabBar() }
+, tabBar_{ new MultilineTabBar(this) }
 , stack_{ new QStackedWidget() }
 {
     setLayout(new QBoxLayout(QBoxLayout::Direction::TopToBottom));

@@ -32,7 +32,7 @@ MultilineTabWidget::pane {
 }
 
 MultilineTabBar::tab {
-    padding: 0.3em 0.7em;
+    /* NOTE: Padding does not work correctly and is hardcoded in layout recalculation */
     border-right: 1px;
     border-bottom: 1px;
     border-style: solid;
@@ -41,7 +41,6 @@ MultilineTabBar::tab {
 }
 
 MultilineTabBar::tab:selected {
-    padding-top: 0.2em;
     background-color: #ECECEC;
 }
 
