@@ -194,8 +194,6 @@ void MainWindow::setupWindow()
 
         ui.mainStack->addWidget(albumWidget);
 
-        ui.mainStack->setCurrentWidget(albumWidget);
-
         layout->addWidget(ui.mainStack, 1, 5, 1, 1);
     }
 }
@@ -329,17 +327,21 @@ void MainWindow::setupVolumeControl()
     constexpr auto minVolume{ 0 };
     constexpr auto maxVolume{ 100 };
 
-    const auto volume = qBound(minVolume, settings_.value(config::volumeKey, defaultVolume).toInt(), maxVolume);
+    const auto sliderValue =
+        qBound(minVolume, settings_.value(config::volumeKey, defaultVolume).toInt(), maxVolume);
     ui.volumeSlider->setMaximum(maxVolume);
-    ui.volumeSlider->setValue(volume);
+    ui.volumeSlider->setValue(sliderValue);
 
+    const float volume = static_cast<float>(sliderValue) / maxVolume;
     mediaPlayer_->audioOutput()->setVolume(volume);
 
     connect(ui.volumeSlider, &QSlider::valueChanged,
-        [this](int volume)
+        [this](int sliderValue)
         {
+            const float volume = static_cast<float>(sliderValue) / maxVolume;
             mediaPlayer_->audioOutput()->setVolume(volume);
-            this->settings_.setValue(config::volumeKey, volume);
+
+            this->settings_.setValue(config::volumeKey, sliderValue);
             qDebug() << "Volume set to" << volume;
         });
 }
