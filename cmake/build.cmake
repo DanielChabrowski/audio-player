@@ -21,8 +21,34 @@ if(FORCE_COLORED_OUTPUT)
     add_compile_options($<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>)
 endif()
 
-if(WIN32 AND NOT CYGWIN)
-    include(cmake/build_configs/win32.cmake)
+include(cmake/sanitizers.cmake)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    add_compile_options(/permissive-)
 else()
-    include(cmake/build_configs/linux.cmake)
+    add_compile_options(
+        -Werror
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wredundant-decls
+        -Wnon-virtual-dtor
+        -Wnull-dereference
+        -Wzero-as-null-pointer-constant
+        $<$<CXX_COMPILER_ID:GNU>:-Wsuggest-override>
+        $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
+        $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
+        $<$<CXX_COMPILER_ID:Clang>:-Wno-gnu-zero-variadic-macro-arguments>
+    )
+
+    include(CheckLinkerFlag)
+    check_linker_flag(CXX "-fuse-ld=lld" LLD_SUPPORTED)
+    if(LLD_SUPPORTED)
+        add_link_options("-fuse-ld=lld")
+    else()
+        check_linker_flag(CXX "-fuse-ld=gold" GOLD_SUPPORTED)
+        if(GOLD_SUPPORTED)
+            add_link_options("-fuse-ld=gold")
+        endif()
+    endif()
 endif()
