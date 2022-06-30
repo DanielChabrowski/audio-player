@@ -13,7 +13,7 @@ check:
   image: debian:testing-slim
   stage: build
   before_script:
-    - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} git ca-certificates cmake ninja-build libtag1-dev qtbase5-dev qtmultimedia5-dev
+    - apt update && apt install -y --no-install-recommends ${COMPILER_PACKAGE} git ca-certificates cmake ninja-build libtag1-dev qt6-base-dev qt6-multimedia-dev
   script:
     - cmake . --warn-uninitialized -GNinja -DCMAKE_CXX_COMPILER=${COMPILER} -DSANITIZE_ADDRESS=On
     - ninja -v
