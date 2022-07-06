@@ -34,7 +34,6 @@
 #include "PlaylistWidget.hpp"
 
 #include <algorithm>
-#include <qaudiooutput.h>
 
 MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, PlaylistManager &playlistManager)
 : QWidget{ nullptr }
