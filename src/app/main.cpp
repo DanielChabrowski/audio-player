@@ -3,6 +3,7 @@
 #include "FilesystemPlaylistIO.hpp"
 #include "LibraryManager.hpp"
 #include "MainWindow.hpp"
+#include "MediaPlayer.hpp"
 #include "MetaDataCache.hpp"
 #include "PlaylistManager.hpp"
 
@@ -54,7 +55,14 @@ int main(int argc, char *argv[])
     PlaylistManager playlistManager{ playlistIO, playlistsDirectory };
     LibraryManager libraryManager{ metaDataCache };
 
-    MainWindow window{ appSettings, libraryManager, playlistManager };
+    const auto mediaPlayer = MediaPlayer::create();
+    if(not mediaPlayer)
+    {
+        qCritical() << "Could not create a media player backend";
+        return 1;
+    }
+
+    MainWindow window{ appSettings, libraryManager, playlistManager, *mediaPlayer };
     window.show();
 
     return app.exec();

@@ -22,7 +22,7 @@
 #include "ConfigurationKeys.hpp"
 #include "EscapableLineEdit.hpp"
 #include "FilesystemPlaylistIO.hpp"
-#include "MediaPlayerQtBackend.hpp"
+#include "MediaPlayer.hpp"
 #include "MultilineTabBar.hpp"
 #include "PlaylistFilterModel.hpp"
 #include "PlaylistHeader.hpp"
@@ -32,11 +32,12 @@
 
 #include <algorithm>
 
-MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, PlaylistManager &playlistManager)
+MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, PlaylistManager &playlistManager, MediaPlayer &mediaPlayer)
 : QWidget{ nullptr }
 , settings_{ settings }
 , libraryManager_{ libraryManager }
 , playlistManager_{ playlistManager }
+, mediaPlayer_{ mediaPlayer }
 {
     setupWindow();
 
@@ -46,8 +47,6 @@ MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, Play
         // Restoring window size and position
         restoreGeometry(settings_.value(config::geometryKey).toByteArray());
     }
-
-    setupMediaPlayer();
 
     setupMenu();
     setupPlaybackControlButtons();
@@ -329,13 +328,13 @@ void MainWindow::setupVolumeControl()
     ui.volumeSlider->setValue(sliderValue);
 
     const float volume = static_cast<float>(sliderValue) / maxVolume;
-    mediaPlayer_->setVolume(volume);
+    mediaPlayer_.setVolume(volume);
 
     connect(ui.volumeSlider, &QSlider::valueChanged,
         [this](int sliderValue)
         {
             const float volume = static_cast<float>(sliderValue) / maxVolume;
-            mediaPlayer_->setVolume(volume);
+            mediaPlayer_.setVolume(volume);
 
             this->settings_.setValue(config::volumeKey, sliderValue);
             qDebug() << "Volume set to" << volume;
@@ -347,13 +346,12 @@ void MainWindow::setupSeekbar()
     disableSeekbar();
 
     connect(ui.seekbar, &QSlider::sliderPressed,
-        [this]()
-        { disconnect(mediaPlayer_.get(), &MediaPlayer::positionChanged, ui.seekbar, nullptr); });
+        [this]() { disconnect(&mediaPlayer_, &MediaPlayer::positionChanged, ui.seekbar, nullptr); });
 
     connect(ui.seekbar, &QSlider::sliderReleased,
         [this]()
         {
-            this->mediaPlayer_->setPosition(this->ui.seekbar->value());
+            this->mediaPlayer_.setPosition(this->ui.seekbar->value());
             connectMediaPlayerToSeekbar();
         });
 
@@ -383,9 +381,9 @@ void MainWindow::setupPlaybackControlButtons()
 
     ui.buttonsLayout->QLayout::setSpacing(0);
 
-    createButtonFunc(":/icons/play.png", [this]() { mediaPlayer_->play(); });
-    createButtonFunc(":/icons/pause.png", [this]() { mediaPlayer_->pause(); });
-    createButtonFunc(":/icons/stop.png", [this]() { mediaPlayer_->stop(); });
+    createButtonFunc(":/icons/play.png", [this]() { mediaPlayer_.play(); });
+    createButtonFunc(":/icons/pause.png", [this]() { mediaPlayer_.pause(); });
+    createButtonFunc(":/icons/stop.png", [this]() { mediaPlayer_.stop(); });
 }
 
 QStringList getAudioFilesNameFilter()
@@ -526,12 +524,6 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
     return ui.playlist->addTab(playlistWidget.release(), playlist.getName());
 }
 
-void MainWindow::setupMediaPlayer()
-{
-    // TODO: Move outside of UI code
-    mediaPlayer_ = std::make_unique<MediaPlayerQtBackend>(this);
-}
-
 void MainWindow::setupGlobalShortcuts()
 {
     const auto togglePlayPause = new QShortcut(Qt::Key_Space, this);
@@ -579,9 +571,8 @@ void MainWindow::setupGlobalShortcuts()
         [&, this]()
         {
             const auto maximum = ui.seekbar->maximum();
-            const auto newPosition =
-                std::clamp<qint64>(mediaPlayer_->position() + seekMilliseconds, 0, maximum);
-            mediaPlayer_->setPosition(newPosition);
+            const auto newPosition = std::clamp<qint64>(mediaPlayer_.position() + seekMilliseconds, 0, maximum);
+            mediaPlayer_.setPosition(newPosition);
         });
 
     const auto seekBackwards = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Left), this);
@@ -589,9 +580,8 @@ void MainWindow::setupGlobalShortcuts()
         [&, this]()
         {
             const auto maximum = ui.seekbar->maximum();
-            const auto newPosition =
-                std::clamp<qint64>(mediaPlayer_->position() - seekMilliseconds, 0, maximum);
-            mediaPlayer_->setPosition(newPosition);
+            const auto newPosition = std::clamp<qint64>(mediaPlayer_.position() - seekMilliseconds, 0, maximum);
+            mediaPlayer_.setPosition(newPosition);
         });
 
     const auto playlistSearchShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_F), this);
@@ -634,7 +624,7 @@ void MainWindow::setTheme(const QString &filename)
 
 void MainWindow::connectMediaPlayerToSeekbar()
 {
-    connect(mediaPlayer_.get(), &MediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
+    connect(&mediaPlayer_, &MediaPlayer::positionChanged, ui.seekbar, &QSlider::setValue);
 }
 
 void MainWindow::disableSeekbar()
@@ -725,8 +715,8 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
     const auto *track = playlist->getTrack(index);
     qDebug() << "Playing media:" << track->path;
 
-    this->mediaPlayer_->setSource(QUrl::fromUserInput(track->path));
-    this->mediaPlayer_->play();
+    this->mediaPlayer_.setSource(QUrl::fromUserInput(track->path));
+    this->mediaPlayer_.play();
 
     const auto trackDuration =
         track->audioMetaData ? track->audioMetaData->duration : std::chrono::seconds{ 0 };
@@ -735,8 +725,8 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
     playlist->setCurrentTrackIndex(index);
     this->ui.playlist->update();
 
-    disconnect(mediaPlayer_.get(), &MediaPlayer::mediaStatusChanged, nullptr, nullptr);
-    connect(mediaPlayer_.get(), &MediaPlayer::mediaStatusChanged,
+    disconnect(&mediaPlayer_, &MediaPlayer::mediaStatusChanged, nullptr, nullptr);
+    connect(&mediaPlayer_, &MediaPlayer::mediaStatusChanged,
         [this, playlistId](const MediaStatus status)
         {
             if(MediaStatus::EndOfMedia == status or MediaStatus::InvalidMedia == status)
@@ -749,13 +739,13 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
 
 void MainWindow::togglePlayPause()
 {
-    if(PlaybackState::PlayingState == mediaPlayer_->playbackState())
+    if(PlaybackState::PlayingState == mediaPlayer_.playbackState())
     {
-        mediaPlayer_->pause();
+        mediaPlayer_.pause();
     }
     else
     {
-        mediaPlayer_->play();
+        mediaPlayer_.play();
     }
 }
 

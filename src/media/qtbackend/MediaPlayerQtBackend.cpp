@@ -2,9 +2,9 @@
 
 #include <QAudioOutput>
 #include <QMediaPlayer>
-#include <QObject>
-#include <qaudiooutput.h>
 
+namespace
+{
 MediaStatus convert(QMediaPlayer::MediaStatus status)
 {
     switch(status)
@@ -39,6 +39,12 @@ PlaybackState convert(QMediaPlayer::PlaybackState state)
     case QMediaPlayer::PausedState:
         return PlaybackState::PausedState;
     }
+}
+} // namespace
+
+std::unique_ptr<MediaPlayer> MediaPlayer::create()
+{
+    return std::make_unique<MediaPlayerQtBackend>();
 }
 
 struct MediaPlayerQtBackend::Private

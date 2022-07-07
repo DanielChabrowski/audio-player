@@ -28,7 +28,7 @@ class MainWindow final : public QWidget
     Q_OBJECT
 
 public:
-    explicit MainWindow(QSettings &, LibraryManager &, PlaylistManager &);
+    explicit MainWindow(QSettings &, LibraryManager &, PlaylistManager &, MediaPlayer &);
     ~MainWindow();
 
 protected:
@@ -47,7 +47,6 @@ private:
 
     EscapableLineEdit *createPlaylistSearchWidget();
 
-    void setupMediaPlayer();
     void setupGlobalShortcuts();
 
     void setTheme(const QString &filename);
@@ -103,6 +102,5 @@ private:
     QSettings &settings_;
     LibraryManager &libraryManager_;
     PlaylistManager &playlistManager_;
-
-    std::unique_ptr<MediaPlayer> mediaPlayer_;
+    MediaPlayer &mediaPlayer_;
 };
