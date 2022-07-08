@@ -7,6 +7,10 @@
 #include "MetaDataCache.hpp"
 #include "PlaylistManager.hpp"
 
+#ifdef PLUGIN_MPRIS_ENABLED
+#include "MprisPlugin.hpp"
+#endif
+
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
@@ -61,6 +65,10 @@ int main(int argc, char *argv[])
         qCritical() << "Could not create a media player backend";
         return 1;
     }
+
+#ifdef PLUGIN_MPRIS_ENABLED
+    plugins::MprisPlugin mprisPlugin(*mediaPlayer);
+#endif
 
     MainWindow window{ appSettings, libraryManager, playlistManager, *mediaPlayer };
     window.show();

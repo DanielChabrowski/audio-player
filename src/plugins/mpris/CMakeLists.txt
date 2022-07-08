@@ -22,7 +22,7 @@ execute_process(
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/dbus-annotate-qt.py ${MPRIS_SPEC_FILES}
 )
 
-add_library(mpris-plugin STATIC MprisPlugin.hpp MprisPlugin.cpp)
+add_library(mpris-plugin MprisPlugin.hpp MprisPlugin.cpp)
 add_library(plugins::mpris ALIAS mpris-plugin)
 
 foreach(filename IN ITEMS ${MPRIS_SPEC_FILES})
@@ -30,5 +30,5 @@ foreach(filename IN ITEMS ${MPRIS_SPEC_FILES})
     target_sources(mpris-plugin PRIVATE ${MPRIS_ADAPTOR})
 endforeach()
 
-target_link_libraries(mpris-plugin PUBLIC Qt6::DBus)
+target_link_libraries(mpris-plugin PUBLIC Qt6::DBus player::media)
 target_include_directories(mpris-plugin PUBLIC ${CMAKE_CURRENT_LIST_DIR})

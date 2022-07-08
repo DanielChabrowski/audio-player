@@ -46,4 +46,5 @@ public slots:
 signals:
     void positionChanged(qint64 position);
     void mediaStatusChanged(MediaStatus status);
+    void playbackStateChanged(PlaybackState state);
 };

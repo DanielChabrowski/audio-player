@@ -3,6 +3,8 @@
 #include <QDBusConnection>
 #include <QDBusObjectPath>
 
+class MediaPlayer;
+
 namespace plugins
 {
 class MprisPlugin : QObject
@@ -10,7 +12,7 @@ class MprisPlugin : QObject
     Q_OBJECT
 
 public:
-    explicit MprisPlugin(QObject *parent);
+    explicit MprisPlugin(MediaPlayer &mediaPlayer);
     ~MprisPlugin();
 
 public: // PROPERTIES
@@ -63,7 +65,7 @@ public: // PROPERTIES
     double volume() const;
     void setVolume(double value);
 
-public Q_SLOTS: // METHODS
+public slots: // METHODS
     void Next();
     void OpenUri(const QString &Uri);
     void Pause();
@@ -74,7 +76,10 @@ public Q_SLOTS: // METHODS
     void SetPosition(const QDBusObjectPath &TrackId, qlonglong Position);
     void Stop();
 
-Q_SIGNALS: // SIGNALS
+signals: // SIGNALS
     void Seeked(qlonglong Position);
+
+private:
+    MediaPlayer &mediaPlayer_;
 };
 } // namespace plugins

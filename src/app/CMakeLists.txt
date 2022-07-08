@@ -31,6 +31,11 @@ add_executable(foobar ${SOURCES})
 
 target_link_libraries(foobar PRIVATE Qt6::Widgets player::core player::media)
 
+if(UNIX AND PLUGIN_MPRIS)
+    target_link_libraries(foobar PRIVATE plugins::mpris)
+    target_compile_definitions(foobar PRIVATE PLUGIN_MPRIS_ENABLED)
+endif()
+
 include(CheckIPOSupported)
 check_ipo_supported(RESULT IPO_SUPPORTED LANGUAGES CXX)
 

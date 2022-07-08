@@ -1,15 +1,52 @@
 #include "MprisPlugin.hpp"
 
+#include <QtGlobal>
+
+#include "MediaPlayer.hpp"
+
 #include "mediaplayer2adaptor.h"
 #include "playeradaptor.h"
 
+namespace
+{
+QString toString(PlaybackState state)
+{
+    switch(state)
+    {
+    case PlaybackState::PausedState:
+        return "Paused";
+    case PlaybackState::StoppedState:
+        return "Stopped";
+    case PlaybackState::PlayingState:
+        return "Playing";
+    }
+
+    Q_UNREACHABLE();
+}
+
+void emitPropertyChanged(const QString &key, const QVariant &value)
+{
+    QDBusMessage msg = QDBusMessage::createSignal(
+        "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged");
+    msg.setArguments({
+        "org.mpris.MediaPlayer2.Player",
+        QVariantMap{ { key, value } },
+        QStringList{},
+    });
+    QDBusConnection::sessionBus().send(msg);
+}
+} // namespace
+
 namespace plugins
 {
-MprisPlugin::MprisPlugin(QObject *parent)
-: QObject(parent)
+MprisPlugin::MprisPlugin(MediaPlayer &mediaPlayer)
+: mediaPlayer_{ mediaPlayer }
 {
     new PlayerAdaptor(this);
     new MediaPlayer2Adaptor(this);
+
+    connect(&mediaPlayer, &MediaPlayer::playbackStateChanged, this,
+        [](PlaybackState state) { emitPropertyChanged("playbackStatus", toString(state)); });
 
     auto dbus = QDBusConnection::sessionBus();
     dbus.registerService("org.mpris.MediaPlayer2.foobar");
@@ -79,12 +116,13 @@ double MprisPlugin::minimumRate() const
 
 QString MprisPlugin::playbackStatus() const
 {
-    return "Playing";
+    const auto state = mediaPlayer_.playbackState();
+    return toString(state);
 }
 
 qlonglong MprisPlugin::position() const
 {
-    return 0;
+    return mediaPlayer_.position();
 }
 
 double MprisPlugin::rate() const
@@ -110,8 +148,9 @@ double MprisPlugin::volume() const
     return 1.0;
 }
 
-void MprisPlugin::setVolume(double)
+void MprisPlugin::setVolume(double volume)
 {
+    mediaPlayer_.setVolume(volume);
 }
 
 void MprisPlugin::Next()
@@ -124,14 +163,24 @@ void MprisPlugin::OpenUri(const QString &) // Uri
 
 void MprisPlugin::Pause()
 {
+    mediaPlayer_.pause();
 }
 
 void MprisPlugin::Play()
 {
+    mediaPlayer_.play();
 }
 
 void MprisPlugin::PlayPause()
 {
+    if(mediaPlayer_.playbackState() == PlaybackState::PlayingState)
+    {
+        mediaPlayer_.pause();
+    }
+    else
+    {
+        mediaPlayer_.play();
+    }
 }
 
 void MprisPlugin::Previous()
@@ -142,11 +191,13 @@ void MprisPlugin::Seek(qlonglong) // offset
 {
 }
 
-void MprisPlugin::SetPosition(const QDBusObjectPath &, qlonglong) // trackid, position
+void MprisPlugin::SetPosition(const QDBusObjectPath &, qlonglong position) // trackid, position
 {
+    mediaPlayer_.setPosition(position);
 }
 
 void MprisPlugin::Stop()
 {
+    mediaPlayer_.stop();
 }
 } // namespace plugins

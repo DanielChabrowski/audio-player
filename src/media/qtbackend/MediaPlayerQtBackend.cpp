@@ -2,6 +2,7 @@
 
 #include <QAudioOutput>
 #include <QMediaPlayer>
+#include <QtGlobal>
 
 namespace
 {
@@ -26,6 +27,8 @@ MediaStatus convert(QMediaPlayer::MediaStatus status)
     case QMediaPlayer::InvalidMedia:
         return MediaStatus::InvalidMedia;
     }
+
+    Q_UNREACHABLE();
 }
 
 PlaybackState convert(QMediaPlayer::PlaybackState state)
@@ -39,6 +42,8 @@ PlaybackState convert(QMediaPlayer::PlaybackState state)
     case QMediaPlayer::PausedState:
         return PlaybackState::PausedState;
     }
+
+    Q_UNREACHABLE();
 }
 } // namespace
 
@@ -65,6 +70,9 @@ MediaPlayerQtBackend::MediaPlayerQtBackend(QObject *parent)
     connect(&impl->player, &QMediaPlayer::positionChanged, this, &MediaPlayerQtBackend::priv_positionChanged);
     connect(&impl->player, &QMediaPlayer::mediaStatusChanged, this,
         [this](QMediaPlayer::MediaStatus status) { emit mediaStatusChanged(convert(status)); });
+    connect(&impl->player, &QMediaPlayer::playbackStateChanged, this,
+        [this](QMediaPlayer::PlaybackState newState)
+        { emit playbackStateChanged(convert(newState)); });
 }
 
 MediaPlayerQtBackend::~MediaPlayerQtBackend() = default;
