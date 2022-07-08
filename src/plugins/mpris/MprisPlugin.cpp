@@ -3,6 +3,7 @@
 #include <QtGlobal>
 
 #include "MediaPlayer.hpp"
+#include "Playlist.hpp"
 
 #include "mediaplayer2adaptor.h"
 #include "playeradaptor.h"
@@ -47,6 +48,18 @@ MprisPlugin::MprisPlugin(MediaPlayer &mediaPlayer)
 
     connect(&mediaPlayer, &MediaPlayer::playbackStateChanged, this,
         [](PlaybackState state) { emitPropertyChanged("playbackStatus", toString(state)); });
+
+    connect(&mediaPlayer, &MediaPlayer::trackChanged, this,
+        [](const PlaylistTrack &track)
+        {
+            if(track.audioMetaData)
+            {
+                emitPropertyChanged("metadata", QVariantMap{
+                                                    { "xesam:title", track.audioMetaData->title },
+                                                    { "xesam:artist", track.audioMetaData->artist },
+                                                });
+            }
+        });
 
     auto dbus = QDBusConnection::sessionBus();
     dbus.registerService("org.mpris.MediaPlayer2.foobar");

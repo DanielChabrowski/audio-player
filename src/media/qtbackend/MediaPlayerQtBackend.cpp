@@ -4,6 +4,8 @@
 #include <QMediaPlayer>
 #include <QtGlobal>
 
+#include "Playlist.hpp"
+
 namespace
 {
 MediaStatus convert(QMediaPlayer::MediaStatus status)
@@ -97,9 +99,10 @@ void MediaPlayerQtBackend::setVolume(float volume)
     impl->player.audioOutput()->setVolume(volume);
 }
 
-void MediaPlayerQtBackend::setSource(QUrl url)
+void MediaPlayerQtBackend::setTrack(const PlaylistTrack &playlistTrack)
 {
-    impl->player.setSource(url);
+    impl->player.setSource(playlistTrack.path);
+    emit trackChanged(playlistTrack);
 }
 
 void MediaPlayerQtBackend::play()

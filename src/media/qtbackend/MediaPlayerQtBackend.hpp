@@ -19,7 +19,7 @@ public:
 public slots:
     void setPosition(qint64 position) override;
     void setVolume(float volume) override;
-    void setSource(QUrl url) override;
+    void setTrack(const PlaylistTrack &) override;
 
     void play() override;
     void pause() override;

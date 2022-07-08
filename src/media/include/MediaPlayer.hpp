@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QUrl>
 
+struct PlaylistTrack;
+
 enum class MediaStatus
 {
     NoMedia,
@@ -37,7 +39,7 @@ public:
 public slots:
     virtual void setPosition(qint64 position) = 0;
     virtual void setVolume(float volume) = 0;
-    virtual void setSource(QUrl url) = 0;
+    virtual void setTrack(const PlaylistTrack &) = 0;
 
     virtual void play() = 0;
     virtual void pause() = 0;
@@ -47,4 +49,5 @@ signals:
     void positionChanged(qint64 position);
     void mediaStatusChanged(MediaStatus status);
     void playbackStateChanged(PlaybackState state);
+    void trackChanged(const PlaylistTrack &track);
 };

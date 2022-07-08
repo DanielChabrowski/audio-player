@@ -713,17 +713,23 @@ void MainWindow::playMediaFromPlaylist(PlaylistId playlistId, std::size_t index)
     }
 
     const auto *track = playlist->getTrack(index);
+    if(not track)
+    {
+        qWarning() << "Selected nonexistent playlist track, skipping";
+        return;
+    }
+
     qDebug() << "Playing media:" << track->path;
 
-    this->mediaPlayer_.setSource(QUrl::fromUserInput(track->path));
-    this->mediaPlayer_.play();
+    mediaPlayer_.setTrack(*track);
+    mediaPlayer_.play();
 
     const auto trackDuration =
         track->audioMetaData ? track->audioMetaData->duration : std::chrono::seconds{ 0 };
     enableSeekbar(trackDuration);
 
     playlist->setCurrentTrackIndex(index);
-    this->ui.playlist->update();
+    ui.playlist->update();
 
     disconnect(&mediaPlayer_, &MediaPlayer::mediaStatusChanged, nullptr, nullptr);
     connect(&mediaPlayer_, &MediaPlayer::mediaStatusChanged,
