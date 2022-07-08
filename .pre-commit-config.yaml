@@ -27,3 +27,9 @@ repos:
         language: pygrep
         entry: '\t'
         types: [text]
+    -   id: ensure-pragma-once
+        name: ensure pragma once
+        entry: '^#pragma once$'
+        language: pygrep
+        files: \.(h|hpp)$
+        args: [--multiline, --negate]
