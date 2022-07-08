@@ -79,6 +79,39 @@ public slots: // METHODS
 signals: // SIGNALS
     void Seeked(qlonglong Position);
 
+public: // org.mpris.MediaPlayer2 PROPERTIES
+    Q_PROPERTY(bool CanQuit READ canQuit)
+    bool canQuit() const;
+
+    Q_PROPERTY(bool CanRaise READ canRaise)
+    bool canRaise() const;
+
+    Q_PROPERTY(bool CanSetFullscreen READ canSetFullscreen)
+    bool canSetFullscreen() const;
+
+    Q_PROPERTY(QString DesktopEntry READ desktopEntry)
+    QString desktopEntry() const;
+
+    Q_PROPERTY(bool Fullscreen READ fullscreen WRITE setFullscreen)
+    bool fullscreen() const;
+    void setFullscreen(bool value);
+
+    Q_PROPERTY(bool HasTrackList READ hasTrackList)
+    bool hasTrackList() const;
+
+    Q_PROPERTY(QString Identity READ identity)
+    QString identity() const;
+
+    Q_PROPERTY(QStringList SupportedMimeTypes READ supportedMimeTypes)
+    QStringList supportedMimeTypes() const;
+
+    Q_PROPERTY(QStringList SupportedUriSchemes READ supportedUriSchemes)
+    QStringList supportedUriSchemes() const;
+
+public Q_SLOTS: // METHODS
+    void Quit();
+    void Raise();
+
 private:
     MediaPlayer &mediaPlayer_;
 };

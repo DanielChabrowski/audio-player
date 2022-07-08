@@ -213,4 +213,61 @@ void MprisPlugin::Stop()
 {
     mediaPlayer_.stop();
 }
+
+bool MprisPlugin::canQuit() const
+{
+    return false;
+}
+
+bool MprisPlugin::canRaise() const
+{
+    return false;
+}
+
+bool MprisPlugin::canSetFullscreen() const
+{
+    return false;
+}
+
+QString MprisPlugin::desktopEntry() const
+{
+    return "foobar";
+}
+
+bool MprisPlugin::fullscreen() const
+{
+    return false;
+}
+
+void MprisPlugin::setFullscreen(bool)
+{
+}
+
+bool MprisPlugin::hasTrackList() const
+{
+    return false;
+}
+
+QString MprisPlugin::identity() const
+{
+    return "Foobar";
+}
+
+QStringList MprisPlugin::supportedMimeTypes() const
+{
+    return {};
+}
+
+QStringList MprisPlugin::supportedUriSchemes() const
+{
+    return {};
+}
+
+void MprisPlugin::Quit()
+{
+}
+
+void MprisPlugin::Raise()
+{
+}
 } // namespace plugins
