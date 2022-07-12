@@ -14,7 +14,7 @@ set(MPRIS_SPEC_DIR ${mpris-spec_SOURCE_DIR})
 set(MPRIS_SPEC_FILES
     ${MPRIS_SPEC_DIR}/spec/org.mpris.MediaPlayer2.xml
     ${MPRIS_SPEC_DIR}/spec/org.mpris.MediaPlayer2.Player.xml
-    #${MPRIS_SPEC_DIR}/spec/org.mpris.MediaPlayer2.Playlists.xml
+    ${MPRIS_SPEC_DIR}/spec/org.mpris.MediaPlayer2.Playlists.xml
     #${MPRIS_SPEC_DIR}/spec/org.mpris.MediaPlayer2.TrackList.xml
 )
 
@@ -22,11 +22,11 @@ execute_process(
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/dbus-annotate-qt.py ${MPRIS_SPEC_FILES}
 )
 
-add_library(mpris-plugin MprisPlugin.hpp MprisPlugin.cpp)
+add_library(mpris-plugin MprisTypes.hpp MprisPlugin.hpp MprisPlugin.cpp)
 add_library(plugins::mpris ALIAS mpris-plugin)
 
 foreach(filename IN ITEMS ${MPRIS_SPEC_FILES})
-    qt_add_dbus_adaptor(MPRIS_ADAPTOR ${filename} MprisPlugin.hpp)
+    qt_add_dbus_adaptor(MPRIS_ADAPTOR ${filename} MprisTypes.hpp)
     target_sources(mpris-plugin PRIVATE ${MPRIS_ADAPTOR})
 endforeach()
 

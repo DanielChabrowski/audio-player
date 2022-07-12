@@ -1,12 +1,49 @@
 #include "MprisPlugin.hpp"
 
+#include <QDBusArgument>
+#include <QDBusMetaType>
+#include <QFileInfo>
 #include <QtGlobal>
 
 #include "MediaPlayer.hpp"
+#include "MprisTypes.hpp"
 #include "Playlist.hpp"
 
 #include "mediaplayer2adaptor.h"
 #include "playeradaptor.h"
+#include "playlistsadaptor.h"
+
+QDBusArgument &operator<<(QDBusArgument &arg, const MprisPlaylist &playlist)
+{
+    arg.beginStructure();
+    arg << playlist.id << playlist.name << playlist.icon;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, MprisPlaylist &playlist)
+{
+    arg.beginStructure();
+    arg >> playlist.id >> playlist.name >> playlist.icon;
+    arg.endStructure();
+    return arg;
+}
+
+QDBusArgument &operator<<(QDBusArgument &arg, const MprisMaybePlaylist &playlist)
+{
+    arg.beginStructure();
+    arg << playlist.valid << playlist.playlist;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, MprisMaybePlaylist &playlist)
+{
+    arg.beginStructure();
+    arg >> playlist.valid >> playlist.playlist;
+    arg.endStructure();
+    return arg;
+}
 
 namespace
 {
@@ -25,17 +62,46 @@ QString toString(PlaybackState state)
     Q_UNREACHABLE();
 }
 
-void emitPropertyChanged(const QString &key, const QVariant &value)
+void emitPropertyChanged(const QString &key, const QVariant &value, const char *interfaceName)
 {
     QDBusMessage msg = QDBusMessage::createSignal(
         "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged");
     msg.setArguments({
-        "org.mpris.MediaPlayer2.Player",
+        interfaceName,
         QVariantMap{ { key, value } },
         QStringList{},
     });
     QDBusConnection::sessionBus().send(msg);
 }
+
+QVariantMap convert(const PlaylistTrack &track)
+{
+    auto length = std::chrono::duration<quint64, std::milli>(track.audioMetaData->duration).count();
+
+    if(track.audioMetaData && !track.audioMetaData->title.isEmpty())
+    {
+        return {
+            { "xesam:url", track.path },
+            { "xesam:title", track.audioMetaData->title },
+            { "xesam:artist", track.audioMetaData->artist },
+            { "xesam:album", track.audioMetaData->albumName },
+            { "xesam:discNumber", track.audioMetaData->discNumber },
+            { "xesam:trackNumber", track.audioMetaData->trackNumber },
+            { "mpris:length", length },
+        };
+    }
+    else
+    {
+        return {
+            { "xesam:url", track.path },
+            { "xesam:title", QFileInfo(track.path).completeBaseName() },
+            { "mpris:length", length },
+        };
+    }
+}
+
+constexpr auto playerInterfaceName = "org.mpris.MediaPlayer2.Player";
+// constexpr auto playlistInterfaceName = "org.mpris.MediaPlayer2.Playlist";
 } // namespace
 
 namespace plugins
@@ -43,28 +109,27 @@ namespace plugins
 MprisPlugin::MprisPlugin(MediaPlayer &mediaPlayer)
 : mediaPlayer_{ mediaPlayer }
 {
+    qDBusRegisterMetaType<MprisPlaylist>();
+    qDBusRegisterMetaType<MprisMaybePlaylist>();
+    qDBusRegisterMetaType<MprisPlaylistList>();
+
     new PlayerAdaptor(this);
     new MediaPlayer2Adaptor(this);
+    new PlaylistsAdaptor(this);
 
     connect(&mediaPlayer, &MediaPlayer::playbackStateChanged, this,
-        [](PlaybackState state) { emitPropertyChanged("playbackStatus", toString(state)); });
+        [](PlaybackState state)
+        { emitPropertyChanged("playbackStatus", toString(state), playerInterfaceName); });
 
     connect(&mediaPlayer, &MediaPlayer::trackChanged, this,
         [](const PlaylistTrack &track)
-        {
-            if(track.audioMetaData)
-            {
-                emitPropertyChanged("metadata", QVariantMap{
-                                                    { "xesam:title", track.audioMetaData->title },
-                                                    { "xesam:artist", track.audioMetaData->artist },
-                                                });
-            }
-        });
+        { emitPropertyChanged("metadata", convert(track), playerInterfaceName); });
 
     auto dbus = QDBusConnection::sessionBus();
     dbus.registerService("org.mpris.MediaPlayer2.foobar");
     dbus.registerObject("/org/mpris/MediaPlayer2", this);
     dbus.registerObject("/org/mpris/MediaPlayer2/Player", this);
+    dbus.registerObject("/org/mpris/MediaPlayer2/Playlist", this);
 }
 
 MprisPlugin::~MprisPlugin()
@@ -170,8 +235,9 @@ void MprisPlugin::Next()
 {
 }
 
-void MprisPlugin::OpenUri(const QString &) // Uri
+void MprisPlugin::OpenUri(const QString &url)
 {
+    Q_UNUSED(url);
 }
 
 void MprisPlugin::Pause()
@@ -200,12 +266,14 @@ void MprisPlugin::Previous()
 {
 }
 
-void MprisPlugin::Seek(qlonglong) // offset
+void MprisPlugin::Seek(qlonglong offset)
 {
+    Q_UNUSED(offset);
 }
 
-void MprisPlugin::SetPosition(const QDBusObjectPath &, qlonglong position) // trackid, position
+void MprisPlugin::SetPosition(const QDBusObjectPath &trackId, qlonglong position)
 {
+    Q_UNUSED(trackId);
     mediaPlayer_.setPosition(position);
 }
 
@@ -269,5 +337,37 @@ void MprisPlugin::Quit()
 
 void MprisPlugin::Raise()
 {
+}
+
+MprisMaybePlaylist MprisPlugin::activePlaylist() const
+{
+    return MprisMaybePlaylist{
+        false,
+        MprisPlaylist{ QDBusObjectPath{ "/org/foobar/playlist/0" }, "Playlist name", "" },
+    };
+}
+
+QStringList MprisPlugin::orderings() const
+{
+    return { "Alphabetical" };
+}
+
+uint MprisPlugin::playlistCount() const
+{
+    return 0;
+}
+
+void MprisPlugin::ActivatePlaylist(const QDBusObjectPath &playlistId)
+{
+    Q_UNUSED(playlistId);
+}
+
+MprisPlaylistList MprisPlugin::GetPlaylists(uint index, uint maxCount, const QString &order, bool reverseOrder)
+{
+    Q_UNUSED(index);
+    Q_UNUSED(maxCount);
+    Q_UNUSED(order);
+    Q_UNUSED(reverseOrder);
+    return {};
 }
 } // namespace plugins

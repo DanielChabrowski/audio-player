@@ -64,7 +64,7 @@ def annotate_arg_container(node, mapping) -> bool:
 
         qt_type = escape(mapping[prop_type])
         counter = out_counter if direction == 'out' else in_counter
-        annotation_name = f'org.qtproject.QtDBus.QtTypeName.{direction.capitalize()}{counter}'
+        annotation_name = f'org.qtproject.QtDBus.QtTypeName.{direction.capitalize()}{counter - 1}'
 
         is_annotated = any([
             ('name' in annotation.attrib and annotation.attrib['name'] == annotation_name)
@@ -87,6 +87,9 @@ def main() -> int:
     mapping = {
         'a{sv}': 'QVariantMap',
         'aa{sv}': 'QVector<QVariantList>',
+        '(oss)': 'MprisPlaylist',
+        'a(oss)': 'MprisPlaylistList',
+        '(b(oss))': 'MprisMaybePlaylist',
     }
 
     for xml_file in args.xml_files:

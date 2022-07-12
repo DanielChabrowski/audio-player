@@ -3,6 +3,8 @@
 #include <QDBusConnection>
 #include <QDBusObjectPath>
 
+#include "MprisTypes.hpp"
+
 class MediaPlayer;
 
 namespace plugins
@@ -108,9 +110,26 @@ public: // org.mpris.MediaPlayer2 PROPERTIES
     Q_PROPERTY(QStringList SupportedUriSchemes READ supportedUriSchemes)
     QStringList supportedUriSchemes() const;
 
-public Q_SLOTS: // METHODS
+public slots: // METHODS
     void Quit();
     void Raise();
+
+public: // PROPERTIES
+    Q_PROPERTY(MprisMaybePlaylist ActivePlaylist READ activePlaylist)
+    MprisMaybePlaylist activePlaylist() const;
+
+    Q_PROPERTY(QStringList Orderings READ orderings)
+    QStringList orderings() const;
+
+    Q_PROPERTY(uint PlaylistCount READ playlistCount)
+    uint playlistCount() const;
+
+public slots: // METHODS
+    void ActivatePlaylist(const QDBusObjectPath &playlistId);
+    MprisPlaylistList GetPlaylists(uint index, uint maxCount, const QString &order, bool reverseOrder);
+
+signals: // SIGNALS
+    void PlaylistChanged(MprisPlaylist playlist);
 
 private:
     MediaPlayer &mediaPlayer_;
