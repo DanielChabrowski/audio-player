@@ -23,6 +23,10 @@ QMenuBar::item:pressed {
     border-bottom: 1px solid #f47e46;
 }
 
+PlaybackControlButton {
+    padding: 0;
+}
+
 QTreeView {
     border: none;
 }

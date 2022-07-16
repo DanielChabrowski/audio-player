@@ -24,6 +24,7 @@
 #include "FilesystemPlaylistIO.hpp"
 #include "MediaPlayer.hpp"
 #include "MultilineTabBar.hpp"
+#include "PlaybackControlButton.hpp"
 #include "PlaylistFilterModel.hpp"
 #include "PlaylistHeader.hpp"
 #include "PlaylistManager.hpp"
@@ -369,7 +370,7 @@ void MainWindow::setupPlaybackControlButtons()
 {
     const auto createButtonFunc = [this](const QString &filename, std::function<void()> onReleaseEvent)
     {
-        auto *button = new QPushButton(this);
+        auto *button = new PlaybackControlButton(this);
         button->setFlat(true);
         button->setMaximumSize(24, 24);
         button->setIcon(QPixmap(filename));
@@ -379,7 +380,7 @@ void MainWindow::setupPlaybackControlButtons()
         ui.buttonsLayout->addWidget(button);
     };
 
-    ui.buttonsLayout->QLayout::setSpacing(0);
+    ui.buttonsLayout->setSpacing(0);
 
     createButtonFunc(":/icons/play.png", [this]() { mediaPlayer_.play(); });
     createButtonFunc(":/icons/pause.png", [this]() { mediaPlayer_.pause(); });

@@ -18,6 +18,7 @@ set(SOURCES
     EscapableLineEdit.hpp
     MultilineTabBar.cpp
     MultilineTabBar.hpp
+    PlaybackControlButton.hpp
     AlbumGallery.cpp
     AlbumGallery.hpp
     AlbumModel.cpp
