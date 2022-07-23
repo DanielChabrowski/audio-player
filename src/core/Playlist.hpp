@@ -44,6 +44,12 @@ public:
     Playlist(QString name, QString playlistPath, IPlaylistIO &);
     Playlist(QString name, QString playlistPath, const std::vector<QUrl> &tracks, IPlaylistIO &);
 
+    Playlist(Playlist &&) = default;
+    Playlist &operator=(Playlist &&) = default;
+
+    Playlist(const Playlist &) = delete;
+    Playlist &operator=(const Playlist &) = delete;
+
     const QString &getName() const;
     const QString &getPath() const;
 

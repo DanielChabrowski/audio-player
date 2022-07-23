@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
+
 #include <stdexcept>
 
 PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirectory)
@@ -27,7 +28,7 @@ try
     auto playlist = playlistIO_.load(filepath);
 
     const auto newPlaylistIndex = PlaylistId{ lastPlaylistIndex_++ };
-    playlist.setPlaylistId(PlaylistId{ newPlaylistIndex });
+    playlist.setPlaylistId(newPlaylistIndex);
     playlists_.emplace(newPlaylistIndex, std::move(playlist));
     return newPlaylistIndex;
 }

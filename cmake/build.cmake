@@ -41,6 +41,17 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-Wno-gnu-zero-variadic-macro-arguments>
     )
 
+    # WA for a GCC bug
+    # no way? to check for Multi-Config build type
+    if(
+        CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+        AND (NOT CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    )
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "12.1")
+            add_compile_options(-Wno-maybe-uninitialized)
+        endif()
+    endif()
+
     include(CheckLinkerFlag)
     check_linker_flag(CXX "-fuse-ld=lld" LLD_SUPPORTED)
     if(LLD_SUPPORTED)
