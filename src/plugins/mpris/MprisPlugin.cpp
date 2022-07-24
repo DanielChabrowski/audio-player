@@ -13,6 +13,11 @@
 #include "playeradaptor.h"
 #include "playlistsadaptor.h"
 
+namespace
+{
+constexpr auto mprisEventSource{ "mpris" };
+}
+
 QDBusArgument &operator<<(QDBusArgument &arg, const MprisPlaylist &playlist)
 {
     arg.beginStructure();
@@ -125,11 +130,22 @@ MprisPlugin::MprisPlugin(MediaPlayer &mediaPlayer)
         [](const PlaylistTrack &track)
         { emitPropertyChanged("metadata", convert(track), playerInterfaceName); });
 
+    connect(&mediaPlayer, &MediaPlayer::volumeChanged, this,
+        [](float volume, const char *eventSource)
+        {
+            if(eventSource != mprisEventSource)
+            {
+                emitPropertyChanged("volume", static_cast<double>(volume), playerInterfaceName);
+            }
+        });
+
     auto dbus = QDBusConnection::sessionBus();
     dbus.registerService("org.mpris.MediaPlayer2.foobar");
     dbus.registerObject("/org/mpris/MediaPlayer2", this);
     dbus.registerObject("/org/mpris/MediaPlayer2/Player", this);
     dbus.registerObject("/org/mpris/MediaPlayer2/Playlist", this);
+
+    qInfo() << "MPRIS plugin enabled";
 }
 
 MprisPlugin::~MprisPlugin()
@@ -223,12 +239,12 @@ void MprisPlugin::setShuffle(bool)
 
 double MprisPlugin::volume() const
 {
-    return 1.0;
+    return mediaPlayer_.volume();
 }
 
 void MprisPlugin::setVolume(double volume)
 {
-    mediaPlayer_.setVolume(volume);
+    mediaPlayer_.setVolume(volume, mprisEventSource);
 }
 
 void MprisPlugin::Next()

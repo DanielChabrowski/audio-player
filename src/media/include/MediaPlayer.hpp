@@ -32,13 +32,14 @@ public:
     virtual ~MediaPlayer() = default;
 
     virtual qint64 position() const = 0;
+    virtual float volume() const = 0;
     virtual PlaybackState playbackState() const = 0;
 
     static std::unique_ptr<MediaPlayer> create();
 
 public slots:
     virtual void setPosition(qint64 position) = 0;
-    virtual void setVolume(float volume) = 0;
+    virtual void setVolume(float volume, const char *eventSource) = 0;
     virtual void setTrack(const PlaylistTrack &) = 0;
 
     virtual void play() = 0;
@@ -47,6 +48,7 @@ public slots:
 
 signals:
     void positionChanged(qint64 position);
+    void volumeChanged(float volume, const char *eventSource);
     void mediaStatusChanged(MediaStatus status);
     void playbackStateChanged(PlaybackState state);
     void trackChanged(const PlaylistTrack &track);

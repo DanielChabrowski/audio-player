@@ -84,6 +84,11 @@ qint64 MediaPlayerQtBackend::position() const
     return impl->player.position();
 }
 
+float MediaPlayerQtBackend::volume() const
+{
+    return impl->player.audioOutput()->volume();
+}
+
 PlaybackState MediaPlayerQtBackend::playbackState() const
 {
     return convert(impl->player.playbackState());
@@ -94,9 +99,10 @@ void MediaPlayerQtBackend::setPosition(qint64 position)
     impl->player.setPosition(position);
 }
 
-void MediaPlayerQtBackend::setVolume(float volume)
+void MediaPlayerQtBackend::setVolume(float volume, const char *eventSource)
 {
     impl->player.audioOutput()->setVolume(volume);
+    emit volumeChanged(volume, eventSource);
 }
 
 void MediaPlayerQtBackend::setTrack(const PlaylistTrack &playlistTrack)

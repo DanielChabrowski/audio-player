@@ -33,6 +33,11 @@
 
 #include <algorithm>
 
+namespace
+{
+constexpr auto uiEventSource{ "ui" };
+}
+
 MainWindow::MainWindow(QSettings &settings, LibraryManager &libraryManager, PlaylistManager &playlistManager, MediaPlayer &mediaPlayer)
 : QWidget{ nullptr }
 , settings_{ settings }
@@ -329,16 +334,25 @@ void MainWindow::setupVolumeControl()
     ui.volumeSlider->setValue(sliderValue);
 
     const float volume = static_cast<float>(sliderValue) / maxVolume;
-    mediaPlayer_.setVolume(volume);
+    mediaPlayer_.setVolume(volume, uiEventSource);
 
-    connect(ui.volumeSlider, &QSlider::valueChanged,
+    connect(ui.volumeSlider, &QSlider::valueChanged, this,
         [this](int sliderValue)
         {
             const float volume = static_cast<float>(sliderValue) / maxVolume;
-            mediaPlayer_.setVolume(volume);
+            mediaPlayer_.setVolume(volume, uiEventSource);
 
             this->settings_.setValue(config::volumeKey, sliderValue);
-            qDebug() << "Volume set to" << volume;
+        });
+
+    connect(&mediaPlayer_, &MediaPlayer::volumeChanged, this,
+        [this](float volume, const char *eventSource)
+        {
+            if(eventSource != uiEventSource)
+            {
+                const int value = volume * maxVolume;
+                ui.volumeSlider->setValue(value);
+            }
         });
 }
 

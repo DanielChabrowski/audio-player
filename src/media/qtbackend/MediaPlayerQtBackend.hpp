@@ -20,8 +20,10 @@ public:
 
 public slots:
     void setPosition(qint64 position) override;
-    void setVolume(float volume) override;
     void setTrack(const PlaylistTrack &) override;
+
+    void setVolume(float volume, const char *eventSource) override;
+    float volume() const override;
 
     void play() override;
     void pause() override;
