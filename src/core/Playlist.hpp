@@ -45,7 +45,7 @@ public:
     Playlist(QString name, QString playlistPath, const std::vector<QUrl> &tracks, IPlaylistIO &);
 
     Playlist(Playlist &&) = default;
-    Playlist &operator=(Playlist &&) = default;
+    Playlist &operator=(Playlist &&) = delete; // clang: implicitly deleted by PlaylistIO ref
 
     Playlist(const Playlist &) = delete;
     Playlist &operator=(const Playlist &) = delete;
