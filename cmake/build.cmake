@@ -52,14 +52,25 @@ else()
         endif()
     endif()
 
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT IPO_SUPPORTED LANGUAGES CXX)
+
     include(CheckLinkerFlag)
     check_linker_flag(CXX "-fuse-ld=lld" LLD_SUPPORTED)
-    if(LLD_SUPPORTED)
+    if(
+        LLD_SUPPORTED
+        AND IPO_SUPPORTED
+        AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+    )
+        # lld doesn't work when used with gcc and lto enabled
+        # https://github.com/llvm/llvm-project/issues/41791
         add_link_options("-fuse-ld=lld")
+        message(STATUS "Using lld linker")
     else()
         check_linker_flag(CXX "-fuse-ld=gold" GOLD_SUPPORTED)
         if(GOLD_SUPPORTED)
             add_link_options("-fuse-ld=gold")
+            message(STATUS "Using gold linker")
         endif()
     endif()
 endif()
