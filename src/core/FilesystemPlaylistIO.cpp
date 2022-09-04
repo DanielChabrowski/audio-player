@@ -18,6 +18,8 @@
 #include <stdexcept>
 #include <vector>
 
+namespace
+{
 QStringList getSupportedAudioFileExtensions()
 {
     return QStringList() << "flac"
@@ -30,6 +32,7 @@ QStringList getSupportedAudioFileExtensions()
                          << "mkv"
                          << "mp4";
 }
+} // namespace
 
 FilesystemPlaylistIO::FilesystemPlaylistIO(MetaDataCache &cache, IAudioMetaDataProvider &audioMetaDataProvider)
 : cache_{ cache }
@@ -116,15 +119,12 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
         {
             const auto trackPath = trackUrl.toLocalFile();
 
-            QFileInfo trackFileInfo{ trackPath };
-            if(trackFileInfo.isFile())
+            const QFileInfo trackFileInfo{ trackPath };
+            if(trackFileInfo.isFile() && isSupportedFileType(trackFileInfo))
             {
-                if(isSupportedFileType(trackFileInfo))
-                {
-                    auto path = trackFileInfo.absoluteFilePath();
-                    tracks.emplace_back(path);
-                    localFiles.push_back(std::move(path));
-                }
+                auto path = trackFileInfo.absoluteFilePath();
+                tracks.emplace_back(path);
+                localFiles.push_back(std::move(path));
             }
             else if(trackFileInfo.isDir())
             {
@@ -135,14 +135,11 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
 
                     for(const auto &entry : directoryEntries)
                     {
-                        if(entry.isFile())
+                        if(entry.isFile() && isSupportedFileType(entry))
                         {
-                            if(isSupportedFileType(entry))
-                            {
-                                auto path = entry.absoluteFilePath();
-                                tracks.emplace_back(path);
-                                localFiles.push_back(std::move(path));
-                            }
+                            auto path = entry.absoluteFilePath();
+                            tracks.emplace_back(path);
+                            localFiles.push_back(std::move(path));
                         }
                         else if(entry.isDir())
                         {
@@ -172,10 +169,10 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
     auto cached = cache_.batchFindByPath(std::move(uniqueLocalFiles));
 
     auto cachedCovers = cache_.getCoverArtHashCache();
+    std::vector<std::pair<std::uint64_t, QByteArray>> tempCoverCache{};
 
     std::size_t tempCacheHits{ 0 }, cacheHits{ 0 }, cacheMisses{ 0 };
-
-    QCryptographicHash crypto{ QCryptographicHash::Algorithm::Md5 };
+    std::size_t tempCoverCacheHits{ 0 }, coverCacheHits{ 0 }, coverCacheMisses{ 0 };
 
     for(auto &path : tracks)
     {
@@ -204,24 +201,41 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
             {
                 const auto coverByteView = QByteArray::fromRawData(coverArt->data(), coverArt->size());
 
-                crypto.addData(coverByteView);
-                const auto coverHash = crypto.result();
-                crypto.reset();
+                const auto tempCoverCacheIt = std::find_if(tempCoverCache.cbegin(), tempCoverCache.cend(),
+                    [&coverByteView](const auto &tempCover)
+                    { return tempCover.second == coverByteView; });
 
-                const auto cachedCoverIt = std::find_if(cachedCovers.cbegin(), cachedCovers.cend(),
-                    [&coverHash](const auto &cachedCover) { return cachedCover.hash == coverHash; });
-
-                if(cachedCoverIt == cachedCovers.cend())
+                if(tempCoverCacheIt != tempCoverCache.cend())
                 {
-                    if(const auto coverCacheResult = cache_.cache(coverByteView, coverHash); coverCacheResult)
-                    {
-                        cachedCovers.emplace_back(CachedCoverHash{ *coverCacheResult, std::move(coverHash) });
-                        coverId = coverCacheResult;
-                    }
+                    coverId = tempCoverCacheIt->first;
+                    ++tempCoverCacheHits;
                 }
                 else
                 {
-                    coverId = cachedCoverIt->id;
+                    const auto coverHash =
+                        QCryptographicHash::hash(coverByteView, QCryptographicHash::Algorithm::Sha1);
+
+                    const auto cachedCoverIt = std::find_if(cachedCovers.cbegin(), cachedCovers.cend(),
+                        [&coverHash](const auto &cachedCover)
+                        { return cachedCover.hash == coverHash; });
+
+                    if(cachedCoverIt == cachedCovers.cend())
+                    {
+                        if(const auto coverCacheResult = cache_.cache(coverByteView, coverHash); coverCacheResult)
+                        {
+                            cachedCovers.emplace_back(
+                                CachedCoverHash{ *coverCacheResult, std::move(coverHash) });
+                            tempCoverCache.emplace_back(*coverCacheResult,
+                                QByteArray(coverByteView.data(), coverByteView.size()));
+                            coverId = coverCacheResult;
+                        }
+                        ++coverCacheMisses;
+                    }
+                    else
+                    {
+                        coverId = cachedCoverIt->id;
+                        ++coverCacheHits;
+                    }
                 }
             }
 
@@ -244,6 +258,9 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
 
     qDebug() << tempCacheHits << "temporary cache hits," << cacheHits << "cache hits,"
              << cacheMisses << "cache misses";
+
+    qDebug() << tempCoverCacheHits << "temporary cover cache hits," << coverCacheHits
+             << "cover cache hits," << coverCacheMisses << "cover cache misses";
 
     if(!cache_.cache(std::move(uncached)))
     {
