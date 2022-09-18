@@ -25,7 +25,14 @@ PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirect
 std::optional<PlaylistId> PlaylistManager::add(const QString &filepath)
 try
 {
+    QElapsedTimer timer;
+    timer.start();
+
     auto playlist = playlistIO_.load(filepath);
+
+    const auto elapsed = timer.elapsed();
+    qDebug() << "Playlist" << playlist.getName() << "with" << playlist.getTrackCount()
+             << "tracks read in" << elapsed << "ms";
 
     const auto newPlaylistIndex = PlaylistId{ lastPlaylistIndex_++ };
     playlist.setPlaylistId(newPlaylistIndex);

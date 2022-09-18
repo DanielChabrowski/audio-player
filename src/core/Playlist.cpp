@@ -2,8 +2,6 @@
 
 #include "IPlaylistIO.hpp"
 
-#include <QDebug>
-#include <QElapsedTimer>
 #include <QStringView>
 
 #include <random>
@@ -23,14 +21,8 @@ Playlist::Playlist(QString name, QString playlistPath, IPlaylistIO &playlistIO)
 Playlist::Playlist(QString name, QString playlistPath, const std::vector<QUrl> &tracks, IPlaylistIO &playlistIO)
 : Playlist(std::move(name), std::move(playlistPath), playlistIO)
 {
-    QElapsedTimer timer;
-    timer.start();
-
     constexpr auto autoSave = false;
     insertTracks(tracks, autoSave);
-
-    const auto elapsed = timer.elapsed();
-    qDebug() << "Playlist" << name_ << "with" << tracks.size() << "tracks read in" << elapsed << "ms";
 }
 
 const QString &Playlist::getName() const
@@ -184,9 +176,9 @@ void Playlist::removeTracks(std::size_t first, std::size_t count)
     const auto begin = std::clamp<std::size_t>(first, 0u, tracksCount);
     const auto end = std::clamp<std::size_t>(first + count, begin, tracksCount);
 
-    if(first >= tracksCount || (first + count) > tracksCount)
+    if(first >= tracksCount || (first + count) >= tracksCount)
     {
-        qWarning() << "removeTracks out of bounds" << first << first + count;
+        return;
     }
 
     if(currentTrackIndex_ > 0 && static_cast<std::size_t>(currentTrackIndex_) > begin)
@@ -227,7 +219,6 @@ bool Playlist::matchesFilterQuery(std::size_t trackIndex, QString query) const
     const auto &track = getTrack(trackIndex);
     if(not track)
     {
-        qWarning() << "matchesFilterQuery called for unknown track index";
         return false;
     }
 
