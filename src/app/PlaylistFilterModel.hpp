@@ -2,7 +2,7 @@
 
 #include <QSortFilterProxyModel>
 
-class PlaylistFilterModel : public QSortFilterProxyModel
+class PlaylistFilterModel final : public QSortFilterProxyModel
 {
     Q_OBJECT
 

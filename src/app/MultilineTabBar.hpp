@@ -14,7 +14,7 @@ struct Tab
     bool isLastOnRow{ false };
 };
 
-class MultilineTabBar : public QWidget
+class MultilineTabBar final : public QWidget
 {
     Q_OBJECT
 
@@ -72,7 +72,7 @@ private:
     int currentIndex_{ 0 };
 };
 
-class MultilineTabWidget : public QWidget
+class MultilineTabWidget final : public QWidget
 {
     Q_OBJECT
 

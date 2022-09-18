@@ -4,7 +4,7 @@
 
 class PlaylistWidget;
 
-class PlaylistHeader : public QHeaderView
+class PlaylistHeader final : public QHeaderView
 {
 public:
     explicit PlaylistHeader(PlaylistWidget *);

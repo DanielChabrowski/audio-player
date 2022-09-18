@@ -9,7 +9,7 @@
 
 class IPlaylistIO;
 
-class PlaylistManager
+class PlaylistManager final
 {
 public:
     using PlaylistContainer = std::unordered_map<PlaylistId, Playlist, PlaylistIdHasher>;

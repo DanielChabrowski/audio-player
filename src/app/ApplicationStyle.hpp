@@ -2,7 +2,7 @@
 
 #include <QProxyStyle>
 
-class ApplicationStyle : public QProxyStyle
+class ApplicationStyle final : public QProxyStyle
 {
 public:
     using QProxyStyle::QProxyStyle;

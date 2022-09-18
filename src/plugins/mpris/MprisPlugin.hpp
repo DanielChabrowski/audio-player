@@ -9,7 +9,7 @@ class MediaPlayer;
 
 namespace plugins
 {
-class MprisPlugin : QObject
+class MprisPlugin final : QObject
 {
     Q_OBJECT
 

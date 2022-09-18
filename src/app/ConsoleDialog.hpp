@@ -4,7 +4,7 @@
 
 class QPlainTextEdit;
 
-class ConsoleDialog : public QDialog
+class ConsoleDialog final : public QDialog
 {
     Q_OBJECT
 

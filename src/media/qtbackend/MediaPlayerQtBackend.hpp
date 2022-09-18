@@ -4,7 +4,7 @@
 
 #include <memory>
 
-class MediaPlayerQtBackend : public MediaPlayer
+class MediaPlayerQtBackend final : public MediaPlayer
 {
     Q_OBJECT
 

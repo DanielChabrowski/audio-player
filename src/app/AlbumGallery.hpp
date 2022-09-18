@@ -4,7 +4,7 @@
 #include <QList>
 #include <QRect>
 
-class AlbumGallery : public QAbstractItemView
+class AlbumGallery final : public QAbstractItemView
 {
     Q_OBJECT
 

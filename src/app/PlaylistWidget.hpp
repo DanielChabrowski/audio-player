@@ -6,7 +6,7 @@
 
 class Playlist;
 
-class PlaylistWidget : public QTreeView
+class PlaylistWidget final : public QTreeView
 {
     Q_OBJECT
 

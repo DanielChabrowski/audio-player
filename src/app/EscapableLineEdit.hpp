@@ -2,7 +2,7 @@
 
 #include <QLineEdit>
 
-class EscapableLineEdit : public QLineEdit
+class EscapableLineEdit final : public QLineEdit
 {
     Q_OBJECT
 

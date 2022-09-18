@@ -38,7 +38,7 @@ struct PlaylistIdHasher
     std::size_t operator()(const PlaylistId &id) const noexcept;
 };
 
-class Playlist
+class Playlist final
 {
 public:
     Playlist(QString name, QString playlistPath, IPlaylistIO &);
