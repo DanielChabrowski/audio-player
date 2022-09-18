@@ -15,12 +15,7 @@ public:
 
     const Playlist &getPlaylist() const;
 
-    void keyPressEvent(QKeyEvent *) override;
-    void mouseMoveEvent(QMouseEvent *) override;
     void mouseDoubleClickEvent(QMouseEvent *) override;
-    void leaveEvent(QEvent *) override;
-    void currentChanged(const QModelIndex &, const QModelIndex &) override;
-    void selectionChanged(const QItemSelection &, const QItemSelection &) override;
 
 private:
     void enablePlayTrackShortcut();

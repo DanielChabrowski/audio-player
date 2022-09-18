@@ -18,7 +18,7 @@ struct CachedCoverHash
     QByteArray hash;
 };
 
-class MetaDataCache
+class MetaDataCache final
 {
 public:
     explicit MetaDataCache(QString databaseFile);

@@ -523,9 +523,6 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
     playlistWidget->setModel(filterModel.release());
     playlistWidget->setHeader(playlistHeader.release());
 
-    // Hide first column containing tree-view decorations
-    playlistWidget->setColumnHidden(PlaylistColumn::DISABLED, true);
-
     // Set fixed width for NOW_PLAYING marker column
     playlistWidget->setColumnWidth(PlaylistColumn::NOW_PLAYING, 10);
 

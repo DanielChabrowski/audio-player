@@ -16,8 +16,7 @@
 namespace
 {
 // Keep in check with PlaylistColumn enum
-const std::array<const char *, 6> labels = {
-    "",
+constexpr std::array<const char *, 5> labels = {
     "",
     "Artist/album",
     "Track",

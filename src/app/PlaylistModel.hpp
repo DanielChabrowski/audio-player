@@ -6,7 +6,6 @@
 
 enum PlaylistColumn
 {
-    DISABLED,
     NOW_PLAYING,
     ARTIST_ALBUM,
     TRACK,

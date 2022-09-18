@@ -1,7 +1,13 @@
 QTreeView {
+    border: none;
     color: #f47e46;
     background-color: #21231f;
     alternate-background-color: #242622;
+}
+
+QTreeView::branch {
+    display: none;
+    border: none;
 }
 
 QTreeView::item:selected,
@@ -25,10 +31,6 @@ QMenuBar::item:pressed {
 
 PlaybackControlButton {
     padding: 0;
-}
-
-QTreeView {
-    border: none;
 }
 
 MultilineTabWidget::pane {

@@ -2,8 +2,7 @@
 
 #include "Playlist.hpp"
 
-#include <QDebug>
-#include <QKeyEvent>
+#include <QMouseEvent>
 #include <QShortcut>
 
 PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> itemSelectedCallback, QWidget *parent)
@@ -14,6 +13,9 @@ PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> item
     setAllColumnsShowFocus(true);
     setAlternatingRowColors(true);
     setUniformRowHeights(true);
+    setItemsExpandable(false);
+    setExpandsOnDoubleClick(false);
+    setRootIsDecorated(false);
     setFrameShape(QFrame::NoFrame);
     setSelectionMode(ExtendedSelection);
     setDropIndicatorShown(true);
@@ -29,16 +31,6 @@ const Playlist &PlaylistWidget::getPlaylist() const
     return playlist_;
 }
 
-void PlaylistWidget::keyPressEvent(QKeyEvent *event)
-{
-    QTreeView::keyPressEvent(event);
-}
-
-void PlaylistWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    QTreeView::mouseMoveEvent(event);
-}
-
 void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if(Qt::LeftButton != event->button())
@@ -52,21 +44,6 @@ void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
         itemSelectedCallback_(index.row());
         update();
     }
-}
-
-void PlaylistWidget::leaveEvent(QEvent *event)
-{
-    QTreeView::leaveEvent(event);
-}
-
-void PlaylistWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
-{
-    QTreeView::currentChanged(current, previous);
-}
-
-void PlaylistWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
-{
-    QTreeView::selectionChanged(selected, deselected);
 }
 
 void PlaylistWidget::enablePlayTrackShortcut()
