@@ -103,8 +103,7 @@ PlaylistManager::PlaylistContainer &PlaylistManager::getAll()
 
 QString PlaylistManager::createPlaylistPath(const QString &playlistName)
 {
-    const QDir playlistDir{ playlistDirectory_ };
-    return playlistDir.absolutePath() + '/' + playlistName;
+    return QDir{ playlistDirectory_ }.absoluteFilePath(playlistName);
 }
 
 QString PlaylistManager::createPlaylistFile(const QString &playlistName)
