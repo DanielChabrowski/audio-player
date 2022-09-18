@@ -4,9 +4,8 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QStringView>
 
-#include <functional>
-#include <qstringview.h>
 #include <random>
 
 std::size_t PlaylistIdHasher::operator()(const PlaylistId &id) const noexcept
