@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 #endif
 
     QSettings appSettings{ applicationName, applicationName };
-    qInfo() << "Config file:" << appSettings.fileName();
+    qInfo() << "Config file:" << QDir::toNativeSeparators(appSettings.fileName());
 
     const auto configLocation =
         QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation);
@@ -41,20 +41,20 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    qInfo() << "Config directory:" << configLocation;
+    qInfo() << "Config directory:" << QDir::toNativeSeparators(configLocation);
 
     QDir configDir{ configLocation };
     configDir.mkdir(applicationName);
 
     const auto cacheFile = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "cache.db");
-    qInfo() << "Cache file:" << cacheFile;
+    qInfo() << "Cache file:" << QDir::toNativeSeparators(cacheFile);
 
     MetaDataCache metaDataCache{ cacheFile };
     AudioMetaDataProvider metaDataProvider;
     FilesystemPlaylistIO playlistIO{ metaDataCache, metaDataProvider };
 
     const auto playlistsDirectory = QString{ "%1/%2/%3" }.arg(configLocation, applicationName, "playlists");
-    qInfo() << "Playlists directory:" << playlistsDirectory;
+    qInfo() << "Playlists directory:" << QDir::toNativeSeparators(playlistsDirectory);
 
     PlaylistManager playlistManager{ playlistIO, playlistsDirectory };
     LibraryManager libraryManager{ metaDataCache };

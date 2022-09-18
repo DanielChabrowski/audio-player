@@ -421,7 +421,7 @@ void MainWindow::setupAlbumsBrowser()
     const auto albumLocation =
         QStandardPaths::standardLocations(QStandardPaths::StandardLocation::MusicLocation).at(0);
 
-    qDebug() << "Loading album view for:" << albumLocation;
+    qDebug() << "Loading album view for:" << QDir::toNativeSeparators(albumLocation);
 
     const auto dirModel = new QFileSystemModel(this);
     dirModel->setReadOnly(true);
