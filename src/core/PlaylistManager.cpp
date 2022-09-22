@@ -10,9 +10,21 @@
 
 #include <stdexcept>
 
-PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, QString playlistDirectory)
+namespace
+{
+const QDir &ensureExists(const QDir &dir)
+{
+    if(not dir.exists() and not dir.mkpath("."))
+    {
+        throw std::runtime_error("Playlist directory does not exist and cannot be created");
+    }
+    return dir;
+}
+} // namespace
+
+PlaylistManager::PlaylistManager(IPlaylistIO &playlistIO, const QString &playlistDirectory)
 : playlistIO_{ playlistIO }
-, playlistDirectory_{ std::move(playlistDirectory) }
+, playlistDirectory_{ playlistDirectory }
 {
     loadFromDirectory();
 
@@ -110,17 +122,11 @@ PlaylistManager::PlaylistContainer &PlaylistManager::getAll()
 
 QString PlaylistManager::createPlaylistPath(const QString &playlistName)
 {
-    return QDir{ playlistDirectory_ }.absoluteFilePath(playlistName);
+    return ensureExists(playlistDirectory_).absoluteFilePath(playlistName);
 }
 
 QString PlaylistManager::createPlaylistFile(const QString &playlistName)
 {
-    QDir playlistDir{ playlistDirectory_ };
-    if(not playlistDir.exists() and not playlistDir.mkpath(playlistDirectory_))
-    {
-        return {};
-    }
-
     QFile playlistFile{ getUniqueFilename(createPlaylistPath(playlistName)) };
     if(not playlistFile.open(QIODevice::ReadWrite))
     {
@@ -132,14 +138,7 @@ QString PlaylistManager::createPlaylistFile(const QString &playlistName)
 
 void PlaylistManager::loadFromDirectory()
 {
-    QDir playlistDir{ playlistDirectory_ };
-    if(not playlistDir.exists() and not playlistDir.mkpath(playlistDirectory_))
-    {
-        // TODO: Error handling
-        return;
-    }
-
-    const auto playlists = playlistDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+    const auto playlists = ensureExists(playlistDirectory_).entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
     qDebug() << "Playlist files found:" << playlists.count();
 
     QElapsedTimer timer;

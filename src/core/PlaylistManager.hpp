@@ -2,6 +2,7 @@
 
 #include "Playlist.hpp"
 
+#include <QDir>
 #include <QString>
 
 #include <optional>
@@ -14,7 +15,7 @@ class PlaylistManager final
 public:
     using PlaylistContainer = std::unordered_map<PlaylistId, Playlist, PlaylistIdHasher>;
 
-    PlaylistManager(IPlaylistIO &, QString playlistDirectory);
+    PlaylistManager(IPlaylistIO &, const QString &playlistDirectory);
 
     std::optional<PlaylistId> add(const QString &filepath);
     std::optional<PlaylistId> create(const QString &name);
@@ -34,7 +35,7 @@ private:
 
 private:
     IPlaylistIO &playlistIO_;
-    QString playlistDirectory_;
+    const QDir playlistDirectory_;
     decltype(PlaylistId::value) lastPlaylistIndex_{ 0 };
     PlaylistContainer playlists_;
 };

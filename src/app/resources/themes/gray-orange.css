@@ -6,7 +6,6 @@ QTreeView {
 }
 
 QTreeView::branch {
-    display: none;
     border: none;
 }
 
