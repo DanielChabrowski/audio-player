@@ -2,4 +2,4 @@
 
 #include <QString>
 
-QString getUniqueFilename(const QString &filename);
+[[nodiscard]] QString getUniqueFilename(const QString &filename);

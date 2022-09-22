@@ -1,16 +1,15 @@
 #include "FileUtilities.hpp"
 
-#include <QFile>
 #include <QFileInfo>
 
 QString getUniqueFilename(const QString &filename)
 {
-    if(not QFile::exists(filename))
+    if(not QFileInfo::exists(filename))
     {
         return filename;
     }
 
-    QFileInfo fileInfo{ filename };
+    const QFileInfo fileInfo{ filename };
 
     QString suffix = fileInfo.completeSuffix();
     if(not suffix.isEmpty())
@@ -24,7 +23,7 @@ QString getUniqueFilename(const QString &filename)
     for(int i = 1;; ++i)
     {
         ret = QString("%1 (%2)%3").arg(filepath).arg(i).arg(suffix);
-        if(not QFile::exists(ret))
+        if(not QFileInfo::exists(ret))
         {
             return ret;
         }
