@@ -873,32 +873,29 @@ int MainWindow::getCurrentPlaylistTabIndex() const
 
 PlaylistWidget *MainWindow::getPlaylistWidgetByTabIndex(int tabIndex)
 {
-    auto *widget = ui.playlist->widget(tabIndex);
-    if(not widget)
+    if(auto *widget = ui.playlist->widget(tabIndex); widget)
     {
-        return nullptr;
+        return qobject_cast<PlaylistWidget *>(widget);
     }
-    return qobject_cast<PlaylistWidget *>(widget);
+    return nullptr;
 }
 
 const Playlist *MainWindow::getPlaylistByTabIndex(int tabIndex)
 {
-    auto playlistWidget = getPlaylistWidgetByTabIndex(tabIndex);
-    if(not playlistWidget)
+    if(auto playlistWidget = getPlaylistWidgetByTabIndex(tabIndex); playlistWidget)
     {
-        return nullptr;
+        return &playlistWidget->getPlaylist();
     }
-    return &playlistWidget->getPlaylist();
+    return nullptr;
 }
 
 std::optional<PlaylistId> MainWindow::getPlaylistIdByTabIndex(int tabIndex)
 {
-    const auto *playlist = getPlaylistByTabIndex(tabIndex);
-    if(not playlist)
+    if(const auto *playlist = getPlaylistByTabIndex(tabIndex); playlist)
     {
-        return std::nullopt;
+        return playlist->getPlaylistId();
     }
-    return playlist->getPlaylistId();
+    return std::nullopt;
 }
 
 std::optional<int> MainWindow::getTabIndexByPlaylistName(const QString &name)
