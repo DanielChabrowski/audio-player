@@ -1,4 +1,5 @@
 #include "MultilineTabBar.hpp"
+
 #include <QApplication>
 #include <QBoxLayout>
 #include <QPainter>
@@ -276,7 +277,7 @@ void MultilineTabBar::recalculateTabsLayout()
 MultilineTabWidget::MultilineTabWidget(QWidget *parent)
 : QWidget{ parent }
 , tabBar_{ new MultilineTabBar(this) }
-, stack_{ new QStackedWidget() }
+, stack_{ new QStackedWidget(this) }
 {
     setLayout(new QBoxLayout(QBoxLayout::Direction::TopToBottom));
     layout()->setContentsMargins(0, 1, 0, 0); // TODO: Figure out the offset of `pane`
@@ -303,19 +304,27 @@ void MultilineTabWidget::paintEvent(QPaintEvent *)
     p.drawPrimitive(QStyle::PE_FrameTabWidget, opt);
 }
 
-int MultilineTabWidget::addTab(QWidget *widget, QString tabText)
+int MultilineTabWidget::addTab(std::unique_ptr<QWidget> widget, QString tabText)
 {
-    stack_->addWidget(widget);
+    if(Q_UNLIKELY(not widget))
+    {
+        return -1;
+    }
+
+    // QStackedWidget takes ownership
+    stack_->addWidget(widget.release());
+
     const int tabIndex = tabBar_->addTab(Tab{ std::move(tabText), QRect{} });
     update();
     return tabIndex;
 }
 
-void MultilineTabWidget::removeTab(int tabIndex)
+std::unique_ptr<QWidget> MultilineTabWidget::removeTab(int tabIndex)
 {
-    auto *widget = stack_->widget(tabIndex);
+    auto widget = std::unique_ptr<QWidget>(stack_->widget(tabIndex));
     if(widget)
     {
-        stack_->removeWidget(widget);
+        stack_->removeWidget(widget.get());
     }
+    return widget;
 }

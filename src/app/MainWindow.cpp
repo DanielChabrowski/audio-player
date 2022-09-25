@@ -465,7 +465,10 @@ void MainWindow::setupPlaylistWidget()
             menu.addAction("Remove playlist", this,
                 [this, playlistId = *playlistId, tabIndex]()
                 {
-                    ui.playlist->removeTab(tabIndex);
+                    {
+                        const auto drop = ui.playlist->removeTab(tabIndex);
+                    }
+
                     playlistManager_.removeById(playlistId);
                 });
 
@@ -489,7 +492,11 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
 {
     const auto playlistId = playlist.getPlaylistId();
 
-    auto playlistModel = std::make_unique<PlaylistModel>(playlist, this);
+    auto playlistWidget = std::make_unique<PlaylistWidget>(playlist);
+    auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
+    auto filterModel = std::make_unique<PlaylistFilterModel>(playlistWidget.get());
+    auto playlistModel = std::make_unique<PlaylistModel>(playlist, playlistWidget.get());
+
     connect(this, &MainWindow::removeDuplicates, playlistModel.get(),
         [playlistId, model = playlistModel.get()](PlaylistId eventPlaylistId)
         {
@@ -508,14 +515,13 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
             }
         });
 
-    auto filterModel = std::make_unique<PlaylistFilterModel>(this);
+
     filterModel->setSourceModel(playlistModel.release());
 
-    auto playlistWidget = std::make_unique<PlaylistWidget>(playlist,
+    connect(playlistWidget.get(), &PlaylistWidget::itemPicked, this,
         [this, playlistId, proxyModel = filterModel.get()](int index) {
             playMediaFromPlaylist(playlistId, proxyModel->mapToSource(proxyModel->index(index, 0)).row());
         });
-    auto playlistHeader = std::make_unique<PlaylistHeader>(playlistWidget.get());
 
     connect(this, &MainWindow::updateSearchResult, filterModel.get(),
         [model = filterModel.get()](QString query) { model->setFilterQuery(query); });
@@ -533,7 +539,7 @@ int MainWindow::setupPlaylistTab(Playlist &playlist)
     header->setSectionResizeMode(PlaylistColumn::TITLE, QHeaderView::ResizeMode::Stretch);
     header->setSectionResizeMode(PlaylistColumn::DURATION, QHeaderView::ResizeMode::ResizeToContents);
 
-    return ui.playlist->addTab(playlistWidget.release(), playlist.getName());
+    return ui.playlist->addTab(std::move(playlistWidget), playlist.getName());
 }
 
 void MainWindow::setupGlobalShortcuts()
@@ -776,14 +782,15 @@ void MainWindow::removeCurrentPlaylist()
     }
 
     const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
-    if(not playlistId)
+
     {
-        ui.playlist->removeTab(currentTabIndex);
-        return;
+        const auto drop = ui.playlist->removeTab(currentTabIndex);
     }
 
-    ui.playlist->removeTab(currentTabIndex);
-    playlistManager_.removeById(*playlistId);
+    if(playlistId)
+    {
+        playlistManager_.removeById(*playlistId);
+    }
 }
 
 void MainWindow::onMediaFinish(PlaylistId playlistId)

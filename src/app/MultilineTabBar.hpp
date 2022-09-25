@@ -2,8 +2,9 @@
 
 #include <QMouseEvent>
 #include <QStackedWidget>
-#include <QVBoxLayout>
 #include <QWidget>
+
+#include <memory>
 
 struct Tab
 {
@@ -93,8 +94,8 @@ public:
         return tabBar_->count();
     }
 
-    int addTab(QWidget *widget, QString tabText);
-    void removeTab(int tabIndex);
+    int addTab(std::unique_ptr<QWidget> widget, QString tabText);
+    std::unique_ptr<QWidget> removeTab(int tabIndex);
 
     int currentIndex()
     {

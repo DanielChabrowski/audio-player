@@ -5,10 +5,9 @@
 #include <QMouseEvent>
 #include <QShortcut>
 
-PlaylistWidget::PlaylistWidget(Playlist &playlist, std::function<void(int)> itemSelectedCallback, QWidget *parent)
+PlaylistWidget::PlaylistWidget(Playlist &playlist, QWidget *parent)
 : QTreeView{ parent }
 , playlist_{ playlist }
-, itemSelectedCallback_{ std::move(itemSelectedCallback) }
 {
     setAllColumnsShowFocus(true);
     setAlternatingRowColors(true);
@@ -41,7 +40,7 @@ void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
     const auto index = indexAt(event->pos());
     if(index.isValid())
     {
-        itemSelectedCallback_(index.row());
+        emit itemPicked(index.row());
         update();
     }
 }
@@ -57,7 +56,7 @@ void PlaylistWidget::enablePlayTrackShortcut()
             const auto currentIndex = this->currentIndex();
             if(currentIndex.isValid())
             {
-                itemSelectedCallback_(currentIndex.row());
+                emit itemPicked(currentIndex.row());
                 update();
             }
         });

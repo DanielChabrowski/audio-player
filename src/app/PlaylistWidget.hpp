@@ -2,8 +2,6 @@
 
 #include <QTreeView>
 
-#include <functional>
-
 class Playlist;
 
 class PlaylistWidget final : public QTreeView
@@ -11,11 +9,14 @@ class PlaylistWidget final : public QTreeView
     Q_OBJECT
 
 public:
-    explicit PlaylistWidget(Playlist &, std::function<void(int)> itemSelectedCallback, QWidget * = nullptr);
+    PlaylistWidget(Playlist &, QWidget * = nullptr);
 
     const Playlist &getPlaylist() const;
 
     void mouseDoubleClickEvent(QMouseEvent *) override;
+
+signals:
+    void itemPicked(int index);
 
 private:
     void enablePlayTrackShortcut();
@@ -23,5 +24,4 @@ private:
 
 private:
     Playlist &playlist_;
-    std::function<void(int)> itemSelectedCallback_;
 };
