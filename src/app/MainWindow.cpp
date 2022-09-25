@@ -457,20 +457,12 @@ void MainWindow::setupPlaylistWidget()
         [this, tabbar](const QPoint &point)
         {
             const auto tabIndex = tabbar->tabAt(point);
-            const auto playlistId = getPlaylistIdByTabIndex(tabIndex);
 
             QMenu menu;
             menu.addAction("Rename playlist", this,
                 [this, tabIndex] { togglePlaylistRenameControl(tabIndex); });
-            menu.addAction("Remove playlist", this,
-                [this, playlistId = *playlistId, tabIndex]()
-                {
-                    {
-                        const auto drop = ui.playlist->removeTab(tabIndex);
-                    }
-
-                    playlistManager_.removeById(playlistId);
-                });
+            menu.addAction(
+                "Remove playlist", this, [this, tabIndex]() { removePlaylistTab(tabIndex); });
 
             menu.exec(tabbar->mapToGlobal(point));
         });
@@ -773,24 +765,25 @@ void MainWindow::togglePlayPause()
     }
 }
 
-void MainWindow::removeCurrentPlaylist()
+void MainWindow::removePlaylistTab(int tabIndex)
 {
-    const auto currentTabIndex = getCurrentPlaylistTabIndex();
-    if(currentTabIndex == -1)
-    {
-        return;
-    }
+    if(tabIndex == -1) return;
 
-    const auto playlistId = getPlaylistIdByTabIndex(currentTabIndex);
+    const auto playlistId = getPlaylistIdByTabIndex(tabIndex);
 
     {
-        const auto drop = ui.playlist->removeTab(currentTabIndex);
+        const auto drop = ui.playlist->removeTab(tabIndex);
     }
 
     if(playlistId)
     {
         playlistManager_.removeById(*playlistId);
     }
+}
+
+void MainWindow::removeCurrentPlaylist()
+{
+    removePlaylistTab(getCurrentPlaylistTabIndex());
 }
 
 void MainWindow::onMediaFinish(PlaylistId playlistId)

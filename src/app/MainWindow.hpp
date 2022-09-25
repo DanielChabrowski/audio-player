@@ -58,6 +58,8 @@ private:
 
     void playMediaFromPlaylist(PlaylistId playlistId, std::size_t index);
     void togglePlayPause();
+
+    void removePlaylistTab(int tabIndex);
     void removeCurrentPlaylist();
 
     void onMediaFinish(PlaylistId playlistId);
