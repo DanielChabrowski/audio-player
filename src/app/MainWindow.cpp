@@ -817,24 +817,18 @@ void MainWindow::enablePlaylistChangeTracking()
     // Otherwise last playlist name is updated with loaded playlists
 
     auto *tabbar = ui.playlist->tabBar();
-    connect(tabbar, &MultilineTabBar::currentChanged,
+    connect(tabbar, &MultilineTabBar::currentChanged, this,
         [this](int newIndex)
         {
-            const auto playlistId = getPlaylistIdByTabIndex(newIndex);
-            if(not playlistId)
+            if(const auto *playlist = getPlaylistByTabIndex(newIndex); playlist)
             {
-                qDebug() << "No playlist at tab index:" << newIndex;
-                return;
+                settings_.setValue(config::lastPlaylistKey, playlist->getName());
+                qDebug() << "Updated last playlist:" << playlist->getName();
             }
-
-            const auto *playlist = playlistManager_.get(*playlistId);
-            if(not playlist)
+            else
             {
-                qCritical() << "No playlist with given playlistId:" << playlistId->value;
-                return;
+                qCritical() << "No playlist at tab index:" << newIndex;
             }
-            settings_.setValue(config::lastPlaylistKey, playlist->getName());
-            qDebug() << "Updated last playlist:" << playlist->getName();
         });
 }
 
