@@ -14,6 +14,7 @@ public:
     const Playlist &getPlaylist() const;
 
     void mouseDoubleClickEvent(QMouseEvent *) override;
+    void timerEvent(QTimerEvent *) override;
 
 signals:
     void itemPicked(int index);

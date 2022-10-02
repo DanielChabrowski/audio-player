@@ -45,6 +45,15 @@ void PlaylistWidget::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
+void PlaylistWidget::timerEvent(QTimerEvent *event)
+{
+    // Skip `fetchMoreTimer` to avoid fetching for invisible widgets
+    if(isVisible())
+    {
+        QTreeView::timerEvent(event);
+    }
+}
+
 void PlaylistWidget::enablePlayTrackShortcut()
 {
     const auto playShortcut = new QShortcut(Qt::Key_Return, this);
