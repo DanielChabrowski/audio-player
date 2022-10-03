@@ -47,7 +47,7 @@ else()
         CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
         AND (NOT CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "12.1")
+        if(CMAKE_CXX_COMPILER_VERSION MATCHES "^12\.[012].*$")
             add_compile_options(-Wno-maybe-uninitialized)
         endif()
     endif()
