@@ -9,6 +9,7 @@
 #include <taglib/mpegfile.h>
 #include <taglib/tag.h>
 #include <taglib/tbytevector.h>
+#include <taglib/tfilestream.h>
 #include <taglib/tpropertymap.h>
 
 #include <QByteArray>
@@ -108,7 +109,8 @@ AudioMetaDataProvider::~AudioMetaDataProvider() = default;
 
 std::optional<ProvidedMetadata> AudioMetaDataProvider::getMetaData(const QString &filepath)
 {
-    TagLib::FileRef ref{ filepath.toStdString().c_str() };
+    TagLib::FileStream stream{ filepath.toStdString().c_str(), true };
+    TagLib::FileRef ref(&stream);
     if(ref.isNull())
     {
         return {};
