@@ -1,5 +1,7 @@
 #include "AudioMetaDataProvider.hpp"
 
+#include <algorithm>
+#include <cstdio>
 #include <taglib/attachedpictureframe.h>
 #include <taglib/fileref.h>
 #include <taglib/flacfile.h>
@@ -16,7 +18,10 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
+#include <QScopeGuard>
 
+namespace
+{
 void extractId3v2Picture(TagLib::ID3v2::Tag *tag, std::optional<CoverArt> &coverArt)
 {
     if(!tag)
@@ -84,26 +89,58 @@ std::optional<CoverArt> extractCoverArt(TagLib::File *file)
     return coverArt;
 }
 
+std::optional<CoverArt> readCoverArt(const QString &path)
+{
+    // Use c-style IO to preallocate taglib buffer and use it for read directly
+    const auto imageFile = std::fopen(path.toStdString().c_str(), "rb");
+    if(not imageFile)
+    {
+        return {};
+    }
+
+    const auto guard = qScopeGuard([imageFile] { std::fclose(imageFile); });
+
+    std::fseek(imageFile, 0, SEEK_END);
+    const unsigned int fileLength = std::ftell(imageFile);
+    std::fseek(imageFile, 0, SEEK_SET);
+
+    auto coverArt = CoverArt(fileLength);
+
+    const auto bytesRead = std::fread(coverArt.data(), sizeof(char), fileLength, imageFile);
+    if(bytesRead != fileLength)
+    {
+        qWarning() << "Couldn't read the whole file";
+        return {};
+    }
+
+    return coverArt;
+}
+
 std::optional<CoverArt> extractFromDirectory(QDir directory)
 {
-    static QStringList extensions = { "*.jpg", "*.png", "*.jpeg" };
+    const auto entries = directory.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::SortFlag::Unsorted);
 
-    const auto entries = directory.entryList(
-        extensions, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDir::SortFlag::Name);
-    if(entries.isEmpty())
+    const auto coverFilePath = std::find_if(entries.cbegin(), entries.cend(),
+        [](const auto &entry)
+        {
+            constexpr auto jpgExt = QLatin1String(".jpg");
+            constexpr auto pngExt = QLatin1String(".png");
+            constexpr auto jpegExt = QLatin1String(".jpeg");
+
+            return entry.endsWith(jpgExt, Qt::CaseInsensitive) ||
+                   entry.endsWith(pngExt, Qt::CaseInsensitive) ||
+                   entry.endsWith(jpegExt, Qt::CaseInsensitive);
+        });
+
+    if(coverFilePath == entries.cend())
     {
         return {};
     }
 
-    QFile imageFile{ directory.absoluteFilePath(entries.first()) };
-    if(not imageFile.open(QIODevice::ReadOnly))
-    {
-        return {};
-    }
-
-    const auto imageData = imageFile.readAll();
-    return CoverArt{ imageData.data(), static_cast<unsigned int>(imageData.size()) };
+    const auto absFilePath = directory.absoluteFilePath(*coverFilePath);
+    return readCoverArt(absFilePath);
 }
+} // namespace
 
 AudioMetaDataProvider::~AudioMetaDataProvider() = default;
 
