@@ -170,6 +170,7 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
 
     auto cachedCovers = cache_.getCoverArtHashCache();
     std::vector<std::pair<std::uint64_t, QByteArray>> tempCoverCache{};
+    std::unordered_map<QString, std::uint64_t> directoryToCoverCache{};
 
     std::size_t tempCacheHits{ 0 }, cacheHits{ 0 }, cacheMisses{ 0 };
     std::size_t tempCoverCacheHits{ 0 }, coverCacheHits{ 0 }, coverCacheMisses{ 0 };
@@ -196,8 +197,25 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
         if(auto metadata = audioMetaDataProvider_.getMetaData(path); metadata)
         {
             std::optional<std::uint64_t> coverId{};
+            bool coverFetchedFromDirectory{ false };
 
-            if(const auto &coverArt = metadata->coverArt; coverArt)
+            if(not metadata->coverArt)
+            {
+                const auto absoluteDir = QFileInfo{ path }.absoluteDir();
+                const auto cachedCoverId = directoryToCoverCache.find(absoluteDir.absolutePath());
+
+                if(cachedCoverId != directoryToCoverCache.cend())
+                {
+                    coverId = cachedCoverId->second;
+                }
+                else
+                {
+                    metadata->coverArt = audioMetaDataProvider_.readCoverFromDirectory(absoluteDir);
+                    coverFetchedFromDirectory = metadata->coverArt.has_value();
+                }
+            }
+
+            if(const auto &coverArt = metadata->coverArt; coverArt && not coverId)
             {
                 const auto coverByteView = QByteArray::fromRawData(coverArt->data(), coverArt->size());
 
@@ -227,6 +245,13 @@ std::vector<PlaylistTrack> FilesystemPlaylistIO::loadTracks(const std::vector<QU
                                 CachedCoverHash{ *coverCacheResult, std::move(coverHash) });
                             tempCoverCache.emplace_back(*coverCacheResult,
                                 QByteArray(coverByteView.data(), coverByteView.size()));
+
+                            if(coverFetchedFromDirectory)
+                            {
+                                directoryToCoverCache.emplace(
+                                    QFileInfo{ path }.absoluteDir().absolutePath(), *coverCacheResult);
+                            }
+
                             coverId = coverCacheResult;
                         }
                         ++coverCacheMisses;

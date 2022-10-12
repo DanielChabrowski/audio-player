@@ -115,31 +115,6 @@ std::optional<CoverArt> readCoverArt(const QString &path)
 
     return coverArt;
 }
-
-std::optional<CoverArt> extractFromDirectory(QDir directory)
-{
-    const auto entries = directory.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::SortFlag::Unsorted);
-
-    const auto coverFilePath = std::find_if(entries.cbegin(), entries.cend(),
-        [](const auto &entry)
-        {
-            constexpr auto jpgExt = QLatin1String(".jpg");
-            constexpr auto pngExt = QLatin1String(".png");
-            constexpr auto jpegExt = QLatin1String(".jpeg");
-
-            return entry.endsWith(jpgExt, Qt::CaseInsensitive) ||
-                   entry.endsWith(pngExt, Qt::CaseInsensitive) ||
-                   entry.endsWith(jpegExt, Qt::CaseInsensitive);
-        });
-
-    if(coverFilePath == entries.cend())
-    {
-        return {};
-    }
-
-    const auto absFilePath = directory.absoluteFilePath(*coverFilePath);
-    return readCoverArt(absFilePath);
-}
 } // namespace
 
 AudioMetaDataProvider::~AudioMetaDataProvider() = default;
@@ -198,12 +173,6 @@ std::optional<ProvidedMetadata> AudioMetaDataProvider::getMetaData(const QString
         }
     }
 
-    auto coverArt = extractCoverArt(ref.file());
-    if(not coverArt)
-    {
-        coverArt = extractFromDirectory(fileInfo.absoluteDir());
-    }
-
     return ProvidedMetadata{
         AudioMetaData{
             TStringToQString(tags->title()),
@@ -214,7 +183,32 @@ std::optional<ProvidedMetadata> AudioMetaDataProvider::getMetaData(const QString
             std::chrono::seconds{ duration },
 
         },
-        std::move(coverArt),
+        extractCoverArt(ref.file()),
         std::chrono::seconds{ lastModified },
     };
+}
+
+std::optional<CoverArt> AudioMetaDataProvider::readCoverFromDirectory(QDir directory)
+{
+    const auto entries = directory.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::SortFlag::Unsorted);
+
+    const auto coverFilePath = std::find_if(entries.cbegin(), entries.cend(),
+        [](const auto &entry)
+        {
+            constexpr auto jpgExt = QLatin1String(".jpg");
+            constexpr auto pngExt = QLatin1String(".png");
+            constexpr auto jpegExt = QLatin1String(".jpeg");
+
+            return entry.endsWith(jpgExt, Qt::CaseInsensitive) ||
+                   entry.endsWith(pngExt, Qt::CaseInsensitive) ||
+                   entry.endsWith(jpegExt, Qt::CaseInsensitive);
+        });
+
+    if(coverFilePath == entries.cend())
+    {
+        return {};
+    }
+
+    const auto absFilePath = directory.absoluteFilePath(*coverFilePath);
+    return readCoverArt(absFilePath);
 }
