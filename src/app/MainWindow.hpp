@@ -1,14 +1,14 @@
 #pragma once
 
+#include "MediaPlayer.hpp"
+#include "Playlist.hpp"
+
 #include <QHBoxLayout>
 #include <QSlider>
 #include <QStackedWidget>
 #include <QStringList>
 #include <QTreeView>
 #include <QWidget>
-
-#include "MediaPlayer.hpp"
-#include "Playlist.hpp"
 
 #include <memory>
 

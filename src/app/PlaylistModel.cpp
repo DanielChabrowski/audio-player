@@ -3,15 +3,13 @@
 #include "Playlist.hpp"
 
 #include <QDataStream>
-#include <QDebug>
 #include <QFileInfo>
 #include <QMimeData>
-#include <QSize>
 #include <QUrl>
 
 #include <array>
 #include <memory>
-#include <qnamespace.h>
+#include <vector>
 
 namespace
 {

@@ -1,17 +1,16 @@
 #include "MprisPlugin.hpp"
 
+#include "MediaPlayer.hpp"
+#include "MprisTypes.hpp"
+#include "Playlist.hpp"
+#include "mediaplayer2adaptor.h"
+#include "playeradaptor.h"
+#include "playlistsadaptor.h"
+
 #include <QDBusArgument>
 #include <QDBusMetaType>
 #include <QFileInfo>
 #include <QtGlobal>
-
-#include "MediaPlayer.hpp"
-#include "MprisTypes.hpp"
-#include "Playlist.hpp"
-
-#include "mediaplayer2adaptor.h"
-#include "playeradaptor.h"
-#include "playlistsadaptor.h"
 
 namespace
 {

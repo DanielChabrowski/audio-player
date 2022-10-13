@@ -2,11 +2,11 @@
 
 #include "Album.hpp"
 
-#include <optional>
-#include <vector>
-
 #include <QByteArray>
 #include <QPixmap>
+
+#include <optional>
+#include <vector>
 
 class MetaDataCache;
 

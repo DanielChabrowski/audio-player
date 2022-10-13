@@ -16,12 +16,17 @@
 #include <QDir>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QStyleFactory>
 
-int main(int argc, char *argv[])
+// int main(int argc, char *argv[])
+int main()
 {
-    QApplication app(argc, argv);
-    app.setStyle(new ApplicationStyle);
-    app.setWindowIcon(QIcon{ ":/icons/icon.svg" });
+    // QApplication app(argc, argv);
+    //  app.setStyle(QStyleFactory::create("kvantum"));
+    // app.setStyle(new ApplicationStyle(QApplication::style()));
+    // app.setWindowIcon(QIcon{ ":/icons/icon.svg" });
+
+    // qDebug() << QStyleFactory::keys();
 
 #ifdef NDEBUG
     constexpr auto applicationName = "foobar";
@@ -59,19 +64,20 @@ int main(int argc, char *argv[])
     PlaylistManager playlistManager{ playlistIO, playlistsDirectory };
     LibraryManager libraryManager{ metaDataCache };
 
-    const auto mediaPlayer = MediaPlayer::create();
-    if(not mediaPlayer)
-    {
-        qCritical() << "Could not create a media player backend";
-        return 1;
-    }
+    //     const auto mediaPlayer = MediaPlayer::create();
+    //     if(not mediaPlayer)
+    //     {
+    //         qCritical() << "Could not create a media player backend";
+    //         return 1;
+    //     }
 
-#ifdef PLUGIN_MPRIS_ENABLED
-    plugins::MprisPlugin mprisPlugin(*mediaPlayer);
-#endif
+    // #ifdef PLUGIN_MPRIS_ENABLED
+    //     plugins::MprisPlugin mprisPlugin(*mediaPlayer);
+    // #endif
 
-    MainWindow window{ appSettings, libraryManager, playlistManager, *mediaPlayer };
-    window.show();
+    //     MainWindow window{ appSettings, libraryManager, playlistManager, *mediaPlayer };
+    //     window.show();
 
-    return app.exec();
+    // return app.exec();
+    return 0;
 }

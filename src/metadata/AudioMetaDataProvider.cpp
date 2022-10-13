@@ -1,7 +1,5 @@
 #include "AudioMetaDataProvider.hpp"
 
-#include <algorithm>
-#include <cstdio>
 #include <taglib/attachedpictureframe.h>
 #include <taglib/fileref.h>
 #include <taglib/flacfile.h>
@@ -19,6 +17,9 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QScopeGuard>
+
+#include <algorithm>
+#include <cstdio>
 
 namespace
 {

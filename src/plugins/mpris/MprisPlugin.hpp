@@ -1,9 +1,9 @@
 #pragma once
 
+#include "MprisTypes.hpp"
+
 #include <QDBusConnection>
 #include <QDBusObjectPath>
-
-#include "MprisTypes.hpp"
 
 class MediaPlayer;
 

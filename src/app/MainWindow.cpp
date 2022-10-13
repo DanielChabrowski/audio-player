@@ -1,5 +1,19 @@
 #include "MainWindow.hpp"
 
+#include "AlbumGallery.hpp"
+#include "AlbumModel.hpp"
+#include "ConfigurationKeys.hpp"
+#include "EscapableLineEdit.hpp"
+#include "FilesystemPlaylistIO.hpp"
+#include "MediaPlayer.hpp"
+#include "MultilineTabBar.hpp"
+#include "PlaybackControlButton.hpp"
+#include "PlaylistFilterModel.hpp"
+#include "PlaylistHeader.hpp"
+#include "PlaylistManager.hpp"
+#include "PlaylistModel.hpp"
+#include "PlaylistWidget.hpp"
+
 #include <QActionGroup>
 #include <QApplication>
 #include <QDebug>
@@ -16,20 +30,6 @@
 #include <QTime>
 #include <QToolTip>
 #include <QtGlobal>
-
-#include "AlbumGallery.hpp"
-#include "AlbumModel.hpp"
-#include "ConfigurationKeys.hpp"
-#include "EscapableLineEdit.hpp"
-#include "FilesystemPlaylistIO.hpp"
-#include "MediaPlayer.hpp"
-#include "MultilineTabBar.hpp"
-#include "PlaybackControlButton.hpp"
-#include "PlaylistFilterModel.hpp"
-#include "PlaylistHeader.hpp"
-#include "PlaylistManager.hpp"
-#include "PlaylistModel.hpp"
-#include "PlaylistWidget.hpp"
 
 #include <algorithm>
 
@@ -204,8 +204,7 @@ void MainWindow::setupMenu()
     auto *bar = new QMenuBar(this);
     auto *fileMenu = bar->addMenu("File");
 
-    fileMenu->addAction(
-        "Open", this,
+    fileMenu->addAction("Open", QKeySequence::Open, this,
         [this]()
         {
             auto filenames = QFileDialog::getOpenFileNames(this, "Open audio",
@@ -222,10 +221,9 @@ void MainWindow::setupMenu()
             }
 
             emit playlistInsertRequest(playlistId.value(), filenames);
-        },
-        QKeySequence::Open);
+        });
 
-    auto *newPlaylistAction = fileMenu->addAction("Add new playlist", this,
+    fileMenu->addAction("Add new playlist", QKeySequence(QKeySequence::New), this,
         [this]()
         {
             const auto index = playlistManager_.create("New playlist");
@@ -241,7 +239,6 @@ void MainWindow::setupMenu()
                 ui.playlist->setCurrentIndex(newTabIndex);
             }
         });
-    newPlaylistAction->setShortcut(QKeySequence(QKeySequence::New));
 
     fileMenu->addAction("Preferences");
 

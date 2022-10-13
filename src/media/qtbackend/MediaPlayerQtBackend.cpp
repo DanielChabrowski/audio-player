@@ -1,10 +1,10 @@
 #include "MediaPlayerQtBackend.hpp"
 
+#include "Playlist.hpp"
+
 #include <QAudioOutput>
 #include <QMediaPlayer>
 #include <QtGlobal>
-
-#include "Playlist.hpp"
 
 namespace
 {

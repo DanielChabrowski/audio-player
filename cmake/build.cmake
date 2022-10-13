@@ -35,6 +35,7 @@ else()
         -Wnon-virtual-dtor
         -Wnull-dereference
         -Wzero-as-null-pointer-constant
+        -march=native
         $<$<CXX_COMPILER_ID:GNU>:-Wsuggest-override>
         $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
         $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>

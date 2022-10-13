@@ -1,7 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "Playlist.hpp"
+
 #include "mocks/PlaylistIOMock.hpp"
+
+#include <gtest/gtest.h>
 
 #include <QString>
 #include <QUrl>

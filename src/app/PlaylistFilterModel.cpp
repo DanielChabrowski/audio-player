@@ -1,4 +1,5 @@
 #include "PlaylistFilterModel.hpp"
+
 #include "Playlist.hpp"
 #include "PlaylistModel.hpp"
 

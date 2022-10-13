@@ -2,6 +2,7 @@
 
 #include <QAbstractListModel>
 #include <QStringList>
+
 #include <optional>
 
 enum PlaylistColumn
